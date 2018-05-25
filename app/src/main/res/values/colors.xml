@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#27C3FC</color>
+    <color name="colorPrimaryDark">#303F9F</color>
+    <color name="colorAccent">#FFf96331</color>
+    <color name="changeOrange">#80f96331</color>
+    <color name="color_red">#E43F3E</color>
+    <color name="color_red1">#D43635</color>
+    <color name="deep_red">#A71B1A</color>
+    <color name="white">#ffffffff</color>
+    <color name="windows_color">#D4C9CF</color>
+    <color name="TopicColor">#27C3FC</color>
+    <color name="blue_one">#419EFF</color>
+    <color name="deep_blue">#1BA7DA</color>
+    <color name="sky_blue">#5AA0FF</color>
+    <color name="water_textcolor">#132d50</color>
+    <color name="royalblue">#4169e1</color>
+    <color name="blue3">#ff275394</color>
+    <color name="blue1">#2B57C1</color>
+    <color name="blue2">#1F4091</color>
+    <color name="alertdialog_line">#c6c6c6</color>
+    <color name="black">#ff000000</color>
+    <color name="right_title">#ff333333</color>
+    <color name="black1">#ff444444</color>
+    <color name="text_color">#ff333333</color>
+    <color name="title_tv">#ff555555</color>
+    <color name="background_gray">#f2f1f1</color>
+    <color name="gray_black">#e2e2e2</color>
+    <color name="line_black">#ffc8c8c8</color>
+    <color name="line_gray">#ffd8d8d8</color>
+    <color name="light_gray">#ffe1e1e1</color>
+    <color name="black_gray">#FFBFBFBF</color>
+    <color name="touch_backgroud">#FFEAEAEA</color>
+    <color name="light_green">#4AC15D</color>
+    <color name="deep_green">#24A042</color>
+    <color name="dark_green">#87A778</color>
+    <color name="transparent">#00000000</color>
+    <color name="half_transparent">#40ffffff</color>
+    <color name="white_transparent">#A0ffffff</color>
+    <color name="black_transparent">#A0222222</color>
+
+</resources>

@@ -1,0 +1,232 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@mipmap/water_background"
+    android:padding="@dimen/margin_width15"
+    android:orientation="vertical"
+    tools:context="com.msht.watersystem.functionView.BuyWater">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:background="#00ffffff"
+        android:orientation="horizontal">
+
+        <FrameLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="0.65"
+            android:background="@color/white">
+
+            <com.msht.watersystem.widget.MyImgScroll
+                android:id="@+id/myvp"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"></com.msht.watersystem.widget.MyImgScroll>
+
+            <ImageView
+                android:id="@+id/textView"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_centerInParent="true"
+                android:gravity="center"
+                android:src="@drawable/water_advertisement" />
+
+            <include layout="@layout/layout_water_quality_detecton" />
+        </FrameLayout>
+
+        <View
+            android:layout_width="@dimen/margin_width15"
+            android:layout_height="match_parent"
+            android:background="#00ffffff" />
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="0.35"
+            android:orientation="vertical">
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@color/sky_blue"
+                android:paddingBottom="@dimen/margin_width15">
+
+                <RelativeLayout
+                    android:id="@+id/id_equipment_layount"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+                    <TextView
+                        android:id="@+id/id_tv_version"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_centerVertical="true"
+                        android:layout_marginLeft="@dimen/margin_width10"
+                        android:layout_marginBottom="@dimen/margin_width10"
+                        android:layout_marginRight="@dimen/margin_width10"
+                        android:layout_marginTop="@dimen/margin_width10"
+                        android:background="@drawable/shape_oval_back_button"
+                        android:text="v0.0"
+                        android:textColor="@color/white"
+                        android:textSize="@dimen/text_width14"
+                        android:textStyle="bold"/>
+
+                    <TextView
+                        android:id="@+id/id_equipment"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentRight="true"
+                        android:layout_centerVertical="true"
+                        android:layout_marginBottom="@dimen/margin_width10"
+                        android:layout_marginRight="@dimen/margin_width10"
+                        android:layout_marginTop="@dimen/margin_width10"
+                        android:background="@drawable/shape_oval_back_button"
+                        android:text="123456"
+                        android:textColor="@color/white"
+                        android:textSize="@dimen/text_width14"
+                        android:textStyle="bold" />
+                </RelativeLayout>
+
+                <TextView
+                    android:id="@+id/id_text1"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@+id/id_equipment_layount"
+                    android:layout_centerHorizontal="true"
+                    android:layout_marginTop="@dimen/margin_width20"
+                    android:text="请刷IC卡/扫二维码（民生宝APP）"
+                    android:textColor="@color/white"
+                    android:textSize="@dimen/text_width16" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@+id/id_text1"
+                    android:layout_centerHorizontal="true"
+                    android:layout_marginTop="@dimen/margin_width10"
+                    android:text="购买纯净水"
+                    android:textColor="@color/white"
+                    android:textSize="@dimen/text_width20"
+                    android:textStyle="bold" />
+            </RelativeLayout>
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:background="@drawable/water_back_xh"
+                android:orientation="vertical"
+                android:padding="@dimen/margin_width15">
+                <TextView
+                    android:id="@+id/id_free_charge"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerHorizontal="true"
+                    android:layout_marginTop="@dimen/margin_width30"
+                    android:text="@string/free_pay_instruction"
+                    android:textSize="@dimen/text_width16"
+                    android:textColor="@color/white"
+                    android:textStyle="bold"
+                    android:visibility="gone"/>
+
+                <RelativeLayout
+                    android:layout_width="@dimen/margin_width180"
+                    android:layout_height="@dimen/margin_width180"
+                    android:layout_alignParentBottom="true"
+                    android:layout_centerHorizontal="true"
+                    android:layout_marginBottom="@dimen/margin_width30"
+                    android:background="@color/white">
+                    <ImageView
+                        android:id="@+id/id_erwei_code"
+                        android:layout_width="@dimen/margin_width180"
+                        android:layout_height="@dimen/margin_width180" />
+
+                    <RelativeLayout
+                        android:id="@+id/id_online_view"
+                        android:layout_width="@dimen/margin_width180"
+                        android:layout_height="@dimen/margin_width180"
+                        android:layout_alignParentBottom="true"
+                        android:layout_centerHorizontal="true"
+                        android:layout_marginBottom="@dimen/margin_width30">
+
+                        <ProgressBar
+                            android:id="@+id/progressBar"
+                            style="?android:attr/progressBarStyle"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_centerHorizontal="true"
+                            android:layout_marginTop="@dimen/margin_width20" />
+
+                        <TextView
+                            android:id="@id/id_text4"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_below="@+id/progressBar"
+                            android:layout_centerHorizontal="true"
+                            android:layout_marginLeft="@dimen/margin_width15"
+                            android:layout_marginRight="@dimen/margin_width15"
+                            android:layout_marginTop="@dimen/margin_width20"
+                            android:text="系统联网中"
+                            android:textColor="@color/water_textcolor"
+                            android:textSize="@dimen/text_width16" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_below="@id/id_text4"
+                            android:layout_centerHorizontal="true"
+                            android:layout_marginLeft="@dimen/margin_width15"
+                            android:layout_marginRight="@dimen/margin_width15"
+                            android:layout_marginTop="@dimen/margin_width15"
+                            android:text="请刷卡购水"
+                            android:textColor="@color/water_textcolor"
+                            android:textSize="@dimen/text_width16" />
+                    </RelativeLayout>
+                </RelativeLayout>
+            </RelativeLayout>
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@color/white"
+                android:gravity="center"
+                android:minHeight="@dimen/margin_width30">
+
+                <TextView
+                    android:id="@id/id_text3"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:layout_marginLeft="@dimen/margin_width15"
+                    android:text="执行操作界面还剩"
+                    android:textColor="@color/water_textcolor"
+                    android:textSize="@dimen/text_width12" />
+
+                <TextView
+                    android:id="@+id/id_time"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:layout_marginLeft="@dimen/margin_width6"
+                    android:layout_toRightOf="@id/id_text3"
+                    android:text="60"
+                    android:textColor="@color/color_red"
+                    android:textSize="@dimen/text_width16" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:layout_marginLeft="@dimen/margin_width6"
+                    android:layout_toRightOf="@id/id_time"
+                    android:text="秒"
+                    android:textColor="@color/water_textcolor"
+                    android:textSize="@dimen/text_width12" />
+            </RelativeLayout>
+
+        </LinearLayout>
+    </LinearLayout>
+</LinearLayout>

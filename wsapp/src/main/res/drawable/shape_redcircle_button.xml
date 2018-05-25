@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="oval">
+    <gradient
+        android:startColor="@color/color_red"
+        android:endColor="@color/color_red1"
+        android:centerColor="@color/deep_red"
+        android:angle="90"/>
+    <!-- 边框的颜色 ：不能和窗口背景色一样-->
+    <stroke
+        android:width="0.5dp"
+        android:color="@color/color_red" />
+    <size
+        android:width="@dimen/margin_width25"
+        android:height="@dimen/margin_width25"/>
+    <padding android:bottom="3dp"
+        android:left="3dp"
+        android:right="3dp"
+        android:top="3dp"/>
+</shape>

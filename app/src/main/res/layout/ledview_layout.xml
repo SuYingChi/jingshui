@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+    <RelativeLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:layout_centerVertical="true"
+        android:layout_marginRight="@dimen/margin_width10">
+        <TextView
+            android:id="@+id/ledview_bg"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:layout_gravity="center"
+            android:textColor="#66C0C0C0"
+            android:textSize="@dimen/text_width20"
+            android:text="@string/default_bg_digital"/>
+        <TextView
+            android:id="@+id/ledview_number"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_alignRight="@id/ledview_bg"
+            android:gravity="right"
+            android:shadowColor ="#455d3a"
+            android:shadowDx ="0"
+            android:shadowDy ="0"
+            android:shadowRadius ="10"
+            android:textColor ="#455d3a"
+            android:textSize="@dimen/text_width20"
+            android:text="0.00"/>
+    </RelativeLayout>
+</RelativeLayout>
