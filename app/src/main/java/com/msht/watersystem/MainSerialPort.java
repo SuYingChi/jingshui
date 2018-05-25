@@ -119,12 +119,12 @@ public class MainSerialPort extends BaseActivity  implements Observer, Handler.C
         if (!file.exists()){
             file.mkdirs();
         }
-        try {
+/*        try {
             FileOutputStream fileOutputStream = new FileOutputStream(file.getPath() + "/");
             fileOutputStream.close();
         } catch (Exception e) {
             e.printStackTrace();
-        }
+        }*/
     }
     /* private void initBraodCast() {   //动态注册广播
          IntentFilter filter = new IntentFilter(Intent.ACTION_TIME_TICK);
