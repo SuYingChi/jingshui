@@ -28,3 +28,5 @@
 -keepattributes Signature
 -keep class android_serialport_api.** { *; }
 -dontwarn android_serialport_api.**
+-dontwarn com.tencent.bugly.**
+-keep public class com.tencent.bugly.**{*;}

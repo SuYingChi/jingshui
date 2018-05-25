@@ -16,6 +16,7 @@ import com.msht.watersystem.Utils.MyLogUtil;
 import com.msht.watersystem.gen.DaoMaster;
 import com.msht.watersystem.gen.DaoSession;
 import com.msht.watersystem.receiver.PortReceiver;
+import com.tencent.bugly.crashreport.CrashReport;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -50,6 +51,7 @@ public class AppContext extends AppLibsContext {
        /* ArrayList<byte[]> types = new ArrayList<>();
         types.add(new byte[]{0x01, 0x04});//如果需要新增其他类型的特例则使用 add 方法叠加即可
         SpecialUtils.addTypes(types);*/
+        CrashReport.initCrashReport(getApplicationContext(), "ea80077b78", true);
     }
     /**
      * 初始化广播事件以及后台服务事件监听串口接收程序
