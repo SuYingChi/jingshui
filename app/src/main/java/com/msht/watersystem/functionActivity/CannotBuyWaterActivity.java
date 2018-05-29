@@ -30,7 +30,6 @@ import java.util.Observer;
 public class CannotBuyWaterActivity extends BaseActivity implements Observer {
     private boolean  bindStatus=false;
     private Context mContext;
-    private ImageView textView;
     private PortService portService;
     private ComServiceConnection serviceConnection;
 
@@ -78,11 +77,10 @@ public class CannotBuyWaterActivity extends BaseActivity implements Observer {
                     response102(packet2.getFrame());
                     initCom102Data2(packet2.getData());
                 }else if (Arrays.equals(packet2.getCmd(),new byte[]{0x01,0x04})){
-                   // MyLogUtil.d("服务端控制指令104：",CreateOrderType.getPacketString(packet2));
                     initCom104Data2(packet2.getData());
                     String stringWork= DataCalculateUtils.IntToBinary(ByteUtils.byteToInt(packet2.getData().get(45)));
                     if (DataCalculateUtils.isRechargeData(stringWork,5,6)){
-                        responseServer(packet2.getFrame());   //回复
+                        responseServer(packet2.getFrame());
                     }
                 }
             }

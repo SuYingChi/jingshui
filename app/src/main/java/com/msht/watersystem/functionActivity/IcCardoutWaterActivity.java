@@ -63,7 +63,7 @@ public class IcCardoutWaterActivity extends BaseActivity implements Observer{
     private String      afterWater="0.0";
     private PortService portService;
     private ComServiceConnection serviceConnection;
-    private MyCountDownTimer myCountDownTimer;// 倒计时对象
+    private MyCountDownTimer myCountDownTimer;
     private static final int SUCCESS=1;
     private static final int FAILURE=0;
     private final static String TAG = IcCardoutWaterActivity.class.getSimpleName();
@@ -113,7 +113,6 @@ public class IcCardoutWaterActivity extends BaseActivity implements Observer{
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_iccard_outwater);
-       // initViewImages();
         mContext=this;
         myCountDownTimer=new MyCountDownTimer(180000,1000);
         initView();
@@ -161,7 +160,6 @@ public class IcCardoutWaterActivity extends BaseActivity implements Observer{
                 if (Arrays.equals(packet1.getCmd(),new byte[]{0x02,0x04})){
                     initCom204Data();
                 }else if (Arrays.equals(packet1.getCmd(),new byte[]{0x01,0x04})){
-                  //  MyLogUtil.d("主板控制指令104：",CreateOrderType.getPacketString(packet1));
                     initCom104Data(packet1.getData(),packet1);
                 }else if (Arrays.equals(packet1.getCmd(),new byte[]{0x01,0x05})){
                     initCom105Data(packet1.getData());
@@ -172,17 +170,15 @@ public class IcCardoutWaterActivity extends BaseActivity implements Observer{
                 if (Arrays.equals(packet2.getCmd(),new byte[]{0x02,0x03})){
                     initCom203Data(packet2.getData());
                 }else if (Arrays.equals(packet2.getCmd(),new byte[]{0x01,0x07})){
-                  //  MyLogUtil.d("服务端业务指令107：",CreateOrderType.getPacketString(packet2));
                     responseSever207(packet2.getFrame());
                     initCom107Data(packet2.getData());
                 }else if (Arrays.equals(packet2.getCmd(),new byte[]{0x01,0x02})){
                     response102(packet2.getFrame());
                     initCom102Data2(packet2.getData());
                 }else if (Arrays.equals(packet2.getCmd(),new byte[]{0x01,0x04})){
-                  //  MyLogUtil.d("服务端控制指令104：",CreateOrderType.getPacketString(packet2));
                     String stringWork= DataCalculateUtils.IntToBinary(ByteUtils.byteToInt(packet2.getData().get(45)));
                     if (DataCalculateUtils.isRechargeData(stringWork,5,6)){
-                        response204(packet2.getFrame());      //回复
+                        response204(packet2.getFrame());
                     }
                 }
             }
@@ -276,7 +272,7 @@ public class IcCardoutWaterActivity extends BaseActivity implements Observer{
         if (InstructUtil.ControlInstruct(data)){
             if (ByteUtils.byteToInt(data.get(15))==1){
                 String stringWork= DataCalculateUtils.IntToBinary(FormatToken.Updateflag3);
-                if (DataCalculateUtils.isEvent(stringWork,3)){   //判断第一次刷卡？
+                if (DataCalculateUtils.isEvent(stringWork,3)){
                     myCountDownTimer.onFinish();
                     handler.removeCallbacks(runnable);
                     double consumption=FormatToken.ConsumptionAmount/100.0;
@@ -349,11 +345,6 @@ public class IcCardoutWaterActivity extends BaseActivity implements Observer{
             e.printStackTrace();
         }
     }
-    /*
-     *设置出水时间
-     *parame aByte  单价
-     *
-     */
     private void setEquipmentData(Byte aByte) {
         if (portService != null) {
             try {
@@ -451,9 +442,7 @@ public class IcCardoutWaterActivity extends BaseActivity implements Observer{
             tv_time.setText(millisUntilFinished/1000+"");
         }
         @Override
-        public void onFinish() {
-
-        }
+        public void onFinish() { }
     }
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {

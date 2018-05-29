@@ -8,8 +8,8 @@ android {
         applicationId "com.msht.watersystem"
         minSdkVersion 17
         targetSdkVersion 27
-        versionCode 18
-        versionName "v2.8.8"
+        versionCode 19
+        versionName "v2.9"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         ndk {
             // 设置支持的SO库架构
@@ -57,7 +57,7 @@ dependencies {
     implementation 'org.greenrobot:greendao:3.0.1'
     implementation 'org.greenrobot:greendao-generator:3.0.0'
     testImplementation 'junit:junit:4.12'
-    compile 'com.tencent.bugly:crashreport:2.6.6.1' //其中latest.release指代最新Bugly SDK版本号，也可以指定明确的版本号，例如2.2.0
-    compile 'com.tencent.bugly:nativecrashreport:3.3.1' //其中latest.release指代最新Bugly NDK版本号，也可以指定明确的版本号，例如3.0
+    implementation 'com.tencent.bugly:crashreport:latest.release' //其中latest.release指代最新Bugly SDK版本号，也可以指定明确的版本号，例如2.2.0
+    implementation 'com.tencent.bugly:nativecrashreport:latest.release' //其中latest.release指代最新Bugly NDK版本号，也可以指定明确的版本号，例如3.0
 
 }
