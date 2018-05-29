@@ -114,11 +114,13 @@ public class MainSerialPort extends BaseActivity  implements Observer, Handler.C
                // imageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
                 imageViewList.add(imageView);
             }
+        }else if(!scanner5Directory.exists()){
+             scanner5Directory.mkdirs();
         }
-        File file = new File(Environment.getExternalStorageDirectory().getPath() + "/WaterSystem/images/");
+       /* File file = new File(Environment.getExternalStorageDirectory().getPath() + "/WaterSystem/images/");
         if (!file.exists()){
             file.mkdirs();
-        }
+        }*/
 /*        try {
             FileOutputStream fileOutputStream = new FileOutputStream(file.getPath() + "/");
             fileOutputStream.close();

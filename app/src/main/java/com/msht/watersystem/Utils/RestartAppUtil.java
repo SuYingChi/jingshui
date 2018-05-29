@@ -21,15 +21,15 @@ public class RestartAppUtil {
 
    public static void restartApp(Context mContext){
        ((AppContext)mContext.getApplicationContext()).removeAllActivity();
-       Intent intent=new Intent(mContext.getApplicationContext(), SplashActivity.class);
-       intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-       mContext.startActivity(intent);
-       PendingIntent restartIntent = PendingIntent.getActivity(
-               mContext.getApplicationContext(), 0, intent, 0);
+       Intent restartIntent =new Intent(mContext.getApplicationContext(), SplashActivity.class);
+       restartIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+       mContext.startActivity(restartIntent);
+       PendingIntent pendingIntent = PendingIntent.getActivity(
+               mContext.getApplicationContext(), 0, restartIntent, 0);
        //退出程序
        AlarmManager mgr = (AlarmManager)mContext.getSystemService(Context.ALARM_SERVICE);
        mgr.set(AlarmManager.RTC, System.currentTimeMillis() + 600,
-               restartIntent); // 6m秒钟后重启应用
+               pendingIntent); // 6m秒钟后重启应用
       ((AppContext) mContext.getApplicationContext()).KillProcess();
     }
     public static void  restartSystem(){
