@@ -1,4 +1,4 @@
-package com.msht.watersystem.functionView;
+package com.msht.watersystem.functionActivity;
 
 import android.content.Intent;
 import android.os.Handler;
@@ -21,7 +21,7 @@ import java.util.Arrays;
 import java.util.Observable;
 import java.util.Observer;
 
-public class SplashActivity extends BaseActivity  implements Observer, Handler.Callback{
+public class SplashActivity extends BaseActivity  implements Observer{
     private final static String TAG = SplashActivity.class.getSimpleName();
     private PortService portService;
     private ComServiceConnection serviceConnection;
@@ -43,15 +43,12 @@ public class SplashActivity extends BaseActivity  implements Observer, Handler.C
             CachePreferencesUtil.putStringData(this,CachePreferencesUtil.outWaterTime,"30");
         }
     }
-    @Override
-    public boolean handleMessage(Message msg) {
-        return false;
-    }
+
     @Override
     public void update(Observable observable, Object arg) {
         PortService.MyObservable myObservable = (PortService.MyObservable) observable;
         if (myObservable != null) {
-            boolean skeyEnable = myObservable.isSkeyEnable();
+            boolean skeyEnable = myObservable.isSKeyEnable();
             Packet packet1 = myObservable.getCom1Packet();
             if (packet1 != null) {
                 if (Arrays.equals(packet1.getCmd(),new byte[]{0x01,0x05})){

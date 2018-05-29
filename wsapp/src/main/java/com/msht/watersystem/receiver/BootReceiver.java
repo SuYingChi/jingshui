@@ -6,7 +6,7 @@ import android.content.Intent;
 import com.mcloyal.serialport.AppLibsContext;
 import com.mcloyal.serialport.utils.ServicesUtils;
 import com.mcloyal.serialport.utils.logs.LogUtils;
-import com.msht.watersystem.functionView.SplashActivity;
+import com.msht.watersystem.functionActivity.SplashActivity;
 
 /**
  * 程序自启动服务

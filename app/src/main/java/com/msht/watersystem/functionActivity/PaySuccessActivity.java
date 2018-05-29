@@ -1,9 +1,8 @@
-package com.msht.watersystem.functionView;
+package com.msht.watersystem.functionActivity;
 
 import android.content.Context;
 import android.content.Intent;
 import android.os.CountDownTimer;
-import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
 import android.os.Bundle;
@@ -22,24 +21,19 @@ import com.mcloyal.serialport.utils.FrameUtils;
 import com.mcloyal.serialport.utils.PacketUtils;
 import com.msht.watersystem.Base.BaseActivity;
 import com.msht.watersystem.R;
-import com.msht.watersystem.Utils.BitmapUtil;
 import com.msht.watersystem.Utils.BusinessInstruct;
 import com.msht.watersystem.Utils.ByteUtils;
 import com.msht.watersystem.Utils.InstructUtil;
 import com.msht.watersystem.Utils.DataCalculateUtils;
 import com.msht.watersystem.Utils.FormatToken;
 import com.msht.watersystem.Utils.VariableUtil;
-import com.msht.watersystem.widget.MyImgScroll;
 
-import java.io.File;
-import java.io.FileOutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
 
-public class PaySuccess extends BaseActivity implements Observer, Handler.Callback {
+public class PaySuccessActivity extends BaseActivity implements Observer {
     private boolean     buyStatus=false;
     private boolean     bindStatus=false;
     private Context     mContext;
@@ -73,7 +67,7 @@ public class PaySuccess extends BaseActivity implements Observer, Handler.Callba
         myCountDownTimer.start();
     }
     private void OpenService() {
-        serviceConnection = new ComServiceConnection(PaySuccess.this, new ComServiceConnection.ConnectionCallBack() {
+        serviceConnection = new ComServiceConnection(PaySuccessActivity.this, new ComServiceConnection.ConnectionCallBack() {
             @Override
             public void onServiceConnected(PortService service) {
                 //此处给portService赋值有如下两种方式
@@ -123,16 +117,13 @@ public class PaySuccess extends BaseActivity implements Observer, Handler.Callba
             tv_balance.setText(String.valueOf(DataCalculateUtils.TwoDecinmal2(afterconsumpte)));
         }
     }
-    @Override
-    public boolean handleMessage(Message msg) {
-        return false;
-    }
+
     @Override
     public void update(Observable observable, Object arg) {
 
         PortService.MyObservable myObservable = (PortService.MyObservable) observable;
         if (myObservable != null) {
-            boolean skeyEnable = myObservable.isSkeyEnable();
+            boolean skeyEnable = myObservable.isSKeyEnable();
             Packet packet1 = myObservable.getCom1Packet();
             if (packet1 != null) {
                 if (Arrays.equals(packet1.getCmd(),new byte[]{0x01,0x04})){
@@ -171,15 +162,15 @@ public class PaySuccess extends BaseActivity implements Observer, Handler.Callba
         if (buyStatus){
             buyStatus=false;
             if (FormatToken.ConsumptionType==1){
-                Intent intent=new Intent(mContext,IcCardoutWater.class);
+                Intent intent=new Intent(mContext,IcCardoutWaterActivity.class);
                 startActivityForResult(intent,1);
                 finish();
             }else if (FormatToken.ConsumptionType==3){
-                Intent intent=new Intent(mContext,AppoutWater.class);
+                Intent intent=new Intent(mContext,AppOutWaterActivity.class);
                 startActivityForResult(intent,1);
                 finish();
             }else if (FormatToken.ConsumptionType==5){
-                Intent intent=new Intent(mContext,DeliveryOutWater.class);
+                Intent intent=new Intent(mContext,DeliverOutWaterActivity.class);
                 startActivityForResult(intent,1);
                 finish();
             }
@@ -238,7 +229,7 @@ public class PaySuccess extends BaseActivity implements Observer, Handler.Callba
                 buyStatus=true;
                 if (FormatToken.BusinessType==1){
                     if (FormatToken.AppBalance<20){
-                        Intent intent=new Intent(mContext,AppNotSufficient.class);
+                        Intent intent=new Intent(mContext,AppNotSufficientActivity.class);
                         startActivityForResult(intent,1);
                         finish();
                     }else {
@@ -292,7 +283,7 @@ public class PaySuccess extends BaseActivity implements Observer, Handler.Callba
         String stringWork= DataCalculateUtils.IntToBinary(ByteUtils.byteToInt(data.get(45)));
         int Switch=ByteUtils.byteToInt(data.get(31));
         if (Switch==2&&DataCalculateUtils.isEvent(stringWork,0)){
-            Intent intent=new Intent(mContext, CloseSystem.class);
+            Intent intent=new Intent(mContext, CloseSystemActivity.class);
             startActivityForResult(intent,2);
             finish();
         }
@@ -304,7 +295,7 @@ public class PaySuccess extends BaseActivity implements Observer, Handler.Callba
             tv_OutTDS.setText(String.valueOf(FormatToken.PurificationTDS));
             String stringWork= DataCalculateUtils.IntToBinary(FormatToken.WorkState);
             if (!DataCalculateUtils.isEvent(stringWork,6)){
-                Intent intent=new Intent(mContext, CannotBuywater.class);
+                Intent intent=new Intent(mContext, CannotBuyWaterActivity.class);
                 startActivityForResult(intent,1);
                 finish();
             }
@@ -321,20 +312,20 @@ public class PaySuccess extends BaseActivity implements Observer, Handler.Callba
                         }
                     }else {
                         if (FormatToken.Balance<=20){
-                            Intent intent=new Intent(mContext,NotSufficient.class);
+                            Intent intent=new Intent(mContext,NotSufficientActivity.class);
                             startActivityForResult(intent,1);
                             finish();
                         }else {
                             if (FormatToken.ConsumptionType==1){
-                                Intent intent=new Intent(mContext,IcCardoutWater.class);
+                                Intent intent=new Intent(mContext,IcCardoutWaterActivity.class);
                                 startActivityForResult(intent,1);
                                 finish();
                             }else if (FormatToken.ConsumptionType==3){
-                                Intent intent=new Intent(mContext,AppoutWater.class);
+                                Intent intent=new Intent(mContext,AppOutWaterActivity.class);
                                 startActivityForResult(intent,1);
                                 finish();
                             }else if (FormatToken.ConsumptionType==5){
-                                Intent intent=new Intent(mContext,DeliveryOutWater.class);
+                                Intent intent=new Intent(mContext,DeliverOutWaterActivity.class);
                                 startActivityForResult(intent,1);
                                 finish();
                             }

@@ -1,17 +1,13 @@
-package com.msht.watersystem.functionView;
+package com.msht.watersystem.functionActivity;
 
 import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.os.AsyncTask;
 import android.os.CountDownTimer;
 import android.os.Environment;
 import android.os.Handler;
-import android.os.Message;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.ImageView;
@@ -34,13 +30,11 @@ import com.msht.watersystem.Utils.BusinessInstruct;
 import com.msht.watersystem.Utils.ByteUtils;
 import com.msht.watersystem.Utils.CachePreferencesUtil;
 import com.msht.watersystem.Utils.CodeUtils;
-import com.msht.watersystem.Utils.CreateOrderType;
 import com.msht.watersystem.Utils.InstructUtil;
 import com.msht.watersystem.Utils.DataCalculateUtils;
 import com.msht.watersystem.Utils.FormatToken;
 import com.msht.watersystem.Utils.VariableUtil;
 import com.msht.watersystem.widget.MyImgScroll;
-import com.msht.watersystem.widget.ToastUtils;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -53,7 +47,7 @@ import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
 
-public class BuyWater extends BaseActivity implements Observer, Handler.Callback{
+public class BuyWaterActivity extends BaseActivity implements Observer{
     private TextView    tv_time;
     private boolean     buyStatus=false;
     private boolean     bindStatus=false;
@@ -124,7 +118,7 @@ public class BuyWater extends BaseActivity implements Observer, Handler.Callback
         handler.post(runnable);
     }
     private void OpenService(){
-        serviceConnection = new ComServiceConnection(BuyWater.this, new ComServiceConnection.ConnectionCallBack() {
+        serviceConnection = new ComServiceConnection(BuyWaterActivity.this, new ComServiceConnection.ConnectionCallBack() {
             @Override
             public void onServiceConnected(PortService service) {
                 portService = serviceConnection.getService();
@@ -206,15 +200,12 @@ public class BuyWater extends BaseActivity implements Observer, Handler.Callback
         }
         return jsonresult;
     }
-    @Override
-    public boolean handleMessage(Message msg) {
-        return false;
-    }
+
     @Override
     public void update(Observable observable, Object arg) {
         PortService.MyObservable myObservable = (PortService.MyObservable) observable;
         if (myObservable != null) {
-            VariableUtil.skeyEnable = myObservable.isSkeyEnable();
+            VariableUtil.skeyEnable = myObservable.isSKeyEnable();
             Packet packet1 = myObservable.getCom1Packet();
             if (packet1 != null) {
                 if (Arrays.equals(packet1.getCmd(),new byte[]{0x01,0x04})){
@@ -340,7 +331,7 @@ public class BuyWater extends BaseActivity implements Observer, Handler.Callback
         String stringWork= DataCalculateUtils.IntToBinary(ByteUtils.byteToInt(data.get(45)));
         int Switch=ByteUtils.byteToInt(data.get(31));
         if (Switch==2&&DataCalculateUtils.isEvent(stringWork,0)){
-            Intent intent=new Intent(mContext, CloseSystem.class);
+            Intent intent=new Intent(mContext, CloseSystemActivity.class);
             startActivityForResult(intent,2);
             CloseService();
             handler.removeCallbacks(runnable);
@@ -368,7 +359,7 @@ public class BuyWater extends BaseActivity implements Observer, Handler.Callback
                 tv_OutTDS.setText(String.valueOf(FormatToken.PurificationTDS));
                 String stringWork= DataCalculateUtils.IntToBinary(FormatToken.WorkState);
                 if (!DataCalculateUtils.isEvent(stringWork,6)){
-                    Intent intent=new Intent(mContext, CannotBuywater.class);
+                    Intent intent=new Intent(mContext, CannotBuyWaterActivity.class);
                     startActivityForResult(intent,2);
                     CloseService();
                     handler.removeCallbacks(runnable);
@@ -388,12 +379,12 @@ public class BuyWater extends BaseActivity implements Observer, Handler.Callback
                 CloseService();
                 myCountDownTimer.cancel();
             }else if (FormatToken.ConsumptionType==3){
-                Intent intent=new Intent(mContext,AppoutWater.class);
+                Intent intent=new Intent(mContext,AppOutWaterActivity.class);
                 startActivityForResult(intent,1);
                 CloseService();
                 myCountDownTimer.cancel();
             }else if (FormatToken.ConsumptionType==5){
-                Intent intent=new Intent(mContext,DeliveryOutWater.class);
+                Intent intent=new Intent(mContext,DeliverOutWaterActivity.class);
                 startActivityForResult(intent,1);
                 CloseService();
                 myCountDownTimer.cancel();
@@ -406,7 +397,7 @@ public class BuyWater extends BaseActivity implements Observer, Handler.Callback
             buyStatus=true;
             if (FormatToken.BusinessType==1){
                 if (FormatToken.AppBalance<20){
-                    Intent intent=new Intent(mContext,AppNotSufficient.class);
+                    Intent intent=new Intent(mContext,AppNotSufficientActivity.class);
                     startActivityForResult(intent,1);
                     CloseService();
                     myCountDownTimer.cancel();
@@ -445,7 +436,7 @@ public class BuyWater extends BaseActivity implements Observer, Handler.Callback
         try {
                 if(InstructUtil.ControlInstruct(data)){
                     if (FormatToken.Balance<=1){
-                        Intent intent=new Intent(mContext,NotSufficient.class);
+                        Intent intent=new Intent(mContext,NotSufficientActivity.class);
                         startActivityForResult(intent,1);
                         CloseService();
                         myCountDownTimer.cancel();
@@ -458,12 +449,12 @@ public class BuyWater extends BaseActivity implements Observer, Handler.Callback
                                 CloseService();
                                 myCountDownTimer.cancel();
                             }else if (FormatToken.ConsumptionType==3){
-                                Intent intent=new Intent(mContext,AppoutWater.class);
+                                Intent intent=new Intent(mContext,AppOutWaterActivity.class);
                                 startActivityForResult(intent,1);
                                 CloseService();
                                 myCountDownTimer.cancel();
                             }else if (FormatToken.ConsumptionType==5){
-                                Intent intent=new Intent(mContext,DeliveryOutWater.class);
+                                Intent intent=new Intent(mContext,DeliverOutWaterActivity.class);
                                 startActivityForResult(intent,1);
                                 CloseService();
                                 myCountDownTimer.cancel();
@@ -476,7 +467,7 @@ public class BuyWater extends BaseActivity implements Observer, Handler.Callback
                             String afterAmount=String.valueOf(DataCalculateUtils.TwoDecinmal2(consumption));
                             String afterWater=String.valueOf(DataCalculateUtils.TwoDecinmal2(waterVolume));
                             String mAccount=String.valueOf(FormatToken.StringCardNo);
-                            Intent intent=new Intent(mContext,PaySuccess.class);
+                            Intent intent=new Intent(mContext,PaySuccessActivity.class);
                             intent.putExtra("afterAmount",afterAmount) ;
                             intent.putExtra("afetrWater",afterWater);
                             intent.putExtra("mAccount",mAccount);

@@ -1,9 +1,8 @@
-package com.msht.watersystem.functionView;
+package com.msht.watersystem.functionActivity;
 
 import android.content.Intent;
 import android.os.Handler;
 import android.os.Message;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.KeyEvent;
 
@@ -17,10 +16,7 @@ import com.mcloyal.serialport.utils.PacketUtils;
 import com.msht.watersystem.Base.BaseActivity;
 import com.msht.watersystem.R;
 import com.msht.watersystem.Utils.ByteUtils;
-import com.msht.watersystem.Utils.CreateOrderType;
 import com.msht.watersystem.Utils.DataCalculateUtils;
-import com.msht.watersystem.Utils.FormatToken;
-import com.msht.watersystem.Utils.MyLogUtil;
 import com.msht.watersystem.widget.LoadingDialog;
 
 import java.util.ArrayList;
@@ -28,7 +24,7 @@ import java.util.Arrays;
 import java.util.Observable;
 import java.util.Observer;
 
-public class CloseSystem extends BaseActivity implements Observer, Handler.Callback {
+public class CloseSystemActivity extends BaseActivity implements Observer{
     private PortService portService;
     private boolean  bindStatus=false;
     private ComServiceConnection serviceConnection;
@@ -41,15 +37,12 @@ public class CloseSystem extends BaseActivity implements Observer, Handler.Callb
         loadingdialog.show();
         OpenService();
     }
-    @Override
-    public boolean handleMessage(Message msg) {
-        return false;
-    }
+
     @Override
     public void update(Observable observable, Object arg) {
         PortService.MyObservable myObservable = (PortService.MyObservable) observable;
         if (myObservable != null) {
-            boolean skeyEnable = myObservable.isSkeyEnable();
+            boolean skeyEnable = myObservable.isSKeyEnable();
             Packet packet1 = myObservable.getCom1Packet();
             if (packet1 != null) {
                 if (Arrays.equals(packet1.getCmd(),new byte[]{0x01,0x04})){
@@ -105,7 +98,7 @@ public class CloseSystem extends BaseActivity implements Observer, Handler.Callb
     }
 
     private void OpenService(){
-        serviceConnection = new ComServiceConnection(CloseSystem.this, new ComServiceConnection.ConnectionCallBack() {
+        serviceConnection = new ComServiceConnection(CloseSystemActivity.this, new ComServiceConnection.ConnectionCallBack() {
             @Override
             public void onServiceConnected(PortService service) {
                 //此处给portService赋值有如下两种方式

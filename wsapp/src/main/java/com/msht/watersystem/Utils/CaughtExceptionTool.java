@@ -30,7 +30,7 @@ import android.util.Log;
 import android.widget.Toast;
 
 import com.msht.watersystem.AppContext;
-import com.msht.watersystem.functionView.SplashActivity;
+import com.msht.watersystem.functionActivity.SplashActivity;
 
 @SuppressLint("SimpleDateFormat")
 public class CaughtExceptionTool implements UncaughtExceptionHandler {

@@ -6,7 +6,7 @@ import android.content.Context;
 import android.content.Intent;
 
 import com.msht.watersystem.AppContext;
-import com.msht.watersystem.functionView.SplashActivity;
+import com.msht.watersystem.functionActivity.SplashActivity;
 
 /**
  * Created by hong on 2017/10/28.

@@ -7,7 +7,7 @@ import android.content.Intent;
 import android.util.Log;
 
 import com.msht.watersystem.AppContext;
-import com.msht.watersystem.functionView.SplashActivity;
+import com.msht.watersystem.functionActivity.SplashActivity;
 import com.msht.watersystem.service.KillSelfService;
 
 import java.io.DataOutputStream;

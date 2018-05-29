@@ -1,10 +1,7 @@
-package com.msht.watersystem.functionView;
+package com.msht.watersystem.functionActivity;
 
 import android.content.Context;
 import android.content.Intent;
-import android.os.Environment;
-import android.os.Handler;
-import android.os.Message;
 import android.os.Bundle;
 import android.view.KeyEvent;
 import android.view.View;
@@ -19,23 +16,18 @@ import com.mcloyal.serialport.utils.ComServiceConnection;
 import com.mcloyal.serialport.utils.PacketUtils;
 import com.msht.watersystem.Base.BaseActivity;
 import com.msht.watersystem.R;
-import com.msht.watersystem.Utils.BitmapUtil;
 import com.msht.watersystem.Utils.BusinessInstruct;
 import com.msht.watersystem.Utils.ByteUtils;
 import com.msht.watersystem.Utils.DataCalculateUtils;
 import com.msht.watersystem.Utils.FormatToken;
 import com.msht.watersystem.Utils.InstructUtil;
-import com.msht.watersystem.widget.MyImgScroll;
 
-import java.io.File;
-import java.io.FileOutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
 
-public class CannotBuywater extends BaseActivity implements Observer, Handler.Callback {
+public class CannotBuyWaterActivity extends BaseActivity implements Observer {
     private boolean  bindStatus=false;
     private Context mContext;
     private ImageView textView;
@@ -51,7 +43,7 @@ public class CannotBuywater extends BaseActivity implements Observer, Handler.Ca
         OpenService();
     }
     private void OpenService(){
-        serviceConnection = new ComServiceConnection(CannotBuywater.this, new ComServiceConnection.ConnectionCallBack() {
+        serviceConnection = new ComServiceConnection(CannotBuyWaterActivity.this, new ComServiceConnection.ConnectionCallBack() {
             @Override
             public void onServiceConnected(PortService service) {
                 //此处给portService赋值有如下两种方式
@@ -63,15 +55,12 @@ public class CannotBuywater extends BaseActivity implements Observer, Handler.Ca
                 BIND_AUTO_CREATE);
         bindStatus=true;
     }
-    @Override
-    public boolean handleMessage(Message msg) {
-        return false;
-    }
+
     @Override
     public void update(Observable observable, Object arg) {
         PortService.MyObservable myObservable = (PortService.MyObservable) observable;
         if (myObservable != null) {
-            boolean skeyEnable = myObservable.isSkeyEnable();
+            boolean skeyEnable = myObservable.isSKeyEnable();
             Packet packet1 = myObservable.getCom1Packet();
             if (packet1 != null) {
                 if (Arrays.equals(packet1.getCmd(),new byte[]{0x01,0x04})){
@@ -118,7 +107,7 @@ public class CannotBuywater extends BaseActivity implements Observer, Handler.Ca
         String stringWork= DataCalculateUtils.IntToBinary(ByteUtils.byteToInt(data.get(45)));
         int Switch=ByteUtils.byteToInt(data.get(31));
         if (Switch==2&&DataCalculateUtils.isEvent(stringWork,0)){
-            Intent intent=new Intent(mContext, CloseSystem.class);
+            Intent intent=new Intent(mContext, CloseSystemActivity.class);
             startActivityForResult(intent,2);
             CloseService();
         }

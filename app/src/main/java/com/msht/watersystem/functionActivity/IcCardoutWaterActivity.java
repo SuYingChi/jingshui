@@ -1,4 +1,4 @@
-package com.msht.watersystem.functionView;
+package com.msht.watersystem.functionActivity;
 
 import android.content.Intent;
 import android.os.CountDownTimer;
@@ -27,24 +27,23 @@ import com.msht.watersystem.Utils.BitmapUtil;
 import com.msht.watersystem.Utils.BusinessInstruct;
 import com.msht.watersystem.Utils.ByteUtils;
 import com.msht.watersystem.Utils.CachePreferencesUtil;
-import com.msht.watersystem.Utils.CreateOrderType;
 import com.msht.watersystem.Utils.InstructUtil;
 import com.msht.watersystem.Utils.DataCalculateUtils;
 import com.msht.watersystem.Utils.FormatToken;
 import com.msht.watersystem.Utils.VariableUtil;
 import com.msht.watersystem.widget.LEDView;
 import com.msht.watersystem.widget.MyImgScroll;
-import com.msht.watersystem.widget.ToastUtils;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
 
-public class IcCardoutWater extends BaseActivity implements Observer, Handler.Callback{
+public class IcCardoutWaterActivity extends BaseActivity implements Observer{
     private TextView tv_Balalance;
     private TextView tv_CardNo;
     private LEDView  le_water,le_amount;
@@ -67,21 +66,30 @@ public class IcCardoutWater extends BaseActivity implements Observer, Handler.Ca
     private MyCountDownTimer myCountDownTimer;// 倒计时对象
     private static final int SUCCESS=1;
     private static final int FAILURE=0;
-    private final static String TAG = IcCardoutWater.class.getSimpleName();
-    Handler FinishHandler = new Handler() {
+    private final static String TAG = IcCardoutWaterActivity.class.getSimpleName();
+    Handler finishHandler = new FinishHandler(this);
+
+    private static class FinishHandler extends Handler{
+
+        private final WeakReference<IcCardoutWaterActivity> icCardoutWaterActivityWeakReference;
+
+        FinishHandler(IcCardoutWaterActivity icCardoutWaterActivity){
+            icCardoutWaterActivityWeakReference = new WeakReference<IcCardoutWaterActivity>(icCardoutWaterActivity);
+        }
+        @Override
         public void handleMessage(Message msg) {
             switch (msg.what) {
                 case SUCCESS:
-                    FinishOutwaterActivity("0");
+                    icCardoutWaterActivityWeakReference.get().finishOutwaterActivity("0");
                     break;
                 case FAILURE:
-                    FinishOutwaterActivity("0");
+                    icCardoutWaterActivityWeakReference.get().finishOutwaterActivity("0");
                     break;
                 default:
                     break;
             }
         }
-    };
+    }
     Handler handler=new Handler();
     Runnable runnable=new Runnable() {
         @Override
@@ -96,7 +104,7 @@ public class IcCardoutWater extends BaseActivity implements Observer, Handler.Ca
             if (second>=overTime){
                 afterAmount=String.valueOf(mAmount);
                 afterWater=String.valueOf(mVolume);
-                FinishOutwaterActivity("3");
+                finishOutwaterActivity("3");
             }
             handler.postDelayed(this,1000);
         }
@@ -130,7 +138,7 @@ public class IcCardoutWater extends BaseActivity implements Observer, Handler.Ca
         OpenService();
     }
     private void OpenService() {
-        serviceConnection = new ComServiceConnection(IcCardoutWater.this, new ComServiceConnection.ConnectionCallBack() {
+        serviceConnection = new ComServiceConnection(IcCardoutWaterActivity.this, new ComServiceConnection.ConnectionCallBack() {
             @Override
             public void onServiceConnected(PortService service) {
                 //此处给portService赋值有如下两种方式
@@ -142,15 +150,12 @@ public class IcCardoutWater extends BaseActivity implements Observer, Handler.Ca
                 BIND_AUTO_CREATE);
         bindStatus=true;
     }
-    @Override
-    public boolean handleMessage(Message msg) {
-        return false;
-    }
+
     @Override
     public void update(Observable observable, Object arg) {
         PortService.MyObservable myObservable = (PortService.MyObservable) observable;
         if (myObservable != null) {
-            VariableUtil.skeyEnable = myObservable.isSkeyEnable();
+            VariableUtil.skeyEnable = myObservable.isSKeyEnable();
             Packet packet1 = myObservable.getCom1Packet();
             if (packet1 != null) {
                 if (Arrays.equals(packet1.getCmd(),new byte[]{0x02,0x04})){
@@ -230,7 +235,7 @@ public class IcCardoutWater extends BaseActivity implements Observer, Handler.Ca
             if (!DataCalculateUtils.isEvent(stringWork,6)){
                 if (!startOut){
                     //扫码打水过程，水量不足，自动结账
-                    Intent intent=new Intent(mContext, CannotBuywater.class);
+                    Intent intent=new Intent(mContext, CannotBuyWaterActivity.class);
                     startActivityForResult(intent,1);
                     finish();
                 }
@@ -257,7 +262,7 @@ public class IcCardoutWater extends BaseActivity implements Observer, Handler.Ca
         if (BusinessInstruct.CalaculateRecharge(data)){
             if (FormatToken.BusinessType==3){
                 FormatToken.Balance=FormatToken.Balance+FormatToken.rechargeAmount;
-                Intent intent=new Intent(IcCardoutWater.this,PaySuccess.class);
+                Intent intent=new Intent(IcCardoutWaterActivity.this,PaySuccessActivity.class);
                 intent.putExtra("afterAmount",afterAmount) ;
                 intent.putExtra("afetrWater",afterWater);
                 intent.putExtra("mAccount",mAccount);
@@ -284,12 +289,12 @@ public class IcCardoutWater extends BaseActivity implements Observer, Handler.Ca
                         if (!portService.isConnection()){
                             SavaData(packet1);
                         }else {
-                            FinishOutwaterActivity();
+                            finishOutwaterActivity();
                         }
                     }else {
                         SavaData(packet1);
                     }*/
-                    FinishOutwaterActivity("0");
+                    finishOutwaterActivity("0");
                 }else {
                     double balance= DataCalculateUtils.TwoDecinmal2(FormatToken.Balance/100.0);
                     tv_Balalance.setText(String.valueOf(balance));
@@ -299,8 +304,8 @@ public class IcCardoutWater extends BaseActivity implements Observer, Handler.Ca
             }
         }
     }
-    private void FinishOutwaterActivity(String sign) {
-        Intent intent=new Intent(IcCardoutWater.this,PaySuccess.class);
+    private void finishOutwaterActivity(String sign) {
+        Intent intent=new Intent(IcCardoutWaterActivity.this,PaySuccessActivity.class);
         intent.putExtra("afterAmount",afterAmount) ;
         intent.putExtra("afetrWater",afterWater);
         intent.putExtra("mAccount",mAccount);
@@ -315,14 +320,14 @@ public class IcCardoutWater extends BaseActivity implements Observer, Handler.Ca
                 Message msg = new Message();
                 msg.obj=success;
                 msg.what = SUCCESS;
-                FinishHandler.sendMessage(msg);
+                finishHandler.sendMessage(msg);
             }
             @Override
             public void onResultFail(String fail) {
                 Message msg = new Message();
                 msg.obj = fail;
                 msg.what = FAILURE;
-                FinishHandler.sendMessage(msg);
+                finishHandler.sendMessage(msg);
             }
         });
     }

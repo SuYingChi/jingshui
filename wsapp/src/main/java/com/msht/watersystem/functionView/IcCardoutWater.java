@@ -1,4 +1,4 @@
-package com.msht.watersystem.functionView;
+package com.msht.watersystem.functionActivity;
 
 import android.content.Intent;
 import android.os.CountDownTimer;

@@ -24,6 +24,7 @@
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.WRITE_SETTINGS" />
+
     <application
         android:name=".AppContext"
         android:allowBackup="true"
@@ -32,7 +33,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".functionView.SplashActivity"
+        <activity android:name=".functionActivity.SplashActivity"
             >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -57,17 +58,17 @@
             android:enabled="true"
             android:exported="true" />
 
-        <activity android:name=".functionView.BuyWater" />
-        <activity android:name=".functionView.IcCardoutWater" />
-        <activity android:name=".functionView.CannotBuywater" />
-        <activity android:name=".functionView.DeliveryOutWater" />
-        <activity android:name=".functionView.NotSufficient" />
-        <activity android:name=".functionView.PaySuccess" />
-        <activity android:name=".functionView.AppNotSufficient" />
+        <activity android:name=".functionActivity.BuyWaterActivity" />
+        <activity android:name=".functionActivity.IcCardoutWater" />
+        <activity android:name=".functionActivity.CannotBuyWaterActivity" />
+        <activity android:name=".functionActivity.DeliverOutWaterActivity" />
+        <activity android:name=".functionActivity.NotSufficientActivity" />
+        <activity android:name=".functionActivity.PaySuccessActivity" />
+        <activity android:name=".functionActivity.AppNotSufficientActivity" />
 
         <service android:name="com.mcloyal.serialport.service.PortService" />
-        <activity android:name=".functionView.AppoutWater" />
-        <activity android:name=".functionView.CloseSystem" />
+        <activity android:name=".functionActivity.AppOutWaterActivity" />
+        <activity android:name=".functionActivity.CloseSystemActivity" />
         <service
             android:name=".service.MyIntentService"
             android:exported="false">

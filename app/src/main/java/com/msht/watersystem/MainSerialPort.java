@@ -7,8 +7,7 @@ import android.content.Intent;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Environment;
-import android.os.Handler;
-import android.os.Message;
+
 import android.os.Bundle;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -37,15 +36,15 @@ import com.msht.watersystem.Utils.DateTimeUtils;
 import com.msht.watersystem.Utils.FormatToken;
 import com.msht.watersystem.Utils.VariableUtil;
 import com.msht.watersystem.entity.OrderInfo;
-import com.msht.watersystem.functionView.AppNotSufficient;
-import com.msht.watersystem.functionView.AppoutWater;
-import com.msht.watersystem.functionView.BuyWater;
-import com.msht.watersystem.functionView.CannotBuywater;
-import com.msht.watersystem.functionView.CloseSystem;
-import com.msht.watersystem.functionView.NotSufficient;
-import com.msht.watersystem.functionView.DeliveryOutWater;
-import com.msht.watersystem.functionView.IcCardoutWater;
-import com.msht.watersystem.functionView.PaySuccess;
+import com.msht.watersystem.functionActivity.AppNotSufficientActivity;
+import com.msht.watersystem.functionActivity.AppOutWaterActivity;
+import com.msht.watersystem.functionActivity.BuyWaterActivity;
+import com.msht.watersystem.functionActivity.CannotBuyWaterActivity;
+import com.msht.watersystem.functionActivity.CloseSystemActivity;
+import com.msht.watersystem.functionActivity.NotSufficientActivity;
+import com.msht.watersystem.functionActivity.DeliverOutWaterActivity;
+import com.msht.watersystem.functionActivity.IcCardoutWater;
+import com.msht.watersystem.functionActivity.PaySuccessActivity;
 import com.msht.watersystem.gen.OrderInfoDao;
 import com.msht.watersystem.widget.CustomVideoView;
 import com.msht.watersystem.widget.MyImgScroll;
@@ -58,7 +57,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
-public class MainSerialPort extends BaseActivity  implements Observer, Handler.Callback{
+public class MainSerialPort extends BaseActivity  implements Observer{
     private static final int CLOSE_MECHINE = 2;
     private CustomVideoView mVideoView;
     private MyImgScroll myPager;
@@ -214,10 +213,7 @@ public class MainSerialPort extends BaseActivity  implements Observer, Handler.C
             myPager.startTimer();
         }
     }
-    @Override
-    public boolean handleMessage(Message msg) {
-        return false;
-    }
+
     @Override
     public void update(Observable observable, Object arg) {
         PortService.MyObservable myObservable = (PortService.MyObservable) observable;
@@ -304,12 +300,12 @@ public class MainSerialPort extends BaseActivity  implements Observer, Handler.C
                 closeService();
                 myPager.stopTimer();
             }else if (FormatToken.ConsumptionType==3){
-                Intent intent=new Intent(mContext,AppoutWater.class);
+                Intent intent=new Intent(mContext,AppOutWaterActivity.class);
                 startActivityForResult(intent,1);
                 closeService();
                 myPager.stopTimer();
             }else if (FormatToken.ConsumptionType==5){
-                Intent intent=new Intent(mContext,DeliveryOutWater.class);
+                Intent intent=new Intent(mContext,DeliverOutWaterActivity.class);
                 startActivityForResult(intent,1);
                 closeService();
                 myPager.stopTimer();
@@ -326,7 +322,7 @@ public class MainSerialPort extends BaseActivity  implements Observer, Handler.C
                 //已分为单位
                 if (FormatToken.AppBalance<20){
                     //提示余额不足
-                    Intent intent=new Intent(mContext,AppNotSufficient.class);
+                    Intent intent=new Intent(mContext,AppNotSufficientActivity.class);
                     startActivityForResult(intent,1);
                     closeService();
                     myPager.stopTimer();
@@ -458,7 +454,7 @@ public class MainSerialPort extends BaseActivity  implements Observer, Handler.C
         int switch2=ByteUtils.byteToInt(data.get(31));
         //判断是否为关机指令
         if (switch2==CLOSE_MECHINE&&DataCalculateUtils.isEvent(stringWork,0)){
-            Intent intent=new Intent(mContext, CloseSystem.class);
+            Intent intent=new Intent(mContext, CloseSystemActivity.class);
             startActivityForResult(intent,1);
             closeService();
             myPager.stopTimer();
@@ -469,7 +465,7 @@ public class MainSerialPort extends BaseActivity  implements Observer, Handler.C
         try {
             if(InstructUtil.ControlInstruct(data)){
                 if (FormatToken.Balance<=1){
-                    Intent intent=new Intent(mContext,NotSufficient.class);
+                    Intent intent=new Intent(mContext,NotSufficientActivity.class);
                     startActivityForResult(intent,1);
                     closeService();
                     myPager.stopTimer();
@@ -482,12 +478,12 @@ public class MainSerialPort extends BaseActivity  implements Observer, Handler.C
                             closeService();
                             myPager.stopTimer();
                         } else if (FormatToken.ConsumptionType == 3) {
-                            Intent intent = new Intent(mContext, AppoutWater.class);
+                            Intent intent = new Intent(mContext, AppOutWaterActivity.class);
                             startActivityForResult(intent, 1);
                             closeService();
                             myPager.stopTimer();
                         } else if (FormatToken.ConsumptionType == 5) {
-                            Intent intent = new Intent(mContext, DeliveryOutWater.class);
+                            Intent intent = new Intent(mContext, DeliverOutWaterActivity.class);
                             startActivityForResult(intent, 1);
                             closeService();
                             myPager.stopTimer();
@@ -500,7 +496,7 @@ public class MainSerialPort extends BaseActivity  implements Observer, Handler.C
                         String afterAmount=String.valueOf(DataCalculateUtils.TwoDecinmal2(consumption));
                         String afterWater=String.valueOf(DataCalculateUtils.TwoDecinmal2(waterVolume));
                         String mAccount=String.valueOf(FormatToken.StringCardNo);
-                        Intent intent=new Intent(mContext,PaySuccess.class);
+                        Intent intent=new Intent(mContext,PaySuccessActivity.class);
                         intent.putExtra("afterAmount",afterAmount) ;
                         intent.putExtra("afetrWater",afterWater);
                         intent.putExtra("mAccount",mAccount);
@@ -530,7 +526,7 @@ public class MainSerialPort extends BaseActivity  implements Observer, Handler.C
             if (InstructUtil.StatusInstruct(data)){
                 String stringWork= DataCalculateUtils.IntToBinary(FormatToken.WorkState);
                 if (!DataCalculateUtils.isEvent(stringWork,6)){
-                    Intent intent=new Intent(mContext, CannotBuywater.class);
+                    Intent intent=new Intent(mContext, CannotBuyWaterActivity.class);
                     startActivityForResult(intent,1);
                     closeService();
                     myPager.stopTimer();
@@ -591,7 +587,7 @@ public class MainSerialPort extends BaseActivity  implements Observer, Handler.C
     }
 
     private void startBuyWater() {
-        Intent intent=new Intent(mContext,BuyWater.class);
+        Intent intent=new Intent(mContext,BuyWaterActivity.class);
         startActivityForResult(intent,1);
         closeService();
         myPager.stopTimer();

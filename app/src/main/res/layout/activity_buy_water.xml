@@ -7,7 +7,7 @@
     android:background="@mipmap/water_background"
     android:padding="@dimen/margin_width15"
     android:orientation="vertical"
-    tools:context="com.msht.watersystem.functionView.BuyWater">
+    tools:context="com.msht.watersystem.functionActivity.BuyWaterActivity">
 
     <LinearLayout
         android:layout_width="match_parent"

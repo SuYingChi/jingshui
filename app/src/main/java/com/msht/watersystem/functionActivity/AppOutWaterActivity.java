@@ -1,4 +1,4 @@
-package com.msht.watersystem.functionView;
+package com.msht.watersystem.functionActivity;
 
 import android.content.Intent;
 import android.os.CountDownTimer;
@@ -6,12 +6,10 @@ import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.mcloyal.serialport.constant.Cmd;
 import com.mcloyal.serialport.entity.Packet;
@@ -28,14 +26,12 @@ import com.msht.watersystem.Utils.BitmapUtil;
 import com.msht.watersystem.Utils.BusinessInstruct;
 import com.msht.watersystem.Utils.ByteUtils;
 import com.msht.watersystem.Utils.CachePreferencesUtil;
-import com.msht.watersystem.Utils.CreateOrderType;
 import com.msht.watersystem.Utils.InstructUtil;
 import com.msht.watersystem.Utils.DataCalculateUtils;
 import com.msht.watersystem.Utils.FormatToken;
 import com.msht.watersystem.Utils.VariableUtil;
 import com.msht.watersystem.widget.LEDView;
 import com.msht.watersystem.widget.MyImgScroll;
-import com.msht.watersystem.widget.ToastUtils;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -45,7 +41,7 @@ import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
 
-public class AppoutWater extends BaseActivity implements Observer, Handler.Callback{
+public class AppOutWaterActivity extends BaseActivity implements Observer{
     private int      second=0;
     private boolean  bindStatus=false;
     private boolean  isStart=false;
@@ -128,7 +124,7 @@ public class AppoutWater extends BaseActivity implements Observer, Handler.Callb
         OpenService();
     }
     private void OpenService() {
-        serviceConnection = new ComServiceConnection(AppoutWater.this, new ComServiceConnection.ConnectionCallBack() {
+        serviceConnection = new ComServiceConnection(AppOutWaterActivity.this, new ComServiceConnection.ConnectionCallBack() {
             @Override
             public void onServiceConnected(PortService service) {
                 //此处给portService赋值有如下两种方式
@@ -140,15 +136,12 @@ public class AppoutWater extends BaseActivity implements Observer, Handler.Callb
                 BIND_AUTO_CREATE);
         bindStatus=true;
     }
-    @Override
-    public boolean handleMessage(Message msg) {
-        return false;
-    }
+
     @Override
     public void update(Observable observable, Object arg) {
         PortService.MyObservable myObservable = (PortService.MyObservable) observable;
         if (myObservable != null) {
-            VariableUtil.skeyEnable = myObservable.isSkeyEnable();
+            VariableUtil.skeyEnable = myObservable.isSKeyEnable();
             Packet packet1 = myObservable.getCom1Packet();
             if (packet1 != null) {
                 if (Arrays.equals(packet1.getCmd(),new byte[]{0x02,0x04})){
@@ -183,7 +176,7 @@ public class AppoutWater extends BaseActivity implements Observer, Handler.Callb
         String stringWork= DataCalculateUtils.IntToBinary(ByteUtils.byteToInt(data.get(45)));
         int Switch=ByteUtils.byteToInt(data.get(31));
         if (Switch==2&&DataCalculateUtils.isEvent(stringWork,0)){
-            Intent intent=new Intent(mContext, CloseSystem.class);
+            Intent intent=new Intent(mContext, CloseSystemActivity.class);
             startActivityForResult(intent,1);
             finish();
         }
@@ -241,7 +234,7 @@ public class AppoutWater extends BaseActivity implements Observer, Handler.Callb
                         ReceiveState=3;
                         settleAccount();
                     }else {
-                        Intent intent=new Intent(mContext, CannotBuywater.class);
+                        Intent intent=new Intent(mContext, CannotBuyWaterActivity.class);
                         startActivityForResult(intent,1);
                         finish();
                     }
@@ -280,7 +273,7 @@ public class AppoutWater extends BaseActivity implements Observer, Handler.Callb
                     }
                 }else if (businessType==1){
                     if (FormatToken.Balance<=1){
-                        Intent intent=new Intent(mContext,NotSufficient.class);
+                        Intent intent=new Intent(mContext,NotSufficientActivity.class);
                         startActivityForResult(intent,1);
                         myCountDownTimer.cancel();
                         finish();
@@ -298,7 +291,7 @@ public class AppoutWater extends BaseActivity implements Observer, Handler.Callb
                             String afterAmount=String.valueOf(DataCalculateUtils.TwoDecinmal2(consumption));
                             String afterWater=String.valueOf(DataCalculateUtils.TwoDecinmal2(waterVolume));
                             String mAccount=String.valueOf(FormatToken.StringCardNo);
-                            Intent intent=new Intent(mContext,PaySuccess.class);
+                            Intent intent=new Intent(mContext,PaySuccessActivity.class);
                             intent.putExtra("afterAmount",afterAmount) ;
                             intent.putExtra("afetrWater",afterWater);
                             intent.putExtra("mAccount",mAccount);
@@ -318,7 +311,7 @@ public class AppoutWater extends BaseActivity implements Observer, Handler.Callb
             afterAmount="0.0";
         }
         afterWater=String.valueOf(DataCalculateUtils.TwoDecinmal2(waterVolume));
-        Intent intent=new Intent(mContext,PaySuccess.class);
+        Intent intent=new Intent(mContext,PaySuccessActivity.class);
         intent.putExtra("afterAmount",afterAmount);
         intent.putExtra("afetrWater",afterWater);
         intent.putExtra("mAccount",mAccount);
