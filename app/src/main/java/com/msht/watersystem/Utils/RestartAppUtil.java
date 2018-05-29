@@ -70,7 +70,7 @@ public class RestartAppUtil {
     }
     /***重启整个APP*/
     public static void restartWaterSystem(Context context){
-        restartWaterSystem(context,2000);
+        restartWaterSystem(context,600);
     }
 
 }

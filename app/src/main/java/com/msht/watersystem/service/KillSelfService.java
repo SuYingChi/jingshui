@@ -11,7 +11,7 @@ public class KillSelfService extends Service {
     /**
      * 关闭应用后多久重新启动
      */
-    private static long stopDelayed = 2000;
+    private static long stopDelayed = 600;
     private Handler handler;
     private String PackageName;
 
@@ -21,7 +21,7 @@ public class KillSelfService extends Service {
 
     @Override
     public int onStartCommand(final Intent intent, int flags, int startId) {
-        stopDelayed = intent.getLongExtra("Delayed", 2000);
+        stopDelayed = intent.getLongExtra("Delayed", 600);
         PackageName = intent.getStringExtra("PackageName");
         handler.postDelayed(new Runnable() {
             @Override
