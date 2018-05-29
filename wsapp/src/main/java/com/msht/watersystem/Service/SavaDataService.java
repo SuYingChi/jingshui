@@ -1,4 +1,4 @@
-package com.msht.watersystem.Service;
+package com.msht.watersystem.service;
 
 import android.app.Service;
 import android.content.Intent;

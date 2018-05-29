@@ -73,7 +73,7 @@
         <activity android:name=".functionView.CloseSystem" />
 
         <service
-            android:name=".Service.SavaDataService"
+            android:name=".service.SavaDataService"
             android:enabled="true"
             android:exported="true"></service>
     </application>

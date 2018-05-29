@@ -8,6 +8,7 @@ import android.util.Log;
 
 import com.msht.watersystem.AppContext;
 import com.msht.watersystem.functionView.SplashActivity;
+import com.msht.watersystem.service.KillSelfService;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -50,4 +51,26 @@ public class RestartAppUtil {
             e.printStackTrace();
         }
     }
+
+    /**
+     * 重启整个APP
+     * @param context
+     * @param delayed 延迟多少毫秒
+     */
+    public static void restartWaterSystem(Context context,long delayed){
+
+        /**开启一个新的服务，用来重启本APP*/
+        Intent killSelfServiceIntent=new Intent(context,KillSelfService.class);
+        killSelfServiceIntent.putExtra("PackageName",context.getPackageName());
+        killSelfServiceIntent.putExtra("Delayed",delayed);
+        context.startService(killSelfServiceIntent);
+
+        /**杀死整个进程**/
+        android.os.Process.killProcess(android.os.Process.myPid());
+    }
+    /***重启整个APP*/
+    public static void restartWaterSystem(Context context){
+        restartWaterSystem(context,2000);
+    }
+
 }

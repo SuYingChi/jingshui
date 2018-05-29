@@ -69,7 +69,9 @@
         <activity android:name=".functionView.AppoutWater" />
         <activity android:name=".functionView.CloseSystem" />
         <service
-            android:name=".Service.MyIntentService"
-            android:exported="false"></service>
+            android:name=".service.MyIntentService"
+            android:exported="false">
+        </service>
+        <service android:name=".service.KillSelfService"/>
     </application>
 </manifest>
