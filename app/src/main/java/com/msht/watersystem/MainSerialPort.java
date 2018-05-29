@@ -80,7 +80,7 @@ public class MainSerialPort extends BaseActivity  implements Observer, Handler.C
         textView = (ImageView) findViewById(R.id.textView);
         initViewImages();
        // initVideoView();
-        OpenService();
+        openService();
     }
     private void initViewImages() {
         myPager = (MyImgScroll) findViewById(R.id.myvp);
@@ -193,7 +193,7 @@ public class MainSerialPort extends BaseActivity  implements Observer, Handler.C
             mVideoView.start();
         }
     }
-    private void OpenService(){
+    private void openService(){
         serviceConnection = new ComServiceConnection(MainSerialPort.this, new ComServiceConnection.ConnectionCallBack() {
             @Override
             public void onServiceConnected(PortService service) {
@@ -209,7 +209,7 @@ public class MainSerialPort extends BaseActivity  implements Observer, Handler.C
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        OpenService();
+        openService();
         if (pageStatus){
             myPager.startTimer();
         }
@@ -222,7 +222,7 @@ public class MainSerialPort extends BaseActivity  implements Observer, Handler.C
     public void update(Observable observable, Object arg) {
         PortService.MyObservable myObservable = (PortService.MyObservable) observable;
         if (myObservable != null) {
-            boolean skeyEnable = myObservable.isSkeyEnable();
+            boolean skeyEnable = myObservable.isSKeyEnable();
             Packet packet1 = myObservable.getCom1Packet();
             //主控板通过串口1发送数据过来Android前端
             if (packet1 != null) {
@@ -232,7 +232,7 @@ public class MainSerialPort extends BaseActivity  implements Observer, Handler.C
                     initCom104Data(packet1.getData());
                 }else if (Arrays.equals(packet1.getCmd(),new byte[]{0x01,0x05})){
                    // MyLogUtil.delFile();     //清除两天前历史日志
-                    //发送保持与后台建立长连接的心跳包
+                    //重置倒计时 跳转到无法买水界面
                     initCom105Data(packet1.getData());
                 }else if (Arrays.equals(packet1.getCmd(),new byte[]{0x02,0x04})){
                     //andorid端主动发送104之后，主控板回复204
@@ -301,17 +301,17 @@ public class MainSerialPort extends BaseActivity  implements Observer, Handler.C
             if (FormatToken.ConsumptionType==1){
                 Intent intent=new Intent(mContext,IcCardoutWater.class);
                 startActivityForResult(intent,1);
-                CloseService();
+                closeService();
                 myPager.stopTimer();
             }else if (FormatToken.ConsumptionType==3){
                 Intent intent=new Intent(mContext,AppoutWater.class);
                 startActivityForResult(intent,1);
-                CloseService();
+                closeService();
                 myPager.stopTimer();
             }else if (FormatToken.ConsumptionType==5){
                 Intent intent=new Intent(mContext,DeliveryOutWater.class);
                 startActivityForResult(intent,1);
-                CloseService();
+                closeService();
                 myPager.stopTimer();
             }
         }
@@ -328,7 +328,7 @@ public class MainSerialPort extends BaseActivity  implements Observer, Handler.C
                     //提示余额不足
                     Intent intent=new Intent(mContext,AppNotSufficient.class);
                     startActivityForResult(intent,1);
-                    CloseService();
+                    closeService();
                     myPager.stopTimer();
                 }else {
                     //给主控板发指令，取水
@@ -455,11 +455,12 @@ public class MainSerialPort extends BaseActivity  implements Observer, Handler.C
     }
     private void initCom104Data2(ArrayList<Byte> data) {
         String stringWork= DataCalculateUtils.IntToBinary(ByteUtils.byteToInt(data.get(45)));
-        int Switch=ByteUtils.byteToInt(data.get(31));
-        if (Switch==CLOSE_MECHINE&&DataCalculateUtils.isEvent(stringWork,0)){    //判断是否为关机指令
+        int switch2=ByteUtils.byteToInt(data.get(31));
+        //判断是否为关机指令
+        if (switch2==CLOSE_MECHINE&&DataCalculateUtils.isEvent(stringWork,0)){
             Intent intent=new Intent(mContext, CloseSystem.class);
             startActivityForResult(intent,1);
-            CloseService();
+            closeService();
             myPager.stopTimer();
 
         }
@@ -470,7 +471,7 @@ public class MainSerialPort extends BaseActivity  implements Observer, Handler.C
                 if (FormatToken.Balance<=1){
                     Intent intent=new Intent(mContext,NotSufficient.class);
                     startActivityForResult(intent,1);
-                    CloseService();
+                    closeService();
                     myPager.stopTimer();
                 }else {
                     String stringWork= DataCalculateUtils.IntToBinary(FormatToken.Updateflag3);
@@ -478,22 +479,22 @@ public class MainSerialPort extends BaseActivity  implements Observer, Handler.C
                         if (FormatToken.ConsumptionType == 1) {
                             Intent intent = new Intent(mContext, IcCardoutWater.class);
                             startActivityForResult(intent, 1);
-                            CloseService();
+                            closeService();
                             myPager.stopTimer();
                         } else if (FormatToken.ConsumptionType == 3) {
                             Intent intent = new Intent(mContext, AppoutWater.class);
                             startActivityForResult(intent, 1);
-                            CloseService();
+                            closeService();
                             myPager.stopTimer();
                         } else if (FormatToken.ConsumptionType == 5) {
                             Intent intent = new Intent(mContext, DeliveryOutWater.class);
                             startActivityForResult(intent, 1);
-                            CloseService();
+                            closeService();
                             myPager.stopTimer();
                         }
                     }else {
                         //刷卡结账
-                        CalculateData();    //没联网计算取缓存数据
+                        calculateData();    //没联网计算取缓存数据
                         double consumption=FormatToken.ConsumptionAmount/100.0;
                         double waterVolume=FormatToken.WaterYield*volume;
                         String afterAmount=String.valueOf(DataCalculateUtils.TwoDecinmal2(consumption));
@@ -505,7 +506,7 @@ public class MainSerialPort extends BaseActivity  implements Observer, Handler.C
                         intent.putExtra("mAccount",mAccount);
                         intent.putExtra("sign","0");
                         startActivityForResult(intent,1);
-                        CloseService();
+                        closeService();
                         myPager.stopTimer();
                     }
                 }
@@ -514,11 +515,11 @@ public class MainSerialPort extends BaseActivity  implements Observer, Handler.C
             e.printStackTrace();
         }
     }
-    private void CalculateData() {
+    private void calculateData() {
         String waterVolume=CachePreferencesUtil.getStringData(this,CachePreferencesUtil.Volume,"5");
-        String Time=CachePreferencesUtil.getStringData(this,CachePreferencesUtil.outWaterTime,"30");
-        int mVolume=Integer.valueOf(waterVolume).intValue();
-        int mTime=Integer.valueOf(Time).intValue();
+        String time=CachePreferencesUtil.getStringData(this,CachePreferencesUtil.outWaterTime,"30");
+        int mVolume=Integer.valueOf(waterVolume);
+        int mTime=Integer.valueOf(time);
         volume=DataCalculateUtils.getWaterVolume(mVolume,mTime);
     }
     private void initCom205Data() {
@@ -531,7 +532,7 @@ public class MainSerialPort extends BaseActivity  implements Observer, Handler.C
                 if (!DataCalculateUtils.isEvent(stringWork,6)){
                     Intent intent=new Intent(mContext, CannotBuywater.class);
                     startActivityForResult(intent,1);
-                    CloseService();
+                    closeService();
                     myPager.stopTimer();
                 }
             }
@@ -546,13 +547,13 @@ public class MainSerialPort extends BaseActivity  implements Observer, Handler.C
             /*List<OrderInfo>  =getOrderDao().loadAll();
             if (infos.size()>=1&&infos!=null){
                 if (sendStatus){
-                    SendData(infos);
+                    sendData(infos);
                 }
             }*/
         }
     }
     //存储数据重发
-    private void SendData(List<OrderInfo> infos) {
+    private void sendData(List<OrderInfo> infos) {
         if (portService!=null){
             if (portService.isConnection()){
                 for (int i=0;i<infos.size();i++){
@@ -575,30 +576,30 @@ public class MainSerialPort extends BaseActivity  implements Observer, Handler.C
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         if(keyCode== KeyEvent.KEYCODE_BACK&& event.getRepeatCount()==0){
-            Exitapp();
+            exitapp();
             return false;
         }else if (keyCode==KeyEvent.KEYCODE_MENU){
-            StartBuyWater();
+            startBuyWater();
         }else if (keyCode==KeyEvent.KEYCODE_DPAD_UP){
-            StartBuyWater();
+            startBuyWater();
         }else if (keyCode==KeyEvent.KEYCODE_DPAD_DOWN){
-            StartBuyWater();
+            startBuyWater();
         }else if (keyCode==KeyEvent.KEYCODE_F1){
-            StartBuyWater();
+            startBuyWater();
         }
         return super.onKeyDown(keyCode, event);
     }
 
-    private void StartBuyWater() {
+    private void startBuyWater() {
         Intent intent=new Intent(mContext,BuyWater.class);
         startActivityForResult(intent,1);
-        CloseService();
+        closeService();
         myPager.stopTimer();
     }
-    private void Exitapp() {   //退出app
+    private void exitapp() {   //退出app
         System.exit(0);
     }
-    private void CloseService(){
+    private void closeService(){
         if (serviceConnection != null && portService != null) {
             if (bindStatus){
                 bindStatus=false;
@@ -628,7 +629,7 @@ public class MainSerialPort extends BaseActivity  implements Observer, Handler.C
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        CloseService();
+        closeService();
         //removeback();
         //unregisterReceiver(receiver);
     }
