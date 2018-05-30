@@ -3,8 +3,6 @@ package com.msht.watersystem.functionActivity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.CountDownTimer;
-import android.os.Handler;
-import android.os.Message;
 import android.os.Bundle;
 import android.view.KeyEvent;
 import android.view.View;
@@ -23,7 +21,7 @@ import com.msht.watersystem.Base.BaseActivity;
 import com.msht.watersystem.R;
 import com.msht.watersystem.Utils.BusinessInstruct;
 import com.msht.watersystem.Utils.ByteUtils;
-import com.msht.watersystem.Utils.InstructUtil;
+import com.msht.watersystem.Utils.FormatCommandUtil;
 import com.msht.watersystem.Utils.DataCalculateUtils;
 import com.msht.watersystem.Utils.FormatToken;
 import com.msht.watersystem.Utils.VariableUtil;
@@ -55,9 +53,9 @@ public class NotSufficientActivity extends BaseActivity implements Observer {
         myCountDownTimer=new MyCountDownTimer(30000,1000);
         initView();
         initWaterQuality();
-        OpenService();
+        bindPortService();
     }
-    private void OpenService() {
+    private void bindPortService() {
         serviceConnection = new ComServiceConnection(NotSufficientActivity.this, new ComServiceConnection.ConnectionCallBack() {
             @Override
             public void onServiceConnected(PortService service) {
@@ -92,11 +90,11 @@ public class NotSufficientActivity extends BaseActivity implements Observer {
             if (packet1 != null) {
                 if (Arrays.equals(packet1.getCmd(),new byte[]{0x01,0x04})){
                    // MyLogUtil.d("主板控制指令104：", CreateOrderType.getPacketString(packet1));
-                    initCom104Data(packet1.getData());
+                    onCom1Received104DataFromControllBoard(packet1.getData());
                 }else if (Arrays.equals(packet1.getCmd(),new byte[]{0x01,0x05})){
-                    initCom105Data(packet1.getData());
+                    onCom1Received105DataFromControllBoard(packet1.getData());
                 }else if (Arrays.equals(packet1.getCmd(),new byte[]{0x02,0x04})){
-                    initCom204Data();
+                    onCom1Received204DataFromControllBoard();
                 }
             }
             Packet packet2 = myObservable.getCom2Packet();
@@ -104,20 +102,20 @@ public class NotSufficientActivity extends BaseActivity implements Observer {
                if (Arrays.equals(packet2.getCmd(),new byte[]{0x01,0x04})){
                     String stringWork= DataCalculateUtils.IntToBinary(ByteUtils.byteToInt(packet2.getData().get(45)));
                     if (DataCalculateUtils.isRechargeData(stringWork,5,6)){
-                        responseServer(packet2.getFrame());   //回复
+                        response204ToServer(packet2.getFrame());   //回复
                     }
-                    initCom104Data2(packet2.getData());
+                   onCom2Received104DataFromServer(packet2.getData());
                 } else if (Arrays.equals(packet2.getCmd(),new byte[]{0x01,0x07})){
-                    responseService(packet2.getFrame());
-                    initCom107Data(packet2.getData());
+                    response207ToServer(packet2.getFrame());
+                   onCom2Received107DataFromServer(packet2.getData());
                 }else if (Arrays.equals(packet2.getCmd(),new byte[]{0x01,0x02})){
-                    response102(packet2.getFrame());
-                    initCom102Data2(packet2.getData());
+                    response102ToServer(packet2.getFrame());
+                   onCom2Received102DataFromServer(packet2.getData());
                 }
             }
         }
     }
-    private void initCom204Data() {
+    private void onCom1Received204DataFromControllBoard() {
         if (buyStatus){
             buyStatus=false;
             if (FormatToken.ConsumptionType==1){
@@ -135,12 +133,12 @@ public class NotSufficientActivity extends BaseActivity implements Observer {
             }
         }
     }
-    private void response102(byte[] frame) {
+    private void response102ToServer(byte[] frame) {
         if (portService != null) {
             try {
                 byte[] type = new byte[]{0x02, 0x02};
                 byte[] packet = PacketUtils.makePackage(frame, type, null);
-                portService.sendToCom2(packet);
+                portService.sendToServer(packet);
             } catch (CRCException e) {
                 e.printStackTrace();
             } catch (FrameException e) {
@@ -150,7 +148,7 @@ public class NotSufficientActivity extends BaseActivity implements Observer {
             }
         }
     }
-    private void initCom102Data2(ArrayList<Byte> data) {
+    private void onCom2Received102DataFromServer(ArrayList<Byte> data) {
         if (BusinessInstruct.ControlModel(mContext,data)){
             if (FormatToken.ShowTDS==0){
                 layout_TDS.setVisibility(View.GONE);
@@ -159,7 +157,7 @@ public class NotSufficientActivity extends BaseActivity implements Observer {
             }
         }
     }
-    private void initCom107Data(ArrayList<Byte> data) {
+    private void onCom2Received107DataFromServer(ArrayList<Byte> data) {
         if (BusinessInstruct.CalaculateBusiness(data)){
             if (FormatToken.BusinessType==3){
                 FormatToken.Balance=FormatToken.Balance+FormatToken.rechargeAmount;
@@ -197,13 +195,13 @@ public class NotSufficientActivity extends BaseActivity implements Observer {
                 byte[] frame = FrameUtils.getFrame(mContext);
                 byte[] type = new byte[]{0x01, 0x04};
                 if (business==1){
-                    byte[] data= InstructUtil.setBusinessType01();
+                    byte[] data= FormatCommandUtil.setTransactionType01();
                     byte[] packet = PacketUtils.makePackage(frame, type, data);
-                    portService.sendToCom1(packet);
+                    portService.sendToControlBoard(packet);
                 }else if (business==2){
-                    byte[] data= InstructUtil.setBusinessType02();
+                    byte[] data= FormatCommandUtil.setTransactionType02();
                     byte[] packet = PacketUtils.makePackage(frame, type, data);
-                    portService.sendToCom1(packet);
+                    portService.sendToControlBoard(packet);
                 }
             } catch (CRCException e) {
                 e.printStackTrace();
@@ -214,12 +212,12 @@ public class NotSufficientActivity extends BaseActivity implements Observer {
             }
         }
     }
-    private void responseService(byte[] frame) {
+    private void response207ToServer(byte[] frame) {
         if (portService != null) {
             try {
                 byte[] type = new byte[]{0x02, 0x07};
                 byte[] packet = PacketUtils.makePackage(frame, type, null);
-                portService.sendToCom2(packet);
+                portService.sendToServer(packet);
             } catch (CRCException e) {
                 e.printStackTrace();
             } catch (FrameException e) {
@@ -229,9 +227,9 @@ public class NotSufficientActivity extends BaseActivity implements Observer {
             }
         }
     }
-    private void initCom104Data(ArrayList<Byte> data) {
+    private void onCom1Received104DataFromControllBoard(ArrayList<Byte> data) {
         try {
-            if(InstructUtil.ControlInstruct(data)){
+            if(FormatCommandUtil.convertCom1ReceivedDataToFormatToken(data)){
                     if (FormatToken.Balance<20){
                         double balance= DataCalculateUtils.TwoDecinmal2(FormatToken.Balance/100.0);
                         tv_Balalance.setText(String.valueOf(balance));
@@ -266,12 +264,12 @@ public class NotSufficientActivity extends BaseActivity implements Observer {
             e.printStackTrace();
         }
     }
-    private void responseServer(byte[] frame) {
+    private void response204ToServer(byte[] frame) {
         if (portService != null) {
             try {
                 byte[] type = new byte[]{0x02, 0x04};
                 byte[] packet = PacketUtils.makePackage(frame, type, null);
-                portService.sendToCom2(packet);
+                portService.sendToServer(packet);
             } catch (CRCException e) {
                 e.printStackTrace();
             } catch (FrameException e) {
@@ -281,9 +279,9 @@ public class NotSufficientActivity extends BaseActivity implements Observer {
             }
         }
     }
-    private void initCom105Data(ArrayList<Byte> data) {
+    private void onCom1Received105DataFromControllBoard(ArrayList<Byte> data) {
         try {
-            if (InstructUtil.StatusInstruct(data)){
+            if (FormatCommandUtil.convertStatusCommandToFormatToken(data)){
                 tv_InTDS.setText(String.valueOf(FormatToken.OriginTDS));
                 tv_OutTDS.setText(String.valueOf(FormatToken.PurificationTDS));
                 String stringWork= DataCalculateUtils.IntToBinary(FormatToken.WorkState);
@@ -297,7 +295,7 @@ public class NotSufficientActivity extends BaseActivity implements Observer {
             e.printStackTrace();
         }
     }
-    private void initCom104Data2(ArrayList<Byte> data) {
+    private void onCom2Received104DataFromServer(ArrayList<Byte> data) {
         String stringWork= DataCalculateUtils.IntToBinary(ByteUtils.byteToInt(data.get(45)));
         int Switch=ByteUtils.byteToInt(data.get(31));
         if (Switch==2&&DataCalculateUtils.isEvent(stringWork,0)){
@@ -306,7 +304,7 @@ public class NotSufficientActivity extends BaseActivity implements Observer {
             finish();
         }
     }
-    private void CloseService(){
+    private void unbindPortServiceAndRemoveObserver(){
         if (serviceConnection != null && portService != null) {
             if (bindStatus){
                 portService.removeObserver(this);
@@ -354,7 +352,7 @@ public class NotSufficientActivity extends BaseActivity implements Observer {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        CloseService();
+        unbindPortServiceAndRemoveObserver();
         endTimeCount();
     }
 }

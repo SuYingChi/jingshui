@@ -3,9 +3,7 @@ package com.msht.watersystem.functionActivity;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
-import android.graphics.Bitmap;
 import android.os.CountDownTimer;
-import android.os.Environment;
 import android.os.Handler;
 import android.os.Bundle;
 import android.view.KeyEvent;
@@ -25,25 +23,20 @@ import com.mcloyal.serialport.utils.PacketUtils;
 import com.msht.watersystem.Base.BaseActivity;
 import com.msht.watersystem.Interface.BitmapListener;
 import com.msht.watersystem.R;
-import com.msht.watersystem.Utils.BitmapUtil;
 import com.msht.watersystem.Utils.BusinessInstruct;
 import com.msht.watersystem.Utils.ByteUtils;
 import com.msht.watersystem.Utils.CachePreferencesUtil;
 import com.msht.watersystem.Utils.CodeUtils;
-import com.msht.watersystem.Utils.InstructUtil;
+import com.msht.watersystem.Utils.FormatCommandUtil;
 import com.msht.watersystem.Utils.DataCalculateUtils;
 import com.msht.watersystem.Utils.FormatToken;
 import com.msht.watersystem.Utils.VariableUtil;
-import com.msht.watersystem.widget.MyImgScroll;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.File;
-import java.io.FileOutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
 
@@ -87,7 +80,7 @@ public class BuyWaterActivity extends BaseActivity implements Observer{
         myCountDownTimer=new MyCountDownTimer(120000,1000);
         initView();
         initWaterQuality();
-        OpenService();
+        bindPortService();
         initNetWork();
         initData();
     }
@@ -98,7 +91,7 @@ public class BuyWaterActivity extends BaseActivity implements Observer{
                     byte[] frame = FrameUtils.getFrame(mContext);
                     byte[] type = new byte[]{0x01, 0x03};
                     byte[] packet = PacketUtils.makePackage(frame, type, null);
-                    portService.sendToCom2(packet);
+                    portService.sendToServer(packet);
                 } catch (CRCException e) {
                     e.printStackTrace();
                 } catch (FrameException e) {
@@ -112,7 +105,7 @@ public class BuyWaterActivity extends BaseActivity implements Observer{
     private void initNetWork() {
         handler.post(runnable);
     }
-    private void OpenService(){
+    private void bindPortService(){
         serviceConnection = new ComServiceConnection(BuyWaterActivity.this, new ComServiceConnection.ConnectionCallBack() {
             @Override
             public void onServiceConnected(PortService service) {
@@ -126,7 +119,7 @@ public class BuyWaterActivity extends BaseActivity implements Observer{
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        OpenService();
+        bindPortService();
         ShowUi();
         myCountDownTimer.start();
         if (requestCode==2){
@@ -205,40 +198,40 @@ public class BuyWaterActivity extends BaseActivity implements Observer{
             if (packet1 != null) {
                 if (Arrays.equals(packet1.getCmd(),new byte[]{0x01,0x04})){
                    // MyLogUtil.d("主板控制指令104：", CreateOrderType.getPacketString(packet1));
-                    initCom104data2(packet1.getData());
+                    onCom1Received104dataFromControllBoard(packet1.getData());
                 }else if (Arrays.equals(packet1.getCmd(),new byte[]{0x02,0x04})){
-                    initCom204Data();
+                    onCom1Received204DataControllBoard();
                 }else if (Arrays.equals(packet1.getCmd(),new byte[]{0x01,0x05})){
-                    initCom105Data(packet1.getData());
+                    onCom1Received105DataControllBoard(packet1.getData());
                 }
             }
             Packet packet2 = myObservable.getCom2Packet();
             if (packet2 != null) {
                 if (Arrays.equals(packet2.getCmd(),new byte[]{0x01,0x07})){
-                    response207(packet2.getFrame());
+                    response207ToServer(packet2.getFrame());
                     VariableUtil.byteArray.clear();
                     VariableUtil.byteArray=packet2.getData();
-                    initCom107Data(packet2.getData());
+                    onCom2Received107DataFromServer(packet2.getData());
                    // Log.d("com107",CreateOrderType.getPacketString(packet2));
                 }else if (Arrays.equals(packet2.getCmd(),new byte[]{0x01,0x04})){
                     String stringWork= DataCalculateUtils.IntToBinary(ByteUtils.byteToInt(packet2.getData().get(45)));
                     if (DataCalculateUtils.isRechargeData(stringWork,5,6)){
-                        response204(packet2.getFrame());   //回复
+                        response204ToServer(packet2.getFrame());   //回复
                     }
-                    initCom104Data2(packet2.getData());
+                    onCom2Received104Data(packet2.getData());
                 }else if (Arrays.equals(packet2.getCmd(),new byte[]{0x01,0x02})){
-                    response102(packet2.getFrame());
-                    initCom102Data2(packet2.getData());
+                    response102ToServer(packet2.getFrame());
+                    onCom2Received102Data(packet2.getData());
                 }else if (Arrays.equals(packet2.getCmd(),new byte[]{0x02,0x03})){
-                    initCom203Data(packet2.getData());
+                    onCom2Received203Data(packet2.getData());
                 }
             }
         }
     }
-    private void initCom203Data(ArrayList<Byte> data) {
+    private void onCom2Received203Data(ArrayList<Byte> data) {
         setEquipmentData(data.get(4));
         try {
-            if(InstructUtil.EquipmentData(data)){
+            if(FormatCommandUtil.equipmentData(data)){
                 String waterVolume=String.valueOf(FormatToken.WaterNum);
                 String Time=String.valueOf(FormatToken.OutWaterTime);
                 CachePreferencesUtil.putStringData(this,CachePreferencesUtil.Volume,waterVolume);
@@ -256,9 +249,9 @@ public class BuyWaterActivity extends BaseActivity implements Observer{
             try {
                 byte[] frame = FrameUtils.getFrame(mContext);
                 byte[] type = new byte[]{0x01, 0x04};
-                byte[] data= InstructUtil.setEquipmentParameter(aByte);
+                byte[] data= FormatCommandUtil.setEquipmentParameter(aByte);
                 byte[] packet = PacketUtils.makePackage(frame, type, data);
-                portService.sendToCom1(packet);
+                portService.sendToControlBoard(packet);
             } catch (CRCException e) {
                 e.printStackTrace();
             } catch (FrameException e) {
@@ -268,7 +261,7 @@ public class BuyWaterActivity extends BaseActivity implements Observer{
             }
         }
     }
-    private void initCom102Data2(ArrayList<Byte> data) {
+    private void onCom2Received102Data(ArrayList<Byte> data) {
         if (BusinessInstruct.ControlModel(mContext,data)){
             ShowUi();
         }
@@ -287,12 +280,12 @@ public class BuyWaterActivity extends BaseActivity implements Observer{
             layout_TDS.setVisibility(View.VISIBLE);
         }
     }
-    private void response102(byte[] frame) {
+    private void response102ToServer(byte[] frame) {
         if (portService != null) {
             try {
                 byte[] type = new byte[]{0x02, 0x02};
                 byte[] packet = PacketUtils.makePackage(frame, type, null);
-                portService.sendToCom2(packet);
+                portService.sendToServer(packet);
             } catch (CRCException e) {
                 e.printStackTrace();
             } catch (FrameException e) {
@@ -302,12 +295,12 @@ public class BuyWaterActivity extends BaseActivity implements Observer{
             }
         }
     }
-    private void response204(byte[] frame) {
+    private void response204ToServer(byte[] frame) {
         if (portService != null) {
             try {
                 byte[] type = new byte[]{0x02, 0x04};
                 byte[] packet = PacketUtils.makePackage(frame, type, null);
-                portService.sendToCom2(packet);
+                portService.sendToServer(packet);
             } catch (CRCException e) {
                 e.printStackTrace();
             } catch (FrameException e) {
@@ -317,22 +310,22 @@ public class BuyWaterActivity extends BaseActivity implements Observer{
             }
         }
     }
-    private void initCom104Data2(ArrayList<Byte> data) {
+    private void onCom2Received104Data(ArrayList<Byte> data) {
         String stringWork= DataCalculateUtils.IntToBinary(ByteUtils.byteToInt(data.get(45)));
         int Switch=ByteUtils.byteToInt(data.get(31));
         if (Switch==2&&DataCalculateUtils.isEvent(stringWork,0)){
             Intent intent=new Intent(mContext, CloseSystemActivity.class);
             startActivityForResult(intent,2);
-            CloseService();
+            unbindPortServiceAndRemoveObserver();
             handler.removeCallbacks(runnable);
         }
     }
-    private void response207(byte[] frame) {
+    private void response207ToServer(byte[] frame) {
         if (portService != null) {
             try {
                 byte[] type = new byte[]{0x02, 0x07};
                 byte[] packet = PacketUtils.makePackage(frame, type, null);
-                portService.sendToCom2(packet);
+                portService.sendToServer(packet);
             } catch (CRCException e) {
                 e.printStackTrace();
             } catch (FrameException e) {
@@ -342,16 +335,16 @@ public class BuyWaterActivity extends BaseActivity implements Observer{
             }
         }
     }
-    private void initCom105Data(ArrayList<Byte> data) {
+    private void onCom1Received105DataControllBoard(ArrayList<Byte> data) {
         try {
-            if (InstructUtil.StatusInstruct(data)){
+            if (FormatCommandUtil.convertStatusCommandToFormatToken(data)){
                 tv_InTDS.setText(String.valueOf(FormatToken.OriginTDS));
                 tv_OutTDS.setText(String.valueOf(FormatToken.PurificationTDS));
                 String stringWork= DataCalculateUtils.IntToBinary(FormatToken.WorkState);
                 if (!DataCalculateUtils.isEvent(stringWork,6)){
                     Intent intent=new Intent(mContext, CannotBuyWaterActivity.class);
                     startActivityForResult(intent,2);
-                    CloseService();
+                    unbindPortServiceAndRemoveObserver();
                     handler.removeCallbacks(runnable);
                     myCountDownTimer.cancel();
                 }
@@ -360,28 +353,28 @@ public class BuyWaterActivity extends BaseActivity implements Observer{
             e.printStackTrace();
         }
     }
-    private void initCom204Data() {
+    private void onCom1Received204DataControllBoard() {
         if (buyStatus){
             buyStatus=false;
             if (FormatToken.ConsumptionType==1){
                 Intent intent=new Intent(mContext,IcCardoutWaterActivity.class);
                 startActivityForResult(intent,1);
-                CloseService();
+                unbindPortServiceAndRemoveObserver();
                 myCountDownTimer.cancel();
             }else if (FormatToken.ConsumptionType==3){
                 Intent intent=new Intent(mContext,AppOutWaterActivity.class);
                 startActivityForResult(intent,1);
-                CloseService();
+                unbindPortServiceAndRemoveObserver();
                 myCountDownTimer.cancel();
             }else if (FormatToken.ConsumptionType==5){
                 Intent intent=new Intent(mContext,DeliverOutWaterActivity.class);
                 startActivityForResult(intent,1);
-                CloseService();
+                unbindPortServiceAndRemoveObserver();
                 myCountDownTimer.cancel();
             }
         }
     }
-    private void initCom107Data(ArrayList<Byte> data) {
+    private void onCom2Received107DataFromServer(ArrayList<Byte> data) {
         if (BusinessInstruct.CalaculateBusiness(data)){
             CachePreferencesUtil.putBoolean(this,CachePreferencesUtil.FIRST_OPEN,false);
             buyStatus=true;
@@ -389,7 +382,7 @@ public class BuyWaterActivity extends BaseActivity implements Observer{
                 if (FormatToken.AppBalance<20){
                     Intent intent=new Intent(mContext,AppNotSufficientActivity.class);
                     startActivityForResult(intent,1);
-                    CloseService();
+                    unbindPortServiceAndRemoveObserver();
                     myCountDownTimer.cancel();
                 }else {
                     setBusiness(1);
@@ -405,13 +398,13 @@ public class BuyWaterActivity extends BaseActivity implements Observer{
                 byte[] frame = FrameUtils.getFrame(mContext);
                 byte[] type = new byte[]{0x01, 0x04};
                 if (business==1){
-                    byte[] data= InstructUtil.setBusinessType01();
+                    byte[] data= FormatCommandUtil.setTransactionType01();
                     byte[] packet = PacketUtils.makePackage(frame, type, data);
-                    portService.sendToCom1(packet);
+                    portService.sendToControlBoard(packet);
                 }else if (business==2){
-                    byte[] data= InstructUtil.setBusinessType02();
+                    byte[] data= FormatCommandUtil.setTransactionType02();
                     byte[] packet = PacketUtils.makePackage(frame, type, data);
-                    portService.sendToCom1(packet);
+                    portService.sendToControlBoard(packet);
                 }
             } catch (CRCException e) {
                 e.printStackTrace();
@@ -422,13 +415,13 @@ public class BuyWaterActivity extends BaseActivity implements Observer{
             }
         }
     }
-    private void initCom104data2(ArrayList<Byte> data) {
+    private void onCom1Received104dataFromControllBoard(ArrayList<Byte> data) {
         try {
-                if(InstructUtil.ControlInstruct(data)){
+                if(FormatCommandUtil.convertCom1ReceivedDataToFormatToken(data)){
                     if (FormatToken.Balance<=1){
                         Intent intent=new Intent(mContext,NotSufficientActivity.class);
                         startActivityForResult(intent,1);
-                        CloseService();
+                        unbindPortServiceAndRemoveObserver();
                         myCountDownTimer.cancel();
                     }else {
                         String stringWork= DataCalculateUtils.IntToBinary(FormatToken.Updateflag3);
@@ -436,17 +429,17 @@ public class BuyWaterActivity extends BaseActivity implements Observer{
                             if (FormatToken.ConsumptionType==1){
                                 Intent intent=new Intent(mContext,IcCardoutWaterActivity.class);
                                 startActivityForResult(intent,1);
-                                CloseService();
+                                unbindPortServiceAndRemoveObserver();
                                 myCountDownTimer.cancel();
                             }else if (FormatToken.ConsumptionType==3){
                                 Intent intent=new Intent(mContext,AppOutWaterActivity.class);
                                 startActivityForResult(intent,1);
-                                CloseService();
+                                unbindPortServiceAndRemoveObserver();
                                 myCountDownTimer.cancel();
                             }else if (FormatToken.ConsumptionType==5){
                                 Intent intent=new Intent(mContext,DeliverOutWaterActivity.class);
                                 startActivityForResult(intent,1);
-                                CloseService();
+                                unbindPortServiceAndRemoveObserver();
                                 myCountDownTimer.cancel();
                             }
                         }else {
@@ -463,7 +456,7 @@ public class BuyWaterActivity extends BaseActivity implements Observer{
                             intent.putExtra("mAccount",mAccount);
                             intent.putExtra("sign","0");
                             startActivityForResult(intent,1);
-                            CloseService();
+                            unbindPortServiceAndRemoveObserver();
                             myCountDownTimer.cancel();
 
                         }
@@ -519,7 +512,7 @@ public class BuyWaterActivity extends BaseActivity implements Observer{
             myCountDownTimer.cancel();
         }
     }
-    private void CloseService(){
+    private void unbindPortServiceAndRemoveObserver(){
         if (serviceConnection != null && portService != null) {
             if (bindStatus){
                 bindStatus=false;
@@ -531,7 +524,7 @@ public class BuyWaterActivity extends BaseActivity implements Observer{
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        CloseService();
+        unbindPortServiceAndRemoveObserver();
         removeback();
         endTimeCount();
     }
