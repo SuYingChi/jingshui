@@ -421,8 +421,10 @@ public class IcCardoutWaterActivity extends BaseActivity implements Observer{
                 imageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
                 listViews.add(imageView);
             }
+        }else if(!scanner5Directory.exists()){
+            scanner5Directory.mkdirs();
         }
-        File file = new File(Environment.getExternalStorageDirectory().getPath() + "/watersystem/images/");
+      /*  File file = new File(Environment.getExternalStorageDirectory().getPath() + "/watersystem/images/");
         if (!file.exists()){
             file.mkdirs();
         }
@@ -431,7 +433,7 @@ public class IcCardoutWaterActivity extends BaseActivity implements Observer{
             fileOutputStream.close();
         } catch (Exception e) {
             e.printStackTrace();
-        }
+        }*/
     }
     class MyCountDownTimer extends CountDownTimer {
         public MyCountDownTimer(long millisInFuture, long countDownInterval) {
