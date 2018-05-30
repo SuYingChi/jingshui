@@ -35,6 +35,7 @@ import com.msht.watersystem.widget.MyImgScroll;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -67,13 +68,13 @@ public class AppOutWaterActivity extends BaseActivity implements Observer{
     private boolean Currentstatus=false;
     private final UpdataHandler handlerStop = new UpdataHandler(this);
     private static class  UpdataHandler extends Handler{
-        private WeakReference<AppoutWater> mWeakReference;
-        public UpdataHandler(AppoutWater appoutWater) {
-            mWeakReference = new WeakReference<AppoutWater>(appoutWater);
+        private WeakReference<AppOutWaterActivity> mWeakReference;
+        public UpdataHandler(AppOutWaterActivity appoutWater) {
+            mWeakReference = new WeakReference<AppOutWaterActivity>(appoutWater);
         }
         @Override
         public void handleMessage(Message msg){
-            AppoutWater activity =mWeakReference.get();
+            AppOutWaterActivity activity =mWeakReference.get();
             // the referenced object has been cleared
             if (activity == null||activity.isFinishing()) {
                 return;
