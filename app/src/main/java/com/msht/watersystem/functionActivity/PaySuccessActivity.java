@@ -35,7 +35,7 @@ public class PaySuccessActivity extends BaseActivity implements Observer {
     private boolean     buyStatus=false;
     private boolean     bindStatus=false;
     private Context     mContext;
-    private MyCountDownTimer myCountDownTimer;// 倒计时对象
+    private MyCountDownTimer myCountDownTimer;
     private ImageView   textView;
     private TextView    tv_time;
     private TextView    tv_customerNo;
@@ -138,14 +138,12 @@ public class PaySuccessActivity extends BaseActivity implements Observer {
                 if (Arrays.equals(packet2.getCmd(),new byte[]{0x02,0x05})){
                     onCom2Received205DataFromServer();
                 }else  if (Arrays.equals(packet2.getCmd(),new byte[]{0x01,0x04})){
-                   // MyLogUtil.d("服务端控制指令104：", CreateOrderType.getPacketString(packet2));
                     String stringWork= DataCalculateUtils.IntToBinary(ByteUtils.byteToInt(packet2.getData().get(45)));
                     if (DataCalculateUtils.isRechargeData(stringWork,5,6)){
                         response204ToServer(packet2.getFrame());
                     }
                     onCom2Received104DataFromServer(packet2.getData());
                 }else if (Arrays.equals(packet2.getCmd(),new byte[]{0x01,0x07})){
-                   // MyLogUtil.d("服务端控制指令107：", CreateOrderType.getPacketString(packet2));
                     response207ToServer(packet2.getFrame());
                     onCom2Received107DataFromServer(packet2.getData());
                 }else if (Arrays.equals(packet2.getCmd(),new byte[]{0x01,0x02})){

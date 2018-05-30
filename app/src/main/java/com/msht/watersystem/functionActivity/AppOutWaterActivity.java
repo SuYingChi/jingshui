@@ -52,9 +52,6 @@ public class AppOutWaterActivity extends BaseActivity implements Observer{
     private TextView tv_CardNo;
     private TextView tv_time;
     private LEDView  le_water,le_amount;
-    private MyImgScroll myPager;
-    private List<View>  listViews;
-    private ImageView   textView;
     private MyCountDownTimer myCountDownTimer;// 倒计时对象
     private CountDownTimer Timer;// 倒计时对象
     private PortService portService;
@@ -110,7 +107,6 @@ public class AppOutWaterActivity extends BaseActivity implements Observer{
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_appout_water);
         mContext=this;
-       // initViewImages();
         myCountDownTimer=new MyCountDownTimer(30000,1000);
         initView();
         initWaterQuality();

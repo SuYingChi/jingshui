@@ -37,6 +37,15 @@ import com.msht.watersystem.Utils.DateTimeUtils;
 import com.msht.watersystem.Utils.FormatToken;
 import com.msht.watersystem.Utils.VariableUtil;
 import com.msht.watersystem.entity.OrderInfo;
+import com.msht.watersystem.functionActivity.AppNotSufficientActivity;
+import com.msht.watersystem.functionActivity.AppOutWaterActivity;
+import com.msht.watersystem.functionActivity.BuyWaterActivity;
+import com.msht.watersystem.functionActivity.CannotBuyWaterActivity;
+import com.msht.watersystem.functionActivity.CloseSystemActivity;
+import com.msht.watersystem.functionActivity.IcCardoutWaterActivity;
+import com.msht.watersystem.functionActivity.NotSufficientActivity;
+import com.msht.watersystem.functionActivity.DeliverOutWaterActivity;
+import com.msht.watersystem.functionActivity.PaySuccessActivity;
 import com.msht.watersystem.gen.OrderInfoDao;
 import com.msht.watersystem.widget.CustomVideoView;
 import com.msht.watersystem.widget.MyImgScroll;
@@ -68,7 +77,7 @@ public class MainSerialPortActivity extends BaseActivity  implements Observer{
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main_serial_port);
-        textView = (ImageView) findViewById(R.id.textView);
+        textView =findViewById(R.id.textView);
         initViewImages();
         bindPortService();
     }
@@ -116,71 +125,6 @@ public class MainSerialPortActivity extends BaseActivity  implements Observer{
         } catch (Exception e) {
             e.printStackTrace();
         }*/
-    }
-    /* private void initBraodCast() {   //动态注册广播
-         IntentFilter filter = new IntentFilter(Intent.ACTION_TIME_TICK);
-         receiver = new TimeBroadcastReceiver();
-         registerReceiver(receiver, filter);
-     }*/
-    private void initVideoView() {
-       // mVideoView=(CustomVideoView) findViewById(R.id.id_mp4_vedio) ;
-        List<String> fileVediolist = new ArrayList<String>();
-        File scanner5Directory = new File(Environment.getExternalStorageDirectory().getPath() + "/WaterSystem/video/");
-        if (scanner5Directory.exists() && scanner5Directory.isDirectory()&&scanner5Directory.list().length > 0) {
-            textView.setVisibility(View.GONE);
-            mVideoView.setVisibility(View.VISIBLE);
-            for (File file : scanner5Directory.listFiles()) {
-                String path = file.getAbsolutePath();
-                if (path.endsWith(".mp4") ) {
-                    fileVediolist.add(path);
-                }
-            }
-            if (fileVediolist.size()>=1){
-                uri=Uri.parse(fileVediolist.get(0));
-                videoPath=fileVediolist.get(0);
-            }
-           // mVideoView.setVideoURI(uri);
-           // mVideoView.setMediaController(new MediaController(this));
-          //  mVideoView.setVideoLayout(VideoView.VIDEO_LAYOUT_STRETCH,1);
-            mVideoView.setVideoPath(videoPath);
-            mVideoView.start();
-            mVideoView.requestFocus();
-            mVideoView.setOnCompletionListener(new MyPlayerOnComletionListener());
-            mVideoView.setOnPreparedListener(new MyPreparedListener());
-        }else {
-            mVideoView.setVisibility(View.GONE);
-            textView.setVisibility(View.VISIBLE);
-        }
-        File file = new File(Environment.getExternalStorageDirectory().getPath() + "/WaterSystem/video/");
-        if (!file.exists()){
-            file.mkdirs();
-        }
-        try {
-            FileOutputStream fileOutputStream = new FileOutputStream(file.getPath() + "/");
-            fileOutputStream.close();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-    class MyPreparedListener implements MediaPlayer.OnPreparedListener{
-
-        @Override
-        public void onPrepared(MediaPlayer mp) {
-           // mp.setPlaybackSpeed(1.0f);
-            mp.start();
-            mp.setLooping(true);
-        }
-    }
-    class MyPlayerOnComletionListener implements MediaPlayer.OnCompletionListener{
-
-        @Override
-        public void onCompletion(MediaPlayer mp) {
-           // mp.start();
-            mp.seekTo(0);
-            mVideoView.setVideoPath(videoPath);
-          //  mVideoView.requestFocus();
-            mVideoView.start();
-        }
     }
     private void bindPortService(){
         serviceConnection = new ComServiceConnection(MainSerialPortActivity.this, new ComServiceConnection.ConnectionCallBack() {
@@ -380,11 +324,6 @@ public class MainSerialPortActivity extends BaseActivity  implements Observer{
             e.printStackTrace();
         }
     }
-    /*
-     *设置出水时间
-     *parame aByte  单价
-     *
-     */
     private void setEquipmentData(Byte aByte) {
         if (portService != null) {
             try {
@@ -601,8 +540,9 @@ public class MainSerialPortActivity extends BaseActivity  implements Observer{
             @Override
             public Object getSystemService(String name)
             {
-                if (Context.AUDIO_SERVICE.equals(name))
+                if (Context.AUDIO_SERVICE.equals(name)){
                     return getApplicationContext().getSystemService(name);
+                }
                 return super.getSystemService(name);
             }
         });
@@ -615,7 +555,5 @@ public class MainSerialPortActivity extends BaseActivity  implements Observer{
     protected void onDestroy() {
         super.onDestroy();
         unbindPortServiceAndRemoveObserver();
-        //removeback();
-        //unregisterReceiver(receiver);
     }
 }

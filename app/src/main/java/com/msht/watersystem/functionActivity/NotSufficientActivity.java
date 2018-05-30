@@ -42,7 +42,7 @@ public class NotSufficientActivity extends BaseActivity implements Observer {
     private ImageView   textView;
     private boolean     bindStatus=false;
     private Context     mContext;
-    private MyCountDownTimer myCountDownTimer;// 倒计时对象
+    private MyCountDownTimer myCountDownTimer;
     private PortService      portService;
     private ComServiceConnection serviceConnection;
     @Override
@@ -102,7 +102,7 @@ public class NotSufficientActivity extends BaseActivity implements Observer {
                if (Arrays.equals(packet2.getCmd(),new byte[]{0x01,0x04})){
                     String stringWork= DataCalculateUtils.IntToBinary(ByteUtils.byteToInt(packet2.getData().get(45)));
                     if (DataCalculateUtils.isRechargeData(stringWork,5,6)){
-                        response204ToServer(packet2.getFrame());   //回复
+                        response204ToServer(packet2.getFrame());
                     }
                    onCom2Received104DataFromServer(packet2.getData());
                 } else if (Arrays.equals(packet2.getCmd(),new byte[]{0x01,0x07})){
