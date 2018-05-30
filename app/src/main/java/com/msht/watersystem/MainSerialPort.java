@@ -79,12 +79,11 @@ public class MainSerialPort extends BaseActivity  implements Observer{
         setContentView(R.layout.activity_main_serial_port);
         textView = (ImageView) findViewById(R.id.textView);
         initViewImages();
-       // initVideoView();
         openService();
     }
     private void initViewImages() {
-        myPager = (MyImgScroll) findViewById(R.id.myvp);
-        textView = (ImageView) findViewById(R.id.textView);
+        myPager = findViewById(R.id.myvp);
+        textView = findViewById(R.id.textView);
         initImageViewList();
         if (!imageViewList.isEmpty()&& imageViewList.size()>0) {
             pageStatus=true;
@@ -111,7 +110,6 @@ public class MainSerialPort extends BaseActivity  implements Observer{
             for (int i = 0; i <fileImagelist.size(); i++) {
                 ImageView imageView = new ImageView(this);
                 imageView.setImageBitmap(BitmapUtil.decodeSampledBitmapFromRSavaSD(fileImagelist.get(i), 1633, 888));
-               // imageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
                 imageViewList.add(imageView);
             }
         }else if(!scanner5Directory.exists()){
@@ -272,9 +270,6 @@ public class MainSerialPort extends BaseActivity  implements Observer{
             }
         }
     }
-    /*
-      com206时间指令，设置系统时间
-     */
     private void initComData206(ArrayList<Byte> data) {
         if (InstructUtil.TimeInstruct(data)){
             if (FormatToken.TimeType==1){
@@ -557,7 +552,7 @@ public class MainSerialPort extends BaseActivity  implements Observer{
                     sendStatus=false;
                     byte[] data=infos.get(i).getOrderData();
                     portService.sendToCom2(data);
-                    OrderInfo singgleData=infos.get(i);//单条订单记录
+                    OrderInfo singgleData=infos.get(i);
                     deleteData(singgleData);
                 }
                 sendStatus=true;

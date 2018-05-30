@@ -60,8 +60,8 @@ public class DeliverOutWaterActivity extends BaseActivity implements Observer{
     private Context     mContext;
     private boolean     isStart=false;
     private PortService portService;
-    private CountDownTimer Timer;// 倒计时对象
-    private MyCountDownTimer myCountDownTimer;// 倒计时对象
+    private CountDownTimer Timer;
+    private MyCountDownTimer myCountDownTimer;
     private ComServiceConnection serviceConnection;
     Handler handler=new Handler();
     Runnable runnable=new Runnable() {
@@ -80,7 +80,6 @@ public class DeliverOutWaterActivity extends BaseActivity implements Observer{
         setContentView(R.layout.activity_deliveryout_water);
         mContext=this;
         myCountDownTimer=new MyCountDownTimer(30000,1000);
-        //initViewImages();
         initView();
         initWaterQuality();
         OpenService();
@@ -254,7 +253,8 @@ public class DeliverOutWaterActivity extends BaseActivity implements Observer{
     }
     private void initCom207Data() {
         tipStatus=true;
-        finishStatus=true;   //返回按键有效
+        //返回按键有效
+        finishStatus=true;
         tv_tip.setText("1、返回首页请点击其他按键");
         btn_tip.setText("按键");
         myCountDownTimer.start();
@@ -394,10 +394,6 @@ public class DeliverOutWaterActivity extends BaseActivity implements Observer{
                 finish();
             }
         }else if (keyCode==KeyEvent.KEYCODE_F1){
-           /* Currentstatus=false;
-            EnsureState=2;
-            ReceiveState=3;
-            settleAccount();*/
             if (finishStatus){
                 finish();
             }

@@ -53,14 +53,10 @@ public class BuyWaterActivity extends BaseActivity implements Observer{
     private boolean     bindStatus=false;
     private View        layout_online;
     private ImageView   ImageCode;
-    private MyImgScroll myPager;
-    private List<View>  listViews;
-    private ImageView   imageView;
     private TextView    tv_freecharge;
     private PortService portService;
     private ComServiceConnection serviceConnection;
-    private MyCountDownTimer myCountDownTimer;// 倒计时对象
-    private Bitmap bm;
+    private MyCountDownTimer myCountDownTimer;
     private double volume=0.00;
     Handler handler=new Handler();
     Runnable runnable=new Runnable() {
@@ -70,7 +66,6 @@ public class BuyWaterActivity extends BaseActivity implements Observer{
                 if (portService.isConnection()){
                     ImageCode.setVisibility(View.VISIBLE);
                     layout_online.setVisibility(View.GONE);
-                    boolean isFirstOpen = CachePreferencesUtil.getBoolean(mContext, CachePreferencesUtil.FIRST_OPEN, true);
                     if (VariableUtil.setEquipmentStatus){
                         initsetData();
                     }
@@ -139,10 +134,10 @@ public class BuyWaterActivity extends BaseActivity implements Observer{
         }
     }
     private void initView() {
-        TextView tv_version=(TextView)findViewById(R.id.id_tv_version);
-        tv_freecharge=(TextView)findViewById(R.id.id_free_charge);
-        tv_time=(TextView)findViewById(R.id.id_time) ;
-        ImageCode=(ImageView)findViewById(R.id.id_erwei_code) ;
+        TextView tv_version=findViewById(R.id.id_tv_version);
+        tv_freecharge=findViewById(R.id.id_free_charge);
+        tv_time=findViewById(R.id.id_time) ;
+        ImageCode=findViewById(R.id.id_erwei_code) ;
         layout_online=findViewById(R.id.id_online_view);
         ((TextView)findViewById(R.id.id_equipment)).setText(String.valueOf(FormatToken.DeviceId));
         int ChargeMode= CachePreferencesUtil.getChargeMode(this,CachePreferencesUtil.ChargeMode,0);
@@ -256,11 +251,6 @@ public class BuyWaterActivity extends BaseActivity implements Observer{
             e.printStackTrace();
         }
     }
-    /*
-     *设置出水时间
-     *parame aByte  单价
-     *
-     */
     private void setEquipmentData(Byte aByte) {
         if (portService != null) {
             try {
@@ -393,7 +383,7 @@ public class BuyWaterActivity extends BaseActivity implements Observer{
     }
     private void initCom107Data(ArrayList<Byte> data) {
         if (BusinessInstruct.CalaculateBusiness(data)){
-            CachePreferencesUtil.putBoolean(this,CachePreferencesUtil.FIRST_OPEN,false);//数据更变
+            CachePreferencesUtil.putBoolean(this,CachePreferencesUtil.FIRST_OPEN,false);
             buyStatus=true;
             if (FormatToken.BusinessType==1){
                 if (FormatToken.AppBalance<20){
@@ -503,50 +493,6 @@ public class BuyWaterActivity extends BaseActivity implements Observer{
            finish();
         }
     }
-    private void initViewImages() {
-        myPager = (MyImgScroll) findViewById(R.id.myvp);
-        imageView = (ImageView) findViewById(R.id.textView);
-        InitViewPagers();
-        if (!listViews.isEmpty()&&listViews.size()>0) {
-            myPager.setVisibility(View.VISIBLE);
-            imageView.setVisibility(View.GONE);
-            myPager.start(this, listViews, 10000);
-        }else{
-            myPager.setVisibility(View.GONE);
-            imageView.setVisibility(View.VISIBLE);
-        }
-    }
-    private void InitViewPagers() {
-        listViews = new ArrayList<View>();
-        List<String> fileImagelist = new ArrayList<String>();
-        File scanner5Directory = new File(Environment.getExternalStorageDirectory().getPath() + "/WaterSystem/images/");
-        if (scanner5Directory.exists() && scanner5Directory.isDirectory()&&scanner5Directory.list().length > 0) {
-
-            for (File file : scanner5Directory.listFiles()) {
-                String path = file.getAbsolutePath();
-                if (path.endsWith(".jpg") || path.endsWith(".jpeg")|| path.endsWith(".png")) {
-                    fileImagelist.add(path);
-                }
-            }
-            for (int i = 0; i <fileImagelist.size(); i++) {
-                ImageView imageView = new ImageView(this);
-               // bm=BitmapUtil.decodeSampledBitmapFromFile(fileImagelist.get(i), 1000, 1000);
-                imageView.setImageBitmap(BitmapUtil.decodeSampledBitmapFromFile(fileImagelist.get(i), 1000, 1000));
-                imageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
-                listViews.add(imageView);
-            }
-        }
-        File file = new File(Environment.getExternalStorageDirectory().getPath() + "/WaterSystem/images/");
-        if (!file.exists()){
-            file.mkdirs();
-        }
-        try {
-            FileOutputStream fileOutputStream = new FileOutputStream(file.getPath() + "/");
-            fileOutputStream.close();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         if(keyCode== KeyEvent.KEYCODE_BACK&& event.getRepeatCount()==0){
@@ -582,18 +528,12 @@ public class BuyWaterActivity extends BaseActivity implements Observer{
             }
         }
     }
-    private void BitmapRecycled() {
-        if (bm!=null){
-            bm.recycle();
-        }
-    }
     @Override
     protected void onDestroy() {
         super.onDestroy();
         CloseService();
         removeback();
         endTimeCount();
-      //  BitmapRecycled();
     }
 
 

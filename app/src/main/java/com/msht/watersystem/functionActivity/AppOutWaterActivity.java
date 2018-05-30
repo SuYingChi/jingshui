@@ -65,17 +65,30 @@ public class AppOutWaterActivity extends BaseActivity implements Observer{
     private int EnsureState=0;
     private int ReceiveState=0;
     private boolean Currentstatus=false;
-    final Handler handlerStop=new Handler(){
+    private final UpdataHandler handlerStop = new UpdataHandler(this);
+    private static class  UpdataHandler extends Handler{
+        private WeakReference<AppoutWater> mWeakReference;
+        public UpdataHandler(AppoutWater appoutWater) {
+            mWeakReference = new WeakReference<AppoutWater>(appoutWater);
+        }
+        @Override
         public void handleMessage(Message msg){
+            AppoutWater activity =mWeakReference.get();
+            // the referenced object has been cleared
+            if (activity == null||activity.isFinishing()) {
+                return;
+            }
             switch (msg.what){
                 case 1:
-                    handler.removeCallbacks(runnable);
+                    activity.handler.removeCallbacks(activity.runnable);
                     break;
                 case 2:
-                    handler.removeCallbacks(runnable);
-                    double waterVolume=FormatToken.WaterYield*volume;
+                    activity.handler.removeCallbacks(activity.runnable);
+                    double waterVolume=FormatToken.WaterYield*activity.volume;
                     String Water=String.valueOf(DataCalculateUtils.TwoDecinmal2(waterVolume));
-                    le_water.setLedView(getString(R.string.default_bg_digital),String.valueOf(Water));
+                    activity.le_water.setLedView(activity.getString(R.string.default_bg_digital),String.valueOf(Water));
+                    break;
+                default:
                     break;
             }
             super.handleMessage(msg);
@@ -165,7 +178,7 @@ public class AppOutWaterActivity extends BaseActivity implements Observer{
                 }else if (Arrays.equals(packet2.getCmd(),new byte[]{0x01,0x04})){
                     String stringWork= DataCalculateUtils.IntToBinary(ByteUtils.byteToInt(packet2.getData().get(45)));
                     if (DataCalculateUtils.isRechargeData(stringWork,5,6)){
-                        responseServer(packet2.getFrame());   //回复
+                        responseServer(packet2.getFrame());
                     }
                     initCom104Data2(packet2.getData());
                 }
@@ -247,7 +260,8 @@ public class AppOutWaterActivity extends BaseActivity implements Observer{
     private void initCom104Data(ArrayList<Byte> data) {
             if(InstructUtil.ControlInstruct(data)){
                 int businessType=ByteUtils.byteToInt(data.get(15));
-                if (businessType==3){   //扫码结账
+                //扫码结账
+                if (businessType==3){
                     if (EnsureState==2){
                         Message msg=new Message();
                         msg.what=2;
@@ -346,8 +360,8 @@ public class AppOutWaterActivity extends BaseActivity implements Observer{
     private void CalculateData() {
         String waterVolume=CachePreferencesUtil.getStringData(this,CachePreferencesUtil.Volume,"5");
         String Time=CachePreferencesUtil.getStringData(this,CachePreferencesUtil.outWaterTime,"30");
-        int mVolume=Integer.valueOf(waterVolume).intValue();
-        int mTime=Integer.valueOf(Time).intValue();
+        int mVolume=Integer.parseInt(waterVolume);
+        int mTime=Integer.parseInt(Time);
         volume=DataCalculateUtils.getWaterVolume(mVolume,mTime);
     }
     private void settleServer(int Afteramount,int amount) {
@@ -455,48 +469,6 @@ public class AppOutWaterActivity extends BaseActivity implements Observer{
         };
         Timer.start();
         isStart=true;
-    }
-    private void initViewImages() {
-        myPager = (MyImgScroll) findViewById(R.id.myvp);
-        textView = (ImageView) findViewById(R.id.textView);
-        InitViewPagers();
-        if (!listViews.isEmpty()&&listViews.size()>0) {
-            myPager.setVisibility(View.VISIBLE);
-            textView.setVisibility(View.GONE);
-            myPager.start(this, listViews, 10000);
-        }else{
-            myPager.setVisibility(View.GONE);
-            textView.setVisibility(View.VISIBLE);
-        }
-    }
-    private void InitViewPagers() {
-        listViews = new ArrayList<View>();
-        List<String> fileImagelist = new ArrayList<String>();
-        File scanner5Directory = new File(Environment.getExternalStorageDirectory().getPath() + "/watersystem/images/");
-        if (scanner5Directory.exists() && scanner5Directory.isDirectory()&&scanner5Directory.list().length > 0) {
-            for (File file : scanner5Directory.listFiles()) {
-                String path = file.getAbsolutePath();
-                if (path.endsWith(".jpg") || path.endsWith(".jpeg")|| path.endsWith(".png")) {
-                    fileImagelist.add(path);
-                }
-            }
-            for (int i = 0; i <fileImagelist.size(); i++) {
-                ImageView imageView = new ImageView(this);
-                imageView.setImageBitmap(BitmapUtil.decodeSampledBitmapFromFile(fileImagelist.get(i), 500, 500));
-                imageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
-                listViews.add(imageView);
-            }
-        }
-        File file = new File(Environment.getExternalStorageDirectory().getPath() + "/WaterSystem/images/");
-        if (!file.exists()){
-            file.mkdirs();
-        }
-        try {
-            FileOutputStream fileOutputStream = new FileOutputStream(file.getPath() + "/");
-            fileOutputStream.close();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
     }
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
