@@ -59,7 +59,7 @@
             android:exported="true" />
 
         <activity android:name=".functionActivity.BuyWaterActivity" />
-        <activity android:name=".functionActivity.IcCardoutWater" />
+        <activity android:name=".functionActivity.IcCardoutWaterActivity" />
         <activity android:name=".functionActivity.CannotBuyWaterActivity" />
         <activity android:name=".functionActivity.DeliverOutWaterActivity" />
         <activity android:name=".functionActivity.NotSufficientActivity" />

@@ -47,7 +47,7 @@ import com.msht.watersystem.functionActivity.CannotBuywater;
 import com.msht.watersystem.functionActivity.CloseSystem;
 import com.msht.watersystem.functionActivity.NotSufficient;
 import com.msht.watersystem.functionActivity.OutWater;
-import com.msht.watersystem.functionActivity.IcCardoutWater;
+import com.msht.watersystem.functionActivity.IcCardoutWaterActivity;
 import com.msht.watersystem.functionActivity.PaySuccess;
 import com.msht.watersystem.gen.OrderInfoDao;
 import com.msht.watersystem.widget.CustomVideoView;

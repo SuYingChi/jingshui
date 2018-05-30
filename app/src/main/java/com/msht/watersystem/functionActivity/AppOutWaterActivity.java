@@ -280,7 +280,7 @@ public class AppOutWaterActivity extends BaseActivity implements Observer{
                     }else {
                         String stringWork= DataCalculateUtils.IntToBinary(FormatToken.Updateflag3);
                         if (!DataCalculateUtils.isEvent(stringWork,3)){
-                            Intent intent=new Intent(mContext,IcCardoutWater.class);
+                            Intent intent=new Intent(mContext,IcCardoutWaterActivity.class);
                             startActivityForResult(intent,1);
                             finish();
                         }else {

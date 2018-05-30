@@ -374,7 +374,7 @@ public class BuyWaterActivity extends BaseActivity implements Observer{
         if (buyStatus){
             buyStatus=false;
             if (FormatToken.ConsumptionType==1){
-                Intent intent=new Intent(mContext,IcCardoutWater.class);
+                Intent intent=new Intent(mContext,IcCardoutWaterActivity.class);
                 startActivityForResult(intent,1);
                 CloseService();
                 myCountDownTimer.cancel();
@@ -444,7 +444,7 @@ public class BuyWaterActivity extends BaseActivity implements Observer{
                         String stringWork= DataCalculateUtils.IntToBinary(FormatToken.Updateflag3);
                         if (!DataCalculateUtils.isEvent(stringWork,3)){
                             if (FormatToken.ConsumptionType==1){
-                                Intent intent=new Intent(mContext,IcCardoutWater.class);
+                                Intent intent=new Intent(mContext,IcCardoutWaterActivity.class);
                                 startActivityForResult(intent,1);
                                 CloseService();
                                 myCountDownTimer.cancel();

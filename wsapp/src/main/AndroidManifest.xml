@@ -60,7 +60,7 @@
 
 
         <activity android:name=".functionActivity.BuyWater" />
-        <activity android:name=".functionActivity.IcCardoutWater" />
+        <activity android:name=".functionActivity.IcCardoutWaterActivity" />
         <activity android:name=".functionActivity.CannotBuywater" />
         <activity android:name=".functionActivity.OutWater" />
         <activity android:name=".functionActivity.NotSufficient" />

@@ -119,7 +119,7 @@ public class AppNotSufficientActivity extends BaseActivity implements Observer {
         if (buyStatus){
             buyStatus=false;
             if (FormatToken.ConsumptionType==1){
-                Intent intent=new Intent(mContext,IcCardoutWater.class);    //进入刷卡购水页面
+                Intent intent=new Intent(mContext,IcCardoutWaterActivity.class);    //进入刷卡购水页面
                 startActivityForResult(intent,1);
                 finish();
             }else if (FormatToken.ConsumptionType==3){
@@ -243,7 +243,7 @@ public class AppNotSufficientActivity extends BaseActivity implements Observer {
                         }
                     }else {
                         if (FormatToken.ConsumptionType==1){
-                            Intent intent=new Intent(mContext,IcCardoutWater.class);
+                            Intent intent=new Intent(mContext,IcCardoutWaterActivity.class);
                             startActivityForResult(intent,1);
                             finish();
                         }else if (FormatToken.ConsumptionType==3){

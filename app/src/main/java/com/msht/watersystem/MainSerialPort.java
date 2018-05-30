@@ -41,9 +41,10 @@ import com.msht.watersystem.functionActivity.AppOutWaterActivity;
 import com.msht.watersystem.functionActivity.BuyWaterActivity;
 import com.msht.watersystem.functionActivity.CannotBuyWaterActivity;
 import com.msht.watersystem.functionActivity.CloseSystemActivity;
+import com.msht.watersystem.functionActivity.IcCardoutWaterActivity;
 import com.msht.watersystem.functionActivity.NotSufficientActivity;
 import com.msht.watersystem.functionActivity.DeliverOutWaterActivity;
-import com.msht.watersystem.functionActivity.IcCardoutWater;
+import com.msht.watersystem.functionActivity.IcCardoutWaterActivity;
 import com.msht.watersystem.functionActivity.PaySuccessActivity;
 import com.msht.watersystem.gen.OrderInfoDao;
 import com.msht.watersystem.widget.CustomVideoView;
@@ -295,7 +296,7 @@ public class MainSerialPort extends BaseActivity  implements Observer{
         if (buyStatus){
             buyStatus=false;
             if (FormatToken.ConsumptionType==1){
-                Intent intent=new Intent(mContext,IcCardoutWater.class);
+                Intent intent=new Intent(mContext,IcCardoutWaterActivity.class);
                 startActivityForResult(intent,1);
                 closeService();
                 myPager.stopTimer();
@@ -473,7 +474,7 @@ public class MainSerialPort extends BaseActivity  implements Observer{
                     String stringWork= DataCalculateUtils.IntToBinary(FormatToken.Updateflag3);
                     if (!DataCalculateUtils.isEvent(stringWork,3)) {
                         if (FormatToken.ConsumptionType == 1) {
-                            Intent intent = new Intent(mContext, IcCardoutWater.class);
+                            Intent intent = new Intent(mContext, IcCardoutWaterActivity.class);
                             startActivityForResult(intent, 1);
                             closeService();
                             myPager.stopTimer();
