@@ -98,7 +98,7 @@ public class InstructUtil {
     *@param  byteList  状态指令
      */
     public static boolean StatusInstruct(ArrayList<Byte> byteList){
-        if (byteList.size()!=0&&byteList!=null){
+        if (byteList!=null&&byteList.size()!=0){
             byte[] DeviceId=new byte[4];
             DeviceId[0]=byteList.get(0);
             DeviceId[1]=byteList.get(1);

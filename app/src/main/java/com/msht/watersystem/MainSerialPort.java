@@ -44,7 +44,6 @@ import com.msht.watersystem.functionActivity.CloseSystemActivity;
 import com.msht.watersystem.functionActivity.IcCardoutWaterActivity;
 import com.msht.watersystem.functionActivity.NotSufficientActivity;
 import com.msht.watersystem.functionActivity.DeliverOutWaterActivity;
-import com.msht.watersystem.functionActivity.IcCardoutWaterActivity;
 import com.msht.watersystem.functionActivity.PaySuccessActivity;
 import com.msht.watersystem.gen.OrderInfoDao;
 import com.msht.watersystem.widget.CustomVideoView;
@@ -218,6 +217,7 @@ public class MainSerialPort extends BaseActivity  implements Observer{
         PortService.MyObservable myObservable = (PortService.MyObservable) observable;
         if (myObservable != null) {
             boolean skeyEnable = myObservable.isSKeyEnable();
+            //主控板通过COM1发过来的数据
             Packet packet1 = myObservable.getCom1Packet();
             //主控板通过串口1发送数据过来Android前端
             if (packet1 != null) {
@@ -230,7 +230,7 @@ public class MainSerialPort extends BaseActivity  implements Observer{
                     //重置倒计时 跳转到无法买水界面
                     initCom105Data(packet1.getData());
                 }else if (Arrays.equals(packet1.getCmd(),new byte[]{0x02,0x04})){
-                    //andorid端主动发送104之后，主控板回复204
+                    //andorid端主动发送104之后，主控板回复204，跳转到IC卡买水或APP买水或现金出水界面
                     initCom204Data();
                 }else if (Arrays.equals(packet1.getCmd(),new byte[]{0x01,0x06})){
                     //
@@ -247,17 +247,18 @@ public class MainSerialPort extends BaseActivity  implements Observer{
                     initCom203Data(packet2.getData());
                 } else  if (Arrays.equals(packet2.getCmd(),new byte[]{0x01,0x04})){
                     String stringWork= DataCalculateUtils.IntToBinary(ByteUtils.byteToInt(packet2.getData().get(45)));
+                    //充值
                     if (DataCalculateUtils.isRechargeData(stringWork,5,6)){
                         responseServer(packet2.getFrame());
                     }
                     //后端主动发104,让关机
                     initCom104Data2(packet2.getData());
                 }else if (Arrays.equals(packet2.getCmd(),new byte[]{0x01,0x02})){
-                    //后端主动发送102
+                    //后端发102，回复202给后端
                     response102(packet2.getFrame());
                     initCom102Data2(packet2.getData());
                 }else if (Arrays.equals(packet2.getCmd(),new byte[]{0x01,0x07})){
-                    //扫码取水，后端主动发送107
+                    //扫码取水，后端主动发送107，回复207给后端,发送104给主控板取水
                     responseSever207(packet2.getFrame());
                     VariableUtil.byteArray.clear();
                     VariableUtil.byteArray=packet2.getData();
@@ -324,16 +325,16 @@ public class MainSerialPort extends BaseActivity  implements Observer{
                     myPager.stopTimer();
                 }else {
                     //给主控板发指令，取水
-                    setBusiness(1);
+                    sendBuyWaterCommandToControlBoard(1);
                 }
             }//配送端APP来扫
             else if (FormatToken.BusinessType==2){
                 //给主控板发指令，取水
-                setBusiness(2);
+                sendBuyWaterCommandToControlBoard(2);
             }
         }
     }
-    private void setBusiness(int business) {
+    private void sendBuyWaterCommandToControlBoard(int business) {
         if (portService != null) {
             try {
                 byte[] frame = FrameUtils.getFrame(mContext);
