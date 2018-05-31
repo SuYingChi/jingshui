@@ -4,7 +4,6 @@ import android.content.Context;
 import android.content.ContextWrapper;
 import android.content.Intent;
 
-import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Environment;
 
@@ -27,31 +26,21 @@ import com.msht.watersystem.Base.BaseActivity;
 import com.msht.watersystem.Manager.GreenDaoManager;
 import com.msht.watersystem.R;
 import com.msht.watersystem.Utils.BitmapUtil;
-import com.msht.watersystem.Utils.BusinessInstruct;
+import com.msht.watersystem.Utils.ConsumeInformationUtils;
 import com.msht.watersystem.Utils.ByteUtils;
 import com.msht.watersystem.Utils.CachePreferencesUtil;
 import com.msht.watersystem.Utils.CreateOrderType;
-import com.msht.watersystem.Utils.FormatCommandUtil;
+import com.msht.watersystem.Utils.FormatInformationBean;
+import com.msht.watersystem.Utils.FormatInformationUtil;
 import com.msht.watersystem.Utils.DataCalculateUtils;
 import com.msht.watersystem.Utils.DateTimeUtils;
-import com.msht.watersystem.Utils.FormatToken;
 import com.msht.watersystem.Utils.VariableUtil;
 import com.msht.watersystem.entity.OrderInfo;
-import com.msht.watersystem.functionActivity.AppNotSufficientActivity;
-import com.msht.watersystem.functionActivity.AppOutWaterActivity;
-import com.msht.watersystem.functionActivity.BuyWaterActivity;
-import com.msht.watersystem.functionActivity.CannotBuyWaterActivity;
-import com.msht.watersystem.functionActivity.CloseSystemActivity;
-import com.msht.watersystem.functionActivity.IcCardoutWaterActivity;
-import com.msht.watersystem.functionActivity.NotSufficientActivity;
-import com.msht.watersystem.functionActivity.DeliverOutWaterActivity;
-import com.msht.watersystem.functionActivity.PaySuccessActivity;
 import com.msht.watersystem.gen.OrderInfoDao;
 import com.msht.watersystem.widget.CustomVideoView;
-import com.msht.watersystem.widget.MyImgScroll;
+import com.msht.watersystem.widget.MyImgScrollViewPager;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -61,7 +50,7 @@ import java.util.Observer;
 public class MainSerialPortActivity extends BaseActivity  implements Observer{
     private static final int CLOSE_MECHINE = 2;
     private CustomVideoView mVideoView;
-    private MyImgScroll myPager;
+    private MyImgScrollViewPager myPager;
     private List<View> imageViewList;
     private ImageView       textView;
     private PortService     portService;
@@ -79,7 +68,7 @@ public class MainSerialPortActivity extends BaseActivity  implements Observer{
         setContentView(R.layout.activity_main_serial_port);
         textView =findViewById(R.id.textView);
         initViewImages();
-        bindPortService();
+        bindAndAddObserverToPortService();
     }
     private void initViewImages() {
         myPager = findViewById(R.id.myvp);
@@ -126,8 +115,8 @@ public class MainSerialPortActivity extends BaseActivity  implements Observer{
             e.printStackTrace();
         }*/
     }
-    private void bindPortService(){
-        serviceConnection = new ComServiceConnection(MainSerialPortActivity.this, new ComServiceConnection.ConnectionCallBack() {
+    private void bindAndAddObserverToPortService(){
+        serviceConnection = new ComServiceConnection(this, new ComServiceConnection.ConnectionCallBack() {
             @Override
             public void onServiceConnected(PortService service) {
                 //此处给portService赋值有如下两种方式
@@ -142,7 +131,7 @@ public class MainSerialPortActivity extends BaseActivity  implements Observer{
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        bindPortService();
+        bindAndAddObserverToPortService();
         if (pageStatus){
             myPager.startTimer();
         }
@@ -179,7 +168,7 @@ public class MainSerialPortActivity extends BaseActivity  implements Observer{
                     //主控板发105到前端，前端发到后端，后端回复205
                     onCom2Received205DataFromServer();
                 }else if (Arrays.equals(packet2.getCmd(),new byte[]{0x02,0x03})){
-                    //前端主动发103给后端，后端回复203过来，保存出水和计费的状态到SP里
+                    //前端主动发103给后端，后端回复203过来，保存出水时间和计费模式，出水量等信息的到SP里
                     onCom2Received203DataFromServer(packet2.getData());
                 } else  if (Arrays.equals(packet2.getCmd(),new byte[]{0x01,0x04})){
                     String stringWork= DataCalculateUtils.IntToBinary(ByteUtils.byteToInt(packet2.getData().get(45)));
@@ -208,12 +197,13 @@ public class MainSerialPortActivity extends BaseActivity  implements Observer{
         }
     }
     private void onCom2Received206DataFromServer(ArrayList<Byte> data) {
-        if (FormatCommandUtil.timeCommand(data)){
-            if (FormatToken.TimeType==1){
+        if (data!=null&&data.size()!=0){
+            FormatInformationUtil.saveTimeInformationToFormatInformation(data);
+            if (FormatInformationBean.TimeType==1){
                 if (!VariableUtil.setTimeStatus){
                     try {
-                        DateTimeUtils.setDateTime(mContext,FormatToken.Year,FormatToken.Month,FormatToken.Day
-                                ,FormatToken.Hour,FormatToken.Minute,FormatToken.Second);
+                        DateTimeUtils.setDateTime(mContext, FormatInformationBean.Year, FormatInformationBean.Month, FormatInformationBean.Day
+                                , FormatInformationBean.Hour, FormatInformationBean.Minute, FormatInformationBean.Second);
                     } catch (IOException e) {
                         e.printStackTrace();
                     } catch (InterruptedException e) {
@@ -227,17 +217,17 @@ public class MainSerialPortActivity extends BaseActivity  implements Observer{
     private void onCom1Received204DataFromControllBoard() {
         if (buyStatus){
             buyStatus=false;
-            if (FormatToken.ConsumptionType==1){
+            if (FormatInformationBean.ConsumptionType==1){
                 Intent intent=new Intent(mContext,IcCardoutWaterActivity.class);
                 startActivityForResult(intent,1);
                 unbindPortServiceAndRemoveObserver();
                 myPager.stopTimer();
-            }else if (FormatToken.ConsumptionType==3){
+            }else if (FormatInformationBean.ConsumptionType==3){
                 Intent intent=new Intent(mContext,AppOutWaterActivity.class);
                 startActivityForResult(intent,1);
                 unbindPortServiceAndRemoveObserver();
                 myPager.stopTimer();
-            }else if (FormatToken.ConsumptionType==5){
+            }else if (FormatInformationBean.ConsumptionType==5){
                 Intent intent=new Intent(mContext,DeliverOutWaterActivity.class);
                 startActivityForResult(intent,1);
                 unbindPortServiceAndRemoveObserver();
@@ -247,13 +237,14 @@ public class MainSerialPortActivity extends BaseActivity  implements Observer{
     }
     //Scan code
     private void onCom2Received107DataFromServer(ArrayList<Byte> data) {
-        if (BusinessInstruct.CalaculateBusiness(data)){
+        if (data!=null&&data.size()!=0){
+            ConsumeInformationUtils.saveConsumptionInformationToFormatInformation(data);
             CachePreferencesUtil.putBoolean(this,CachePreferencesUtil.FIRST_OPEN,false);
             buyStatus=true;
             //民生宝来扫
-            if (FormatToken.BusinessType==1){
+            if (FormatInformationBean.BusinessType==1){
                 //已分为单位
-                if (FormatToken.AppBalance<20){
+                if (FormatInformationBean.AppBalance<20){
                     //提示余额不足
                     Intent intent=new Intent(mContext,AppNotSufficientActivity.class);
                     startActivityForResult(intent,1);
@@ -261,26 +252,26 @@ public class MainSerialPortActivity extends BaseActivity  implements Observer{
                     myPager.stopTimer();
                 }else {
                     //给主控板发指令，取水
-                    sendBuyWaterCommandToControlBoard(1);
+                    sendBuyWaterCommand104ToControlBoard(1);
                 }
             }//配送端APP来扫
-            else if (FormatToken.BusinessType==2){
+            else if (FormatInformationBean.BusinessType==2){
                 //给主控板发指令，取水
-                sendBuyWaterCommandToControlBoard(2);
+                sendBuyWaterCommand104ToControlBoard(2);
             }
         }
     }
-    private void sendBuyWaterCommandToControlBoard(int business) {
+    private void sendBuyWaterCommand104ToControlBoard(int business) {
         if (portService != null) {
             try {
                 byte[] frame = FrameUtils.getFrame(mContext);
                 byte[] type = new byte[]{0x01, 0x04};
                 if (business==1){
-                    byte[] data= FormatCommandUtil.setTransactionType01();
+                    byte[] data= FormatInformationUtil.setConsumeType01();
                     byte[] packet = PacketUtils.makePackage(frame, type, data);
                     portService.sendToControlBoard(packet);
                 }else if (business==2){
-                    byte[] data= FormatCommandUtil.setTransactionType02();
+                    byte[] data= FormatInformationUtil.setConsumeType02();
                     byte[] packet = PacketUtils.makePackage(frame, type, data);
                     portService.sendToControlBoard(packet);
                 }
@@ -309,15 +300,16 @@ public class MainSerialPortActivity extends BaseActivity  implements Observer{
         }
     }
     private void onCom2Received203DataFromServer(ArrayList<Byte> data) {
-        setEquipmentData(data.get(4));
+       // setEquipmentData(data.get(4));
         try {
-            if(FormatCommandUtil.equipmentData(data)){
-                String waterVolume=String.valueOf(FormatToken.WaterNum);
-                String Time=String.valueOf(FormatToken.OutWaterTime);
-                CachePreferencesUtil.putStringData(this,CachePreferencesUtil.Volume,waterVolume);
-                CachePreferencesUtil.putStringData(this,CachePreferencesUtil.outWaterTime,Time);
-                CachePreferencesUtil.putChargeMode(this,CachePreferencesUtil.ChargeMode,FormatToken.ChargeMode);
-                CachePreferencesUtil.putChargeMode(this,CachePreferencesUtil.ShowTds,FormatToken.ShowTDS);
+            if(data!=null&&data.size()!=0){
+                FormatInformationUtil.saveDeviceInformationToFormatInformation(data);
+                String waterVolume=String.valueOf(FormatInformationBean.WaterNum);
+                String time=String.valueOf(FormatInformationBean.OutWaterTime);
+                CachePreferencesUtil.putStringData(this,CachePreferencesUtil.VOLUME,waterVolume);
+                CachePreferencesUtil.putStringData(this,CachePreferencesUtil.OUT_WATER_TIME,time);
+                CachePreferencesUtil.putChargeMode(this,CachePreferencesUtil.CHARGEMODE, FormatInformationBean.ChargeMode);
+                CachePreferencesUtil.putChargeMode(this,CachePreferencesUtil.SHOWTDS, FormatInformationBean.ShowTDS);
                 VariableUtil.setEquipmentStatus=false;
             }
         }catch (Exception e){
@@ -329,7 +321,7 @@ public class MainSerialPortActivity extends BaseActivity  implements Observer{
             try {
                 byte[] frame = FrameUtils.getFrame(mContext);
                 byte[] type = new byte[]{0x01, 0x04};
-                byte[] data= FormatCommandUtil.setEquipmentParameter(aByte);
+                byte[] data= FormatInformationUtil.setEquipmentParameter(aByte);
                 byte[] packet = PacketUtils.makePackage(frame, type, data);
                 portService.sendToControlBoard(packet);
             } catch (CRCException e) {
@@ -358,7 +350,7 @@ public class MainSerialPortActivity extends BaseActivity  implements Observer{
         }
     }
     private void onCom2Received102DataFromServer(ArrayList<Byte> data) {
-        if (BusinessInstruct.ControlModel(mContext,data)){
+        if (ConsumeInformationUtils.controlModel(mContext,data)){
            /*  .....*/
         }
     }
@@ -391,26 +383,27 @@ public class MainSerialPortActivity extends BaseActivity  implements Observer{
     }
     private void onCom1Received104DataFromControllBoard(ArrayList<Byte> data) {
         try {
-            if(FormatCommandUtil.convertCom1ReceivedDataToFormatToken(data)){
-                if (FormatToken.Balance<=1){
+            if(data!=null&&data.size()>0){
+                FormatInformationUtil.saveCom1ReceivedDataToFormatInformation(data);
+                if (FormatInformationBean.Balance<=1){
                     Intent intent=new Intent(mContext,NotSufficientActivity.class);
                     startActivityForResult(intent,1);
                     unbindPortServiceAndRemoveObserver();
                     myPager.stopTimer();
                 }else {
-                    String stringWork= DataCalculateUtils.IntToBinary(FormatToken.Updateflag3);
+                    String stringWork= DataCalculateUtils.IntToBinary(FormatInformationBean.Updateflag3);
                     if (!DataCalculateUtils.isEvent(stringWork,3)) {
-                        if (FormatToken.ConsumptionType == 1) {
+                        if (FormatInformationBean.ConsumptionType == 1) {
                             Intent intent = new Intent(mContext, IcCardoutWaterActivity.class);
                             startActivityForResult(intent, 1);
                             unbindPortServiceAndRemoveObserver();
                             myPager.stopTimer();
-                        } else if (FormatToken.ConsumptionType == 3) {
+                        } else if (FormatInformationBean.ConsumptionType == 3) {
                             Intent intent = new Intent(mContext, AppOutWaterActivity.class);
                             startActivityForResult(intent, 1);
                             unbindPortServiceAndRemoveObserver();
                             myPager.stopTimer();
-                        } else if (FormatToken.ConsumptionType == 5) {
+                        } else if (FormatInformationBean.ConsumptionType == 5) {
                             Intent intent = new Intent(mContext, DeliverOutWaterActivity.class);
                             startActivityForResult(intent, 1);
                             unbindPortServiceAndRemoveObserver();
@@ -419,11 +412,11 @@ public class MainSerialPortActivity extends BaseActivity  implements Observer{
                     }else {
                         //刷卡结账
                         calculateData();    //没联网计算取缓存数据
-                        double consumption=FormatToken.ConsumptionAmount/100.0;
-                        double waterVolume=FormatToken.WaterYield*volume;
+                        double consumption= FormatInformationBean.ConsumptionAmount/100.0;
+                        double waterVolume= FormatInformationBean.WaterYield*volume;
                         String afterAmount=String.valueOf(DataCalculateUtils.TwoDecinmal2(consumption));
                         String afterWater=String.valueOf(DataCalculateUtils.TwoDecinmal2(waterVolume));
-                        String mAccount=String.valueOf(FormatToken.StringCardNo);
+                        String mAccount=String.valueOf(FormatInformationBean.StringCardNo);
                         Intent intent=new Intent(mContext,PaySuccessActivity.class);
                         intent.putExtra("afterAmount",afterAmount) ;
                         intent.putExtra("afetrWater",afterWater);
@@ -440,8 +433,8 @@ public class MainSerialPortActivity extends BaseActivity  implements Observer{
         }
     }
     private void calculateData() {
-        String waterVolume=CachePreferencesUtil.getStringData(this,CachePreferencesUtil.Volume,"5");
-        String time=CachePreferencesUtil.getStringData(this,CachePreferencesUtil.outWaterTime,"30");
+        String waterVolume=CachePreferencesUtil.getStringData(this,CachePreferencesUtil.VOLUME,"5");
+        String time=CachePreferencesUtil.getStringData(this,CachePreferencesUtil.OUT_WATER_TIME,"30");
         int mVolume=Integer.valueOf(waterVolume);
         int mTime=Integer.valueOf(time);
         volume=DataCalculateUtils.getWaterVolume(mVolume,mTime);
@@ -451,8 +444,9 @@ public class MainSerialPortActivity extends BaseActivity  implements Observer{
     }
     private void onCom1Received105DataFromControllBoard(ArrayList<Byte> data) {
         try {
-            if (FormatCommandUtil.convertStatusCommandToFormatToken(data)){
-                String stringWork= DataCalculateUtils.IntToBinary(FormatToken.WorkState);
+            if (data!=null&&data.size()!=0){
+                FormatInformationUtil.saveStatusInformationToFormatInformation(data);
+                String stringWork= DataCalculateUtils.IntToBinary(FormatInformationBean.WorkState);
                 if (!DataCalculateUtils.isEvent(stringWork,6)){
                     Intent intent=new Intent(mContext, CannotBuyWaterActivity.class);
                     startActivityForResult(intent,1);

@@ -10,7 +10,7 @@ import com.mcloyal.serialport.utils.ComServiceConnection;
 import com.msht.watersystem.Base.BaseActivity;
 import com.msht.watersystem.R;
 import com.msht.watersystem.Utils.CachePreferencesUtil;
-import com.msht.watersystem.Utils.FormatCommandUtil;
+import com.msht.watersystem.Utils.FormatInformationUtil;
 import com.msht.watersystem.widget.LoadingDialog;
 
 import java.util.ArrayList;
@@ -36,8 +36,8 @@ public class SplashActivity extends BaseActivity  implements Observer{
     private void initData() {
         boolean isFirstOpen = CachePreferencesUtil.getBoolean(this, CachePreferencesUtil.FIRST_OPEN, true);
         if (isFirstOpen){
-            CachePreferencesUtil.putStringData(this,CachePreferencesUtil.Volume,"5");
-            CachePreferencesUtil.putStringData(this,CachePreferencesUtil.outWaterTime,"30");
+            CachePreferencesUtil.putStringData(this,CachePreferencesUtil.VOLUME,"5");
+            CachePreferencesUtil.putStringData(this,CachePreferencesUtil.OUT_WATER_TIME,"30");
         }
     }
 
@@ -61,7 +61,8 @@ public class SplashActivity extends BaseActivity  implements Observer{
         }
     }
     private void onCom1Received105FromControllBoard(ArrayList<Byte> data) {      //接收到主板心跳指令
-        if (FormatCommandUtil.convertStatusCommandToFormatToken(data)){
+        if (data!=null&&data.size()!=0){
+            FormatInformationUtil.saveStatusInformationToFormatInformation(data);
             if (loadingdialog.isShowing()&&loadingdialog!=null){
                 loadingdialog.dismiss();
             }

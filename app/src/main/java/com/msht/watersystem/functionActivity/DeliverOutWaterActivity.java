@@ -23,12 +23,12 @@ import com.mcloyal.serialport.utils.FrameUtils;
 import com.mcloyal.serialport.utils.PacketUtils;
 import com.msht.watersystem.Base.BaseActivity;
 import com.msht.watersystem.R;
-import com.msht.watersystem.Utils.BusinessInstruct;
+import com.msht.watersystem.Utils.ConsumeInformationUtils;
 import com.msht.watersystem.Utils.ByteUtils;
 import com.msht.watersystem.Utils.CachePreferencesUtil;
-import com.msht.watersystem.Utils.FormatCommandUtil;
+import com.msht.watersystem.Utils.FormatInformationBean;
+import com.msht.watersystem.Utils.FormatInformationUtil;
 import com.msht.watersystem.Utils.DataCalculateUtils;
-import com.msht.watersystem.Utils.FormatToken;
 import com.msht.watersystem.Utils.VariableUtil;
 import com.msht.watersystem.widget.LEDView;
 
@@ -95,10 +95,10 @@ public class DeliverOutWaterActivity extends BaseActivity implements Observer{
         btn_tip=findViewById(R.id.id_tip_button);
         tv_finishOrder=(TextView)findViewById(R.id.id_finish_order);
         tv_time=(TextView)findViewById(R.id.id_time);
-        double weight= DataCalculateUtils.TwoDecinmal2(FormatToken.Waterweight/100.0);
-        tv_CardNo.setText(String.valueOf(FormatToken.StringCardNo));
+        double weight= DataCalculateUtils.TwoDecinmal2(FormatInformationBean.Waterweight/100.0);
+        tv_CardNo.setText(String.valueOf(FormatInformationBean.StringCardNo));
         tv_volume.setText(String.valueOf(weight)+"升");
-        tv_orderNo.setText(FormatToken.OrderNoString);
+        tv_orderNo.setText(FormatInformationBean.OrderNoString);
     }
     private void bindPortService(){
         serviceConnection = new ComServiceConnection(DeliverOutWaterActivity.this, new ComServiceConnection.ConnectionCallBack() {
@@ -162,8 +162,8 @@ public class DeliverOutWaterActivity extends BaseActivity implements Observer{
         }
     }
     private void onCom2Received102DataFromServer(ArrayList<Byte> data) {
-        if (BusinessInstruct.ControlModel(mContext,data)){
-            if (FormatToken.ShowTDS==0){
+        if (ConsumeInformationUtils.controlModel(mContext,data)){
+            if (FormatInformationBean.ShowTDS==0){
                 layout_TDS.setVisibility(View.GONE);
             }else {
                 layout_TDS.setVisibility(View.VISIBLE);
@@ -172,10 +172,11 @@ public class DeliverOutWaterActivity extends BaseActivity implements Observer{
     }
     private void onCom1Received105DataFromControllBoard(ArrayList<Byte> data) {
         try {
-            if (FormatCommandUtil.convertStatusCommandToFormatToken(data)){
-                tv_InTDS.setText(String.valueOf(FormatToken.OriginTDS));
-                tv_OutTDS.setText(String.valueOf(FormatToken.PurificationTDS));
-                String stringWork= DataCalculateUtils.IntToBinary(FormatToken.WorkState);
+            if (data!=null&&data.size()!=0){
+                FormatInformationUtil.saveStatusInformationToFormatInformation(data);
+                tv_InTDS.setText(String.valueOf(FormatInformationBean.OriginTDS));
+                tv_OutTDS.setText(String.valueOf(FormatInformationBean.PurificationTDS));
+                String stringWork= DataCalculateUtils.IntToBinary(FormatInformationBean.WorkState);
                 if (!DataCalculateUtils.isEvent(stringWork,6)){
                     settleAccount();
                 }
@@ -186,7 +187,7 @@ public class DeliverOutWaterActivity extends BaseActivity implements Observer{
     }
     private void onCom1Received204DataFromControllBoard() {
         if (Currentstatus){
-            volume= DataCalculateUtils.getWaterVolume(FormatToken.WaterNum,FormatToken.OutWaterTime);
+            volume= DataCalculateUtils.getWaterVolume(FormatInformationBean.WaterNum, FormatInformationBean.OutWaterTime);
             handler.post(runnable);
             Currentstatus=false;
         }else {
@@ -198,40 +199,42 @@ public class DeliverOutWaterActivity extends BaseActivity implements Observer{
         }
     }
     private void onCom1Received104DataFromControllBoard(ArrayList<Byte> data) {
-        if (FormatCommandUtil.convertCom1ReceivedDataToFormatToken(data)){
+
+        if ( data!=null&&data.size()>0){
+            FormatInformationUtil.saveCom1ReceivedDataToFormatInformation(data);
             int businessType=ByteUtils.byteToInt(data.get(15));
             if (businessType==3){
                 removeback();
-                int amountAfter=FormatToken.AfterAmount;
-                int consumption=FormatToken.ConsumptionAmount;
-                int waterWeight=FormatToken.WaterYield;
+                int amountAfter= FormatInformationBean.AfterAmount;
+                int consumption= FormatInformationBean.ConsumptionAmount;
+                int waterWeight= FormatInformationBean.WaterYield;
                 if (consumption<=0){
                     tv_title.setText("取水未完成");
-                    tv_finishOrder.setText("当前订单"+FormatToken.OrderNoString+"未取水，请再次扫码取水");
+                    tv_finishOrder.setText("当前订单"+ FormatInformationBean.OrderNoString+"未取水，请再次扫码取水");
                 }else {
                     tv_title.setText("取水完成");
-                    tv_finishOrder.setText("当前订单"+FormatToken.OrderNoString+"取水结束");
+                    tv_finishOrder.setText("当前订单"+ FormatInformationBean.OrderNoString+"取水结束");
                 }
                 settleServer(amountAfter,consumption,waterWeight);
             }else if (businessType==1){
-                if (FormatToken.Balance<30){
+                if (FormatInformationBean.Balance<30){
                     Intent intent=new Intent(mContext,NotSufficientActivity.class);
                     startActivityForResult(intent,1);
                     finish();
                 }else {
-                    String stringWork= DataCalculateUtils.IntToBinary(FormatToken.Updateflag3);
+                    String stringWork= DataCalculateUtils.IntToBinary(FormatInformationBean.Updateflag3);
                     if (!DataCalculateUtils.isEvent(stringWork,3)){
                         Intent intent=new Intent(mContext,IcCardoutWaterActivity.class);
                         startActivityForResult(intent,1);
                         finish();
                     }else {
                         //刷卡结账
-                        CalculateData();    //没联网计算取缓存数据
-                        double consumption=FormatToken.ConsumptionAmount/100.0;
-                        double waterVolume=FormatToken.WaterYield*volume;
+                        calculateData();    //没联网计算取缓存数据
+                        double consumption= FormatInformationBean.ConsumptionAmount/100.0;
+                        double waterVolume= FormatInformationBean.WaterYield*volume;
                         String afterAmount=String.valueOf(DataCalculateUtils.TwoDecinmal2(consumption));
                         String afterWater=String.valueOf(DataCalculateUtils.TwoDecinmal2(waterVolume));
-                        String mAccount=String.valueOf(FormatToken.StringCardNo);
+                        String mAccount=String.valueOf(FormatInformationBean.StringCardNo);
                         Intent intent=new Intent(mContext,PaySuccessActivity.class);
                         intent.putExtra("afterAmount",afterAmount) ;
                         intent.putExtra("afetrWater",afterWater);
@@ -244,11 +247,11 @@ public class DeliverOutWaterActivity extends BaseActivity implements Observer{
             }
         }
     }
-    private void CalculateData() {
-        String waterVolume= CachePreferencesUtil.getStringData(this,CachePreferencesUtil.Volume,"5");
-        String Time=CachePreferencesUtil.getStringData(this,CachePreferencesUtil.outWaterTime,"30");
-        int mVolume=Integer.valueOf(waterVolume).intValue();
-        int mTime=Integer.valueOf(Time).intValue();
+    private void calculateData() {
+        String waterVolume= CachePreferencesUtil.getStringData(this,CachePreferencesUtil.VOLUME,"5");
+        String time=CachePreferencesUtil.getStringData(this,CachePreferencesUtil.OUT_WATER_TIME,"30");
+        int mVolume=Integer.valueOf(waterVolume);
+        int mTime=Integer.valueOf(time);
         volume=DataCalculateUtils.getWaterVolume(mVolume,mTime);
     }
     private void onCom2Received207DataFromServer() {
@@ -265,7 +268,7 @@ public class DeliverOutWaterActivity extends BaseActivity implements Observer{
             try {
                 byte[] frame = FrameUtils.getFrame(mContext);
                 byte[] type = new byte[]{0x01, 0x04};
-                byte[] data= FormatCommandUtil.settle();
+                byte[] data= FormatInformationUtil.settle();
                 byte[] packet = PacketUtils.makePackage(frame, type, data);
                 portService.sendToControlBoard(packet);
             } catch (CRCException e) {
@@ -300,7 +303,7 @@ public class DeliverOutWaterActivity extends BaseActivity implements Observer{
                     byte[] packet = PacketUtils.makePackage(frame, type, data);
                     portService.sendToServer(packet);
                 }else {
-                    byte[] data= BusinessInstruct.settleData(FormatToken.phoneType,FormatToken.orderType);
+                    byte[] data= ConsumeInformationUtils.settleData(FormatInformationBean.phoneType, FormatInformationBean.orderType);
                     byte[] consumption= ByteUtils.intToByte4(amount);
                     byte[] afterConsumption=ByteUtils.intToByte4(Afteramount);
                     byte[] water=ByteUtils.intToByte2(waterWeight);

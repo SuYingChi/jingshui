@@ -15,11 +15,11 @@ import com.mcloyal.serialport.utils.ComServiceConnection;
 import com.mcloyal.serialport.utils.PacketUtils;
 import com.msht.watersystem.Base.BaseActivity;
 import com.msht.watersystem.R;
-import com.msht.watersystem.Utils.BusinessInstruct;
+import com.msht.watersystem.Utils.ConsumeInformationUtils;
 import com.msht.watersystem.Utils.ByteUtils;
 import com.msht.watersystem.Utils.DataCalculateUtils;
-import com.msht.watersystem.Utils.FormatToken;
-import com.msht.watersystem.Utils.FormatCommandUtil;
+import com.msht.watersystem.Utils.FormatInformationBean;
+import com.msht.watersystem.Utils.FormatInformationUtil;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -125,8 +125,8 @@ public class CannotBuyWaterActivity extends BaseActivity implements Observer {
         }
     }
     private void onCom2Received102dataFromServer(ArrayList<Byte> data) {
-        if (BusinessInstruct.ControlModel(mContext,data)){
-            if (FormatToken.ShowTDS==0){
+        if (ConsumeInformationUtils.controlModel(mContext,data)){
+            if (FormatInformationBean.ShowTDS==0){
                 layout_TDS.setVisibility(View.GONE);
             }else {
                 layout_TDS.setVisibility(View.VISIBLE);
@@ -136,10 +136,12 @@ public class CannotBuyWaterActivity extends BaseActivity implements Observer {
     private void onCom1Received104dataFromControllBoard() {}
     private void onCom1Received105dataFromControllBoard(ArrayList<Byte> data) {
         try {
-            if (FormatCommandUtil.convertStatusCommandToFormatToken(data)){
-                tv_InTDS.setText(String.valueOf(FormatToken.OriginTDS));
-                tv_OutTDS.setText(String.valueOf(FormatToken.PurificationTDS));
-                String stringWork= DataCalculateUtils.IntToBinary(FormatToken.WorkState);
+
+            if (data!=null&&data.size()!=0){
+                FormatInformationUtil.saveStatusInformationToFormatInformation(data);
+                tv_InTDS.setText(String.valueOf(FormatInformationBean.OriginTDS));
+                tv_OutTDS.setText(String.valueOf(FormatInformationBean.PurificationTDS));
+                String stringWork= DataCalculateUtils.IntToBinary(FormatInformationBean.WorkState);
                 if (DataCalculateUtils.isEvent(stringWork,6)){
                     finish();
                 }

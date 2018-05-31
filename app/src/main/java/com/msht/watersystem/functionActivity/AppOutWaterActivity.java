@@ -7,7 +7,6 @@ import android.os.Message;
 import android.os.Bundle;
 import android.view.KeyEvent;
 import android.view.View;
-import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.mcloyal.serialport.constant.Cmd;
@@ -21,20 +20,18 @@ import com.mcloyal.serialport.utils.FrameUtils;
 import com.mcloyal.serialport.utils.PacketUtils;
 import com.msht.watersystem.Base.BaseActivity;
 import com.msht.watersystem.R;
-import com.msht.watersystem.Utils.BusinessInstruct;
+import com.msht.watersystem.Utils.ConsumeInformationUtils;
 import com.msht.watersystem.Utils.ByteUtils;
 import com.msht.watersystem.Utils.CachePreferencesUtil;
-import com.msht.watersystem.Utils.FormatCommandUtil;
+import com.msht.watersystem.Utils.FormatInformationBean;
+import com.msht.watersystem.Utils.FormatInformationUtil;
 import com.msht.watersystem.Utils.DataCalculateUtils;
-import com.msht.watersystem.Utils.FormatToken;
 import com.msht.watersystem.Utils.VariableUtil;
 import com.msht.watersystem.widget.LEDView;
-import com.msht.watersystem.widget.MyImgScroll;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
 
@@ -78,7 +75,7 @@ public class AppOutWaterActivity extends BaseActivity implements Observer{
                     break;
                 case 2:
                     activity.handler.removeCallbacks(activity.runnable);
-                    double waterVolume=FormatToken.WaterYield*activity.volume;
+                    double waterVolume= FormatInformationBean.WaterYield*activity.volume;
                     String Water=String.valueOf(DataCalculateUtils.TwoDecinmal2(waterVolume));
                     activity.le_water.setLedView(activity.getString(R.string.default_bg_digital),String.valueOf(Water));
                     break;
@@ -119,9 +116,9 @@ public class AppOutWaterActivity extends BaseActivity implements Observer{
         tv_CardNo=(TextView)findViewById(R.id.id_tv_cardno);
         le_amount=(LEDView)findViewById(R.id.id_pay_amount);
         le_water=(LEDView)findViewById(R.id.id_waster_yield);
-        double balance= DataCalculateUtils.TwoDecinmal2(FormatToken.AppBalance/100.0);
+        double balance= DataCalculateUtils.TwoDecinmal2(FormatInformationBean.AppBalance/100.0);
         tv_Balalance.setText(String.valueOf(balance)+"元");
-        mAccount=String.valueOf(FormatToken.StringCardNo);
+        mAccount=String.valueOf(FormatInformationBean.StringCardNo);
         tv_CardNo.setText(mAccount);
     }
     @Override
@@ -218,8 +215,8 @@ public class AppOutWaterActivity extends BaseActivity implements Observer{
         }
     }
     private void onCom2Received102DataFromServer(ArrayList<Byte> data) {
-        if (BusinessInstruct.ControlModel(mContext,data)){
-            if (FormatToken.ShowTDS==0){
+        if (ConsumeInformationUtils.controlModel(mContext,data)){
+            if (FormatInformationBean.ShowTDS==0){
                 layout_TDS.setVisibility(View.GONE);
             }else {
                 layout_TDS.setVisibility(View.VISIBLE);
@@ -228,10 +225,11 @@ public class AppOutWaterActivity extends BaseActivity implements Observer{
     }
     private void onCom1Received105DataFromControllBoard(ArrayList<Byte> data) {
         try {
-            if (FormatCommandUtil.convertStatusCommandToFormatToken(data)){
-                tv_InTDS.setText(String.valueOf(FormatToken.OriginTDS));
-                tv_OutTDS.setText(String.valueOf(FormatToken.PurificationTDS));
-                String stringWork= DataCalculateUtils.IntToBinary(FormatToken.WorkState);
+            if (data!=null&&data.size()!=0){
+                FormatInformationUtil.saveStatusInformationToFormatInformation(data);
+                tv_InTDS.setText(String.valueOf(FormatInformationBean.OriginTDS));
+                tv_OutTDS.setText(String.valueOf(FormatInformationBean.PurificationTDS));
+                String stringWork= DataCalculateUtils.IntToBinary(FormatInformationBean.WorkState);
                 if (!DataCalculateUtils.isEvent(stringWork,6)){
                     if (ReceiveState!=0){
                         //扫码打水过程，水量不足，自动结账
@@ -251,7 +249,8 @@ public class AppOutWaterActivity extends BaseActivity implements Observer{
         }
     }
     private void onCom1Received104DataFromControllBoard(ArrayList<Byte> data) {
-            if(FormatCommandUtil.convertCom1ReceivedDataToFormatToken(data)){
+            if(  data!=null&&data.size()>0){
+                FormatInformationUtil.saveCom1ReceivedDataToFormatInformation(data);
                 int businessType=ByteUtils.byteToInt(data.get(15));
                 //扫码结账
                 if (businessType==3){
@@ -259,33 +258,33 @@ public class AppOutWaterActivity extends BaseActivity implements Observer{
                         Message msg=new Message();
                         msg.what=2;
                         handlerStop.sendMessage(msg);
-                        int amountAfter=FormatToken.AfterAmount;
-                        int consumption=FormatToken.ConsumptionAmount;
-                        int Charge= CachePreferencesUtil.getChargeMode(this,CachePreferencesUtil.ChargeMode,0);
+                        int amountAfter= FormatInformationBean.AfterAmount;
+                        int consumption= FormatInformationBean.ConsumptionAmount;
+                        int Charge= CachePreferencesUtil.getChargeMode(this,CachePreferencesUtil.CHARGEMODE,0);
                         if (Charge!=1){
-                            FormatToken.AppBalance=FormatToken.AppBalance-consumption;
+                            FormatInformationBean.AppBalance= FormatInformationBean.AppBalance-consumption;
                         }
                         settleServer(amountAfter,consumption);
                     }else {
                         Message msg=new Message();
                         msg.what=2;
                         handlerStop.sendMessage(msg);
-                        int amountAfter=FormatToken.AfterAmount;
-                        int consumption=FormatToken.ConsumptionAmount;
-                        int Charge= CachePreferencesUtil.getChargeMode(this,CachePreferencesUtil.ChargeMode,0);
+                        int amountAfter= FormatInformationBean.AfterAmount;
+                        int consumption= FormatInformationBean.ConsumptionAmount;
+                        int Charge= CachePreferencesUtil.getChargeMode(this,CachePreferencesUtil.CHARGEMODE,0);
                         if (Charge!=1){
-                            FormatToken.AppBalance=FormatToken.AppBalance-consumption;
+                            FormatInformationBean.AppBalance= FormatInformationBean.AppBalance-consumption;
                         }
                         settleServer(amountAfter,consumption);
                     }
                 }else if (businessType==1){
-                    if (FormatToken.Balance<=1){
+                    if (FormatInformationBean.Balance<=1){
                         Intent intent=new Intent(mContext,NotSufficientActivity.class);
                         startActivityForResult(intent,1);
                         myCountDownTimer.cancel();
                         finish();
                     }else {
-                        String stringWork= DataCalculateUtils.IntToBinary(FormatToken.Updateflag3);
+                        String stringWork= DataCalculateUtils.IntToBinary(FormatInformationBean.Updateflag3);
                         if (!DataCalculateUtils.isEvent(stringWork,3)){
                             Intent intent=new Intent(mContext,IcCardoutWaterActivity.class);
                             startActivityForResult(intent,1);
@@ -293,11 +292,11 @@ public class AppOutWaterActivity extends BaseActivity implements Observer{
                         }else {
                             //刷卡结账
                             CalculateData();    //没联网计算取缓存数据
-                            double consumption=FormatToken.ConsumptionAmount/100.0;
+                            double consumption= FormatInformationBean.ConsumptionAmount/100.0;
                             double waterVolume=consumption/0.3;
                             String afterAmount=String.valueOf(DataCalculateUtils.TwoDecinmal2(consumption));
                             String afterWater=String.valueOf(DataCalculateUtils.TwoDecinmal2(waterVolume));
-                            String mAccount=String.valueOf(FormatToken.StringCardNo);
+                            String mAccount=String.valueOf(FormatInformationBean.StringCardNo);
                             Intent intent=new Intent(mContext,PaySuccessActivity.class);
                             intent.putExtra("afterAmount",afterAmount) ;
                             intent.putExtra("afetrWater",afterWater);
@@ -311,8 +310,8 @@ public class AppOutWaterActivity extends BaseActivity implements Observer{
             }
     }
     private void onCom2Received207DataFromServer() {
-        double consumption=FormatToken.ConsumptionAmount/100.0;
-        double waterVolume=FormatToken.WaterYield*volume;
+        double consumption= FormatInformationBean.ConsumptionAmount/100.0;
+        double waterVolume= FormatInformationBean.WaterYield*volume;
         afterAmount=String.valueOf(DataCalculateUtils.TwoDecinmal2(consumption));
         if (waterVolume==0){
             afterAmount="0.0";
@@ -328,8 +327,8 @@ public class AppOutWaterActivity extends BaseActivity implements Observer{
     }
     private void onCom1Received204DataFromControllBoard() {
         if (Currentstatus){
-            volume=DataCalculateUtils.getWaterVolume(FormatToken.WaterNum,FormatToken.OutWaterTime);
-            priceNum=DataCalculateUtils.getWaterPrice(FormatToken.PriceNum);
+            volume=DataCalculateUtils.getWaterVolume(FormatInformationBean.WaterNum, FormatInformationBean.OutWaterTime);
+            priceNum=DataCalculateUtils.getWaterPrice(FormatInformationBean.PriceNum);
             handler.post(runnable);
             Currentstatus=false;
         }else {
@@ -351,8 +350,8 @@ public class AppOutWaterActivity extends BaseActivity implements Observer{
         }
     }
     private void CalculateData() {
-        String waterVolume=CachePreferencesUtil.getStringData(this,CachePreferencesUtil.Volume,"5");
-        String Time=CachePreferencesUtil.getStringData(this,CachePreferencesUtil.outWaterTime,"30");
+        String waterVolume=CachePreferencesUtil.getStringData(this,CachePreferencesUtil.VOLUME,"5");
+        String Time=CachePreferencesUtil.getStringData(this,CachePreferencesUtil.OUT_WATER_TIME,"30");
         int mVolume=Integer.parseInt(waterVolume);
         int mTime=Integer.parseInt(Time);
         volume=DataCalculateUtils.getWaterVolume(mVolume,mTime);
@@ -366,7 +365,7 @@ public class AppOutWaterActivity extends BaseActivity implements Observer{
                     byte[] data= DataCalculateUtils.ArrayToByte(VariableUtil.byteArray);
                     byte[] consumption= ByteUtils.intToByte4(amount);
                     byte[] afterConsumption=ByteUtils.intToByte4(Afteramount);
-                    byte[] water=ByteUtils.intToByte2(FormatToken.WaterYield);
+                    byte[] water=ByteUtils.intToByte2(FormatInformationBean.WaterYield);
                     data[13]=consumption[0];
                     data[14]=consumption[1];
                     data[15]=consumption[2];
@@ -380,10 +379,10 @@ public class AppOutWaterActivity extends BaseActivity implements Observer{
                     byte[] packet = PacketUtils.makePackage(frame, type, data);
                     portService.sendToServer(packet);
                 }else {
-                    byte[] data= BusinessInstruct.settleData(FormatToken.phoneType,FormatToken.orderType);
+                    byte[] data= ConsumeInformationUtils.settleData(FormatInformationBean.phoneType, FormatInformationBean.orderType);
                     byte[] consumption= ByteUtils.intToByte4(amount);
                     byte[] afterConsumption=ByteUtils.intToByte4(Afteramount);
-                    byte[] water=ByteUtils.intToByte2(FormatToken.WaterYield);
+                    byte[] water=ByteUtils.intToByte2(FormatInformationBean.WaterYield);
                     data[13]=consumption[0];
                     data[14]=consumption[1];
                     data[15]=consumption[2];
@@ -414,7 +413,7 @@ public class AppOutWaterActivity extends BaseActivity implements Observer{
             try {
                 byte[] frame = FrameUtils.getFrame(mContext);
                 byte[] type = new byte[]{0x01, 0x04};
-                byte[] data= FormatCommandUtil.settle();
+                byte[] data= FormatInformationUtil.settle();
                 byte[] packet = PacketUtils.makePackage(frame, type, data);
                 portService.sendToControlBoard(packet);
             } catch (CRCException e) {

@@ -3,11 +3,9 @@ package com.msht.watersystem.Utils;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.text.TextUtils;
 import android.util.Base64;
 
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 
 /**
@@ -15,62 +13,60 @@ import java.io.ByteArrayOutputStream;
  */
 
 public class CachePreferencesUtil {
-    private static final String spFist="open_app";
-    private static final String spFileName = "AppData";
+    private static final String SP_FIST ="open_app";
+    private static final String SP_FILE_NAME = "AppData";
     public static final String FIRST_OPEN = "first_open";
-    public static final String Volume="volume";
-    public static final String outWaterTime="time";
-    public static final String ChargeMode="chargemode";
-    public static final String ShowTds="showtds";
+    public static final String VOLUME ="volume";
+    public static final String OUT_WATER_TIME ="time";
+    public static final String CHARGEMODE ="chargemode";
+    public static final String SHOWTDS ="showtds";
 
     public static Boolean getBoolean(Context context, String strKey,
                                      Boolean strDefault) {//strDefault  boolean: Value to return if this preference does not exist.
         SharedPreferences setPreferences = context.getSharedPreferences(
-                spFist, Context.MODE_PRIVATE);
-        Boolean result = setPreferences.getBoolean(strKey, strDefault);
-        return result;
+                SP_FIST, Context.MODE_PRIVATE);
+        return setPreferences.getBoolean(strKey, strDefault);
     }
     public static void putBoolean(Context context, String strKey,
                                   Boolean strData) {
         SharedPreferences activityPreferences = context.getSharedPreferences(
-                spFist, Context.MODE_PRIVATE);
+                SP_FIST, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = activityPreferences.edit();
         editor.putBoolean(strKey, strData);
-        editor.commit();
+        editor.apply();
     }
 
     public static int getChargeMode(Context context,String strKey,int strDefault){
         SharedPreferences setPreferences = context.getSharedPreferences(
-                spFileName, Context.MODE_PRIVATE);
-        int result = setPreferences.getInt(strKey, strDefault);
-        return result;
+                SP_FILE_NAME, Context.MODE_PRIVATE);
+        return setPreferences.getInt(strKey, strDefault);
     }
     public static void putChargeMode(Context context, String strKey, int strData){
             SharedPreferences activityPreferences = context.getSharedPreferences(
-                    spFileName, Context.MODE_PRIVATE);
+                    SP_FILE_NAME, Context.MODE_PRIVATE);
             SharedPreferences.Editor editor = activityPreferences.edit();
             editor.putInt(strKey, strData);
-            editor.commit();
+            editor.apply();
     }
     public static String getStringData(Context context, String strKey,
                                        String strDefault) {//strDefault  boolean: Value to return if this preference does not exist.
         SharedPreferences setPreferences = context.getSharedPreferences(
-                spFileName, Context.MODE_PRIVATE);
-        String result = setPreferences.getString(strKey, strDefault);
-        return result;
+                SP_FILE_NAME, Context.MODE_PRIVATE);
+        return setPreferences.getString(strKey, strDefault);
+
     }
     public static void putStringData(Context context, String strKey,
                                      String strData) {
         SharedPreferences activityPreferences = context.getSharedPreferences(
-                spFileName, Context.MODE_PRIVATE);
+                SP_FILE_NAME, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = activityPreferences.edit();
         editor.putString(strKey, strData);
-        editor.commit();
+        editor.apply();
     }
 
-    public static boolean saveBitMap(Context context,String strKey,Bitmap bitmap) {
+    public static boolean savebitmapToShareprefence(Context context, String strKey, Bitmap bitmap) {
        // Bitmap bitmap = BitmapFactory.decodeResource(context.getResources(), id);
-        SharedPreferences activityPreferences = context.getSharedPreferences(spFileName,
+        SharedPreferences activityPreferences = context.getSharedPreferences(SP_FILE_NAME,
                 Context.MODE_PRIVATE);
         paraCheck(activityPreferences,strKey);
         if (bitmap == null || bitmap.isRecycled()){
@@ -79,7 +75,7 @@ public class CachePreferencesUtil {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             bitmap.compress(Bitmap.CompressFormat.PNG, 100, baos);
             SharedPreferences.Editor editor = activityPreferences.edit();
-            String imageBase64 = new String(Base64.encodeToString(baos.toByteArray(),Base64.DEFAULT));
+            String imageBase64 = Base64.encodeToString(baos.toByteArray(), Base64.DEFAULT);
             editor.putString(strKey,imageBase64 );
             return editor.commit();
         }
@@ -93,10 +89,10 @@ public class CachePreferencesUtil {
             throw new IllegalArgumentException();
         }
     }
-    public static void Clear(Context context, String strKey){
+    public static void clear(Context context, String strKey){
         SharedPreferences activityPreferences= context.getSharedPreferences(strKey, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor=activityPreferences.edit();
         editor.clear();
-        editor.commit();
+        editor.apply();
     }
 }

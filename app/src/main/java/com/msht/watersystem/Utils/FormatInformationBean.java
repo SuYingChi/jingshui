@@ -4,7 +4,7 @@ package com.msht.watersystem.Utils;
  * Created by hong on 2017/10/24.
  */
 
-public class FormatToken {
+public class FormatInformationBean {
 
     public static int DeviceId;
     public static int InstallId;

@@ -114,7 +114,7 @@ public class DataCalculateUtils {
     public static boolean getBusinessData(ArrayList<Byte> byteArrayList){
 
         if (byteArrayList.size()!=0&&byteArrayList!=null){
-            FormatToken.BusinessType=ByteUtils.byteToInt(byteArrayList.get(0));
+            FormatInformationBean.BusinessType=ByteUtils.byteToInt(byteArrayList.get(0));
             byte[] account=new byte[8];
             account[0]=byteArrayList.get(1);
             account[1]=byteArrayList.get(2);
@@ -125,7 +125,7 @@ public class DataCalculateUtils {
             account[6]=byteArrayList.get(7);
             account[7]=byteArrayList.get(8);
             try {
-                FormatToken.StringCardNo=getbigNumber(account);
+                FormatInformationBean.StringCardNo=getbigNumber(account);
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -133,27 +133,27 @@ public class DataCalculateUtils {
             byte[] BalanceByte=new byte[2];
             BalanceByte[0]=byteArrayList.get(9);
             BalanceByte[1]=byteArrayList.get(10);
-            FormatToken.Balance=ByteUtils.byte2ToInt(BalanceByte);
+            FormatInformationBean.Balance=ByteUtils.byte2ToInt(BalanceByte);
 
             byte[] AmountByte=new byte[2];
             AmountByte[0]=byteArrayList.get(11);
             AmountByte[1]=byteArrayList.get(12);
-            FormatToken.ConsumptionAmount=ByteUtils.byte2ToInt(AmountByte);
+            FormatInformationBean.ConsumptionAmount=ByteUtils.byte2ToInt(AmountByte);
 
             byte[] AfterByte=new byte[2];
             AfterByte[0]=byteArrayList.get(13);
             AfterByte[1]=byteArrayList.get(14);
-            FormatToken.AfterAmount=ByteUtils.byte2ToInt(AfterByte);
+            FormatInformationBean.AfterAmount=ByteUtils.byte2ToInt(AfterByte);
 
             byte[] DeviceId=new byte[4];
             DeviceId[0]=byteArrayList.get(15);
             DeviceId[1]=byteArrayList.get(16);
             DeviceId[2]=byteArrayList.get(17);
             DeviceId[3]=byteArrayList.get(18);
-            FormatToken.DeviceId=ByteUtils.byte4ToInt(DeviceId);
-            FormatToken.PriceNum=ByteUtils.byteToInt(byteArrayList.get(19));
-            FormatToken.OutWaterTime=ByteUtils.byteToInt(byteArrayList.get(20));
-            FormatToken.WaterNum=ByteUtils.byteToInt(byteArrayList.get(21));
+            FormatInformationBean.DeviceId=ByteUtils.byte4ToInt(DeviceId);
+            FormatInformationBean.PriceNum=ByteUtils.byteToInt(byteArrayList.get(19));
+            FormatInformationBean.OutWaterTime=ByteUtils.byteToInt(byteArrayList.get(20));
+            FormatInformationBean.WaterNum=ByteUtils.byteToInt(byteArrayList.get(21));
             return true;
         }else {
             return false;

@@ -5,11 +5,11 @@ import java.util.ArrayList;
 /**
  * Created by hong on 2017/10/28.
  */
-public class FormatCommandUtil {
+public class FormatInformationUtil {
     /*
    *@param  byteList  控制指令
     */
-    public static boolean convertCom1ReceivedDataToFormatToken(ArrayList<Byte> byteArrayList){
+    public static  void saveCom1ReceivedDataToFormatInformation(ArrayList<Byte> byteArrayList){
 
         if (byteArrayList!=null&&byteArrayList.size()!=0){
             byte[] deviceId=new byte[4];
@@ -17,9 +17,9 @@ public class FormatCommandUtil {
             deviceId[1]=byteArrayList.get(1);
             deviceId[2]=byteArrayList.get(2);
             deviceId[3]=byteArrayList.get(3);
-            FormatToken.DeviceId=ByteUtils.byte4ToInt(deviceId);
+            FormatInformationBean.DeviceId=ByteUtils.byte4ToInt(deviceId);
 
-            FormatToken.StringCardNo= convertIcCardCodeDataToFormatToken(byteArrayList);
+            FormatInformationBean.StringCardNo= saveIcCardCodeDataToFormatInformation(byteArrayList);
             byte[] timeByte=new byte[6];
             timeByte[0]=byteArrayList.get(9);
             timeByte[1]=byteArrayList.get(10);
@@ -27,110 +27,104 @@ public class FormatCommandUtil {
             timeByte[3]=byteArrayList.get(12);
             timeByte[4]=byteArrayList.get(13);
             timeByte[5]=byteArrayList.get(14);
-            FormatToken.TriggerTime=ByteUtils.byte6ToInt(timeByte);
-            FormatToken.ConsumptionType=ByteUtils.byteToInt(byteArrayList.get(15));
+            FormatInformationBean.TriggerTime=ByteUtils.byte6ToInt(timeByte);
+            FormatInformationBean.ConsumptionType=ByteUtils.byteToInt(byteArrayList.get(15));
 
             byte[] balanceByte=new byte[2];
             balanceByte[0]=byteArrayList.get(16);
             balanceByte[1]=byteArrayList.get(17);
-            FormatToken.Balance=ByteUtils.byte2ToInt(balanceByte);
+            FormatInformationBean.Balance=ByteUtils.byte2ToInt(balanceByte);
 
-            FormatToken.AmountType=ByteUtils.byteToInt(byteArrayList.get(18));//金额类型
+            FormatInformationBean.AmountType=ByteUtils.byteToInt(byteArrayList.get(18));//金额类型
 
             byte[] amountByte=new byte[2];
             amountByte[0]=byteArrayList.get(19);
             amountByte[1]=byteArrayList.get(20);
-            FormatToken.ConsumptionAmount=ByteUtils.byte2ToInt(amountByte);
+            FormatInformationBean.ConsumptionAmount=ByteUtils.byte2ToInt(amountByte);
 
             byte[] afterByte=new byte[2];
             afterByte[0]=byteArrayList.get(21);
             afterByte[1]=byteArrayList.get(22);
-            FormatToken.AfterAmount=ByteUtils.byte2ToInt(afterByte);
+            FormatInformationBean.AfterAmount=ByteUtils.byte2ToInt(afterByte);
 
             byte[] waterByte=new byte[2];
             waterByte[0]=byteArrayList.get(23);
             waterByte[1]=byteArrayList.get(24);
-            FormatToken.WaterYield=ByteUtils.byte2ToInt(waterByte);
+            FormatInformationBean.WaterYield=ByteUtils.byte2ToInt(waterByte);
 
             byte[] rechargeByte=new byte[2];
             rechargeByte[0]=byteArrayList.get(25);
             rechargeByte[1]=byteArrayList.get(26);
-            FormatToken.RechargeValue=ByteUtils.byte2ToInt(rechargeByte);
+            FormatInformationBean.RechargeValue=ByteUtils.byte2ToInt(rechargeByte);
 
             byte[] installIdByte=new byte[2];
             installIdByte[0]=byteArrayList.get(27);
             installIdByte[1]=byteArrayList.get(28);
-            FormatToken.MotifyInstall=ByteUtils.byte2ToInt(installIdByte);
+            FormatInformationBean.MotifyInstall=ByteUtils.byte2ToInt(installIdByte);
 
-            FormatToken.MotifyPrice=ByteUtils.byteToInt(byteArrayList.get(29));  //修改单价
-            FormatToken.MotifyOzoneTime=ByteUtils.byteToInt(byteArrayList.get(30));
-            FormatToken.Switch=ByteUtils.byteToInt(byteArrayList.get(31));
-            FormatToken.EnableGet=ByteUtils.byteToInt(byteArrayList.get(32));
-            FormatToken.SetFilter=ByteUtils.byteToInt(byteArrayList.get(33));
-            FormatToken.SetFilterLevel=ByteUtils.byteToInt(byteArrayList.get(34));
+            FormatInformationBean.MotifyPrice=ByteUtils.byteToInt(byteArrayList.get(29));  //修改单价
+            FormatInformationBean.MotifyOzoneTime=ByteUtils.byteToInt(byteArrayList.get(30));
+            FormatInformationBean.Switch=ByteUtils.byteToInt(byteArrayList.get(31));
+            FormatInformationBean.EnableGet=ByteUtils.byteToInt(byteArrayList.get(32));
+            FormatInformationBean.SetFilter=ByteUtils.byteToInt(byteArrayList.get(33));
+            FormatInformationBean.SetFilterLevel=ByteUtils.byteToInt(byteArrayList.get(34));
 
             byte[] deductByte=new byte[2];
             deductByte[0]=byteArrayList.get(35);
             deductByte[1]=byteArrayList.get(36);
-            FormatToken.SetDeductAmount=ByteUtils.byte2ToInt(deductByte);
-            FormatToken.Blacklist=ByteUtils.byteToInt(byteArrayList.get(37));
-            FormatToken.KeyCode=ByteUtils.byteToInt(byteArrayList.get(38));
-            FormatToken.Updateflag1=ByteUtils.byteToInt(byteArrayList.get(42));
-            FormatToken.Updateflag2=ByteUtils.byteToInt(byteArrayList.get(43));
-            FormatToken.Updateflag3=ByteUtils.byteToInt(byteArrayList.get(44));
-            FormatToken.Updateflag4=ByteUtils.byteToInt(byteArrayList.get(45));
-            FormatToken.Updateflag5=ByteUtils.byteToInt(byteArrayList.get(46));
-            FormatToken.Updateflag6=ByteUtils.byteToInt(byteArrayList.get(47));
-            return true;
-        }else {
-            return false;
+            FormatInformationBean.SetDeductAmount=ByteUtils.byte2ToInt(deductByte);
+            FormatInformationBean.Blacklist=ByteUtils.byteToInt(byteArrayList.get(37));
+            FormatInformationBean.KeyCode=ByteUtils.byteToInt(byteArrayList.get(38));
+            FormatInformationBean.Updateflag1=ByteUtils.byteToInt(byteArrayList.get(42));
+            FormatInformationBean.Updateflag2=ByteUtils.byteToInt(byteArrayList.get(43));
+            FormatInformationBean.Updateflag3=ByteUtils.byteToInt(byteArrayList.get(44));
+            FormatInformationBean.Updateflag4=ByteUtils.byteToInt(byteArrayList.get(45));
+            FormatInformationBean.Updateflag5=ByteUtils.byteToInt(byteArrayList.get(46));
+            FormatInformationBean.Updateflag6=ByteUtils.byteToInt(byteArrayList.get(47));
         }
     }
     /*
     *@param  byteList  状态指令
      */
-    public static boolean convertStatusCommandToFormatToken(ArrayList<Byte> byteList){
+    public static void saveStatusInformationToFormatInformation(ArrayList<Byte> byteList){
         if (byteList!=null&&byteList.size()!=0){
             byte[] deviceId=new byte[4];
             deviceId[0]=byteList.get(0);
             deviceId[1]=byteList.get(1);
             deviceId[2]=byteList.get(2);
             deviceId[3]=byteList.get(3);
-            FormatToken.DeviceId=ByteUtils.byte4ToInt(deviceId);
+            FormatInformationBean.DeviceId=ByteUtils.byte4ToInt(deviceId);
             byte[] installId=new byte[2];
             installId[0]=byteList.get(4);
             installId[1]=byteList.get(5);
-            FormatToken.InstallId=ByteUtils.byte2ToInt(installId);
-            FormatToken.Ozonetime=ByteUtils.byteToInt(byteList.get(6));
-            FormatToken.PriceNum=ByteUtils.byteToInt(byteList.get(7));
-            FormatToken.humidity=ByteUtils.byteToInt(byteList.get(8));
-            FormatToken.temperature=ByteUtils.byteToInt(byteList.get(9));
+            FormatInformationBean.InstallId=ByteUtils.byte2ToInt(installId);
+            FormatInformationBean.Ozonetime=ByteUtils.byteToInt(byteList.get(6));
+            FormatInformationBean.PriceNum=ByteUtils.byteToInt(byteList.get(7));
+            FormatInformationBean.humidity=ByteUtils.byteToInt(byteList.get(8));
+            FormatInformationBean.temperature=ByteUtils.byteToInt(byteList.get(9));
             byte[] origin=new byte[2];
             origin[0]=byteList.get(10);
             origin[1]=byteList.get(11);
-            FormatToken.OriginTDS=ByteUtils.byte2ToInt(origin);
+            FormatInformationBean.OriginTDS=ByteUtils.byte2ToInt(origin);
             byte[] purification=new byte[2];
             purification[0]=byteList.get(12);
             purification[1]=byteList.get(13);
-            FormatToken.PurificationTDS=ByteUtils.byte2ToInt(purification);
-            FormatToken.OriginTDS0=ByteUtils.byteToInt(byteList.get(10));
-            FormatToken.OriginTDS1=ByteUtils.byteToInt(byteList.get(11));
-            FormatToken.PurificationTDS0=ByteUtils.byteToInt(byteList.get(12));
-            FormatToken.PurificationTDS1=ByteUtils.byteToInt(byteList.get(13));
-            FormatToken.WorkState=ByteUtils.byteToInt(byteList.get(14));
+            FormatInformationBean.PurificationTDS=ByteUtils.byte2ToInt(purification);
+            FormatInformationBean.OriginTDS0=ByteUtils.byteToInt(byteList.get(10));
+            FormatInformationBean.OriginTDS1=ByteUtils.byteToInt(byteList.get(11));
+            FormatInformationBean.PurificationTDS0=ByteUtils.byteToInt(byteList.get(12));
+            FormatInformationBean.PurificationTDS1=ByteUtils.byteToInt(byteList.get(13));
+            FormatInformationBean.WorkState=ByteUtils.byteToInt(byteList.get(14));
             byte[] makewater=new byte[2];
             makewater[0]=byteList.get(15);
             makewater[1]=byteList.get(16);
-            FormatToken.MakeWater=ByteUtils.byte2ToInt(makewater);
-            return true;
-        }else {
-            return false;
+            FormatInformationBean.MakeWater=ByteUtils.byte2ToInt(makewater);
         }
     }
     /*
     *Ic卡编码数据转换
      */
-    private static String convertIcCardCodeDataToFormatToken(ArrayList<Byte> byteArrayList) {
+    private static String saveIcCardCodeDataToFormatInformation(ArrayList<Byte> byteArrayList) {
         String stringNo="";
         int cardType=ByteUtils.byteToInt(byteArrayList.get(4));
         if (cardType<10){
@@ -143,7 +137,7 @@ public class FormatCommandUtil {
         cardByte[1]=byteArrayList.get(6);
         cardByte[2]=byteArrayList.get(7);
         cardByte[3]=byteArrayList.get(8);
-        FormatToken.CardNo=ByteUtils.byte4ToInt(cardByte);
+        FormatInformationBean.CardNo=ByteUtils.byte4ToInt(cardByte);
         String addzero=String.valueOf(ByteUtils.byte4ToInt(cardByte));
         return stringNo+ addZeroPrefix(addzero);
     }
@@ -156,22 +150,20 @@ public class FormatCommandUtil {
         }
        return zeroString ;
     }
-    public static boolean equipmentData(ArrayList<Byte> byteArrayList){
+    public static void saveDeviceInformationToFormatInformation(ArrayList<Byte> byteArrayList){
         if (byteArrayList!=null&&byteArrayList.size()!=0){
             byte[] deviceId=new byte[4];
             deviceId[0]=byteArrayList.get(0);
             deviceId[1]=byteArrayList.get(1);
             deviceId[2]=byteArrayList.get(2);
             deviceId[3]=byteArrayList.get(3);
-            FormatToken.DeviceId=ByteUtils.byte4ToInt(deviceId);
-            FormatToken.PriceNum=ByteUtils.byteToInt(byteArrayList.get(4));
-            FormatToken.OutWaterTime=ByteUtils.byteToInt(byteArrayList.get(5));
-            FormatToken.WaterNum=ByteUtils.byteToInt(byteArrayList.get(6));
-            FormatToken.ChargeMode=ByteUtils.byteToInt(byteArrayList.get(7));
-            FormatToken.ShowTDS=ByteUtils.byteToInt(byteArrayList.get(8));
-            return true;
-        }else {
-            return false;
+            FormatInformationBean.DeviceId=ByteUtils.byte4ToInt(deviceId);
+            FormatInformationBean.PriceNum=ByteUtils.byteToInt(byteArrayList.get(4));
+            FormatInformationBean.OutWaterTime=ByteUtils.byteToInt(byteArrayList.get(5));
+            FormatInformationBean.WaterNum=ByteUtils.byteToInt(byteArrayList.get(6));
+            FormatInformationBean.ChargeMode=ByteUtils.byteToInt(byteArrayList.get(7));
+            FormatInformationBean.ShowTDS=ByteUtils.byteToInt(byteArrayList.get(8));
+
         }
     }
     public static byte[] settle(){
@@ -201,7 +193,7 @@ public class FormatCommandUtil {
         return parameter;
     }
 
-    public static byte[] setTransactionType01(){
+    public static byte[] setConsumeType01(){
         byte[] consumption=new byte[4];
         consumption[0]=VariableUtil.byteArray.get(13);
         consumption[1]=VariableUtil.byteArray.get(14);
@@ -243,7 +235,7 @@ public class FormatCommandUtil {
         }
         return control;
     }
-    public static byte[] setTransactionType02(){
+    public static byte[] setConsumeType02(){
         byte[] consumption=new byte[4];
         consumption[0]=VariableUtil.byteArray.get(13);
         consumption[1]=VariableUtil.byteArray.get(14);
@@ -304,20 +296,17 @@ public class FormatCommandUtil {
     /*
     *@param  byteArrayList 时间指令
      */
-    public static boolean timeCommand(ArrayList<Byte> byteArrayList){
+    public static void saveTimeInformationToFormatInformation(ArrayList<Byte> byteArrayList){
         if (byteArrayList!=null&&byteArrayList.size()!=0){
-            FormatToken.TimeType=ByteUtils.byteToInt(byteArrayList.get(0));
-            FormatToken.Year=ByteUtils.byteToInt(byteArrayList.get(1))+2000;
-            FormatToken.Month=ByteUtils.byteToInt(byteArrayList.get(2));
-            FormatToken.Day=ByteUtils.byteToInt(byteArrayList.get(3));
-            FormatToken.Hour=ByteUtils.byteToInt(byteArrayList.get(4));
-            FormatToken.Minute=ByteUtils.byteToInt(byteArrayList.get(5));
-            FormatToken.Second=ByteUtils.byteToInt(byteArrayList.get(6));
-            FormatToken.TimeWeek=ByteUtils.byteToInt(byteArrayList.get(7));
-            FormatToken.TimeZone=ByteUtils.byteToInt(byteArrayList.get(8));
-            return true;
-        }else {
-            return false;
+            FormatInformationBean.TimeType=ByteUtils.byteToInt(byteArrayList.get(0));
+            FormatInformationBean.Year=ByteUtils.byteToInt(byteArrayList.get(1))+2000;
+            FormatInformationBean.Month=ByteUtils.byteToInt(byteArrayList.get(2));
+            FormatInformationBean.Day=ByteUtils.byteToInt(byteArrayList.get(3));
+            FormatInformationBean.Hour=ByteUtils.byteToInt(byteArrayList.get(4));
+            FormatInformationBean.Minute=ByteUtils.byteToInt(byteArrayList.get(5));
+            FormatInformationBean.Second=ByteUtils.byteToInt(byteArrayList.get(6));
+            FormatInformationBean.TimeWeek=ByteUtils.byteToInt(byteArrayList.get(7));
+            FormatInformationBean.TimeZone=ByteUtils.byteToInt(byteArrayList.get(8));
         }
     }
 }

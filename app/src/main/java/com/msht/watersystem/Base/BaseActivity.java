@@ -1,7 +1,6 @@
 package com.msht.watersystem.Base;
 
 import android.content.Context;
-import android.os.Build;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
@@ -10,13 +9,12 @@ import android.view.WindowManager;
 import android.widget.TextView;
 
 import com.mcloyal.serialport.AppLibsContext;
-import com.mcloyal.serialport.AppManager;
 import com.mcloyal.serialport.AppPreferences;
 import com.msht.watersystem.AppContext;
 import com.msht.watersystem.Interface.ResendDataEvent;
 import com.msht.watersystem.R;
 import com.msht.watersystem.Utils.CachePreferencesUtil;
-import com.msht.watersystem.Utils.FormatToken;
+import com.msht.watersystem.Utils.FormatInformationBean;
 import com.msht.watersystem.widget.LoadingDialog;
 
 /**
@@ -56,9 +54,9 @@ public abstract class BaseActivity extends AppCompatActivity implements ResendDa
         tv_InTDS=(TextView)findViewById(R.id.id_in_tds);
         tv_OutTDS=(TextView)findViewById(R.id.id_out_tds);
         layout_TDS=findViewById(R.id.id_tds_layout);
-        tv_InTDS.setText(String.valueOf(FormatToken.OriginTDS));
-        tv_OutTDS.setText(String.valueOf(FormatToken.PurificationTDS));
-        int tds= CachePreferencesUtil.getChargeMode(this,CachePreferencesUtil.ShowTds,0);
+        tv_InTDS.setText(String.valueOf(FormatInformationBean.OriginTDS));
+        tv_OutTDS.setText(String.valueOf(FormatInformationBean.PurificationTDS));
+        int tds= CachePreferencesUtil.getChargeMode(this,CachePreferencesUtil.SHOWTDS,0);
         if (tds==0){
             layout_TDS.setVisibility(View.GONE);
         }else {

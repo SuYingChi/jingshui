@@ -19,14 +19,14 @@ import com.mcloyal.serialport.utils.FrameUtils;
 import com.mcloyal.serialport.utils.PacketUtils;
 import com.msht.watersystem.Base.BaseActivity;
 import com.msht.watersystem.R;
-import com.msht.watersystem.Utils.BusinessInstruct;
+import com.msht.watersystem.Utils.ConsumeInformationUtils;
 import com.msht.watersystem.Utils.ByteUtils;
 import com.msht.watersystem.Utils.CachePreferencesUtil;
-import com.msht.watersystem.Utils.FormatCommandUtil;
+import com.msht.watersystem.Utils.FormatInformationBean;
+import com.msht.watersystem.Utils.FormatInformationUtil;
 import com.msht.watersystem.Utils.DataCalculateUtils;
-import com.msht.watersystem.Utils.FormatToken;
 import com.msht.watersystem.Utils.VariableUtil;
-import com.msht.watersystem.widget.MyImgScroll;
+import com.msht.watersystem.widget.MyImgScrollViewPager;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -45,7 +45,7 @@ public class AppNotSufficientActivity extends BaseActivity implements Observer {
     private TextView tv_balance;
     private TextView tv_customerNo;
     private boolean  bindStatus=false;
-    private MyImgScroll myPager;
+    private MyImgScrollViewPager myPager;
     private List<View> listViews;
     private ImageView textView;
     private Context mContext;
@@ -117,15 +117,15 @@ public class AppNotSufficientActivity extends BaseActivity implements Observer {
     private void onCom1Received204DataFromControllBoard() {
         if (buyStatus){
             buyStatus=false;
-            if (FormatToken.ConsumptionType==1){
+            if (FormatInformationBean.ConsumptionType==1){
                 Intent intent=new Intent(mContext,IcCardoutWaterActivity.class);    //进入刷卡购水页面
                 startActivityForResult(intent,1);
                 finish();
-            }else if (FormatToken.ConsumptionType==3){
+            }else if (FormatInformationBean.ConsumptionType==3){
                 Intent intent=new Intent(mContext,AppOutWaterActivity.class);       //进入app购水页面
                 startActivityForResult(intent,1);
                 finish();
-            }else if (FormatToken.ConsumptionType==5){
+            }else if (FormatInformationBean.ConsumptionType==5){
                 Intent intent=new Intent(mContext,DeliverOutWaterActivity.class);  //进入配送取水页面
                 startActivityForResult(intent,1);
                 finish();
@@ -148,9 +148,10 @@ public class AppNotSufficientActivity extends BaseActivity implements Observer {
         }
     }
     private void onCom2Received107DataFromServer(ArrayList<Byte> data) {
-        if (BusinessInstruct.CalaculateBusiness(data)){
-            if (FormatToken.BusinessType==3){
-                FormatToken.Balance=FormatToken.Balance+FormatToken.rechargeAmount;
+        if (data!=null&&data.size()>0){
+            ConsumeInformationUtils.saveConsumptionInformationToFormatInformation(data);
+            if (FormatInformationBean.BusinessType==3){
+                FormatInformationBean.Balance= FormatInformationBean.Balance+ FormatInformationBean.rechargeAmount;
                 Intent intent=new Intent(AppNotSufficientActivity.this,PaySuccessActivity.class);
                 intent.putExtra("afterAmount",afterAmount) ;
                 intent.putExtra("afetrWater",afterWater);
@@ -163,15 +164,15 @@ public class AppNotSufficientActivity extends BaseActivity implements Observer {
                 VariableUtil.byteArray=data;
                 CachePreferencesUtil.putBoolean(this,CachePreferencesUtil.FIRST_OPEN,false);//数据更变
                 buyStatus=true;
-                if (FormatToken.BusinessType==1){
-                    if (FormatToken.AppBalance<20){
-                        double balance= DataCalculateUtils.TwoDecinmal2(FormatToken.Balance/100.0);
+                if (FormatInformationBean.BusinessType==1){
+                    if (FormatInformationBean.AppBalance<20){
+                        double balance= DataCalculateUtils.TwoDecinmal2(FormatInformationBean.Balance/100.0);
                         tv_balance.setText(String.valueOf(balance));
-                        tv_customerNo.setText(FormatToken.StringCardNo);
+                        tv_customerNo.setText(FormatInformationBean.StringCardNo);
                     }else {
                         setBusiness(1);
                     }
-                }else if (FormatToken.BusinessType==2){
+                }else if (FormatInformationBean.BusinessType==2){
                     setBusiness(2);
                 }
             }
@@ -184,11 +185,11 @@ public class AppNotSufficientActivity extends BaseActivity implements Observer {
                 byte[] frame = FrameUtils.getFrame(mContext);
                 byte[] type = new byte[]{0x01, 0x04};
                 if (business==1){
-                    byte[] data= FormatCommandUtil.setTransactionType01();
+                    byte[] data= FormatInformationUtil.setConsumeType01();
                     byte[] packet = PacketUtils.makePackage(frame, type, data);
                     portService.sendToControlBoard(packet);
                 }else if (business==2){
-                    byte[] data= FormatCommandUtil.setTransactionType02();
+                    byte[] data= FormatInformationUtil.setConsumeType02();
                     byte[] packet = PacketUtils.makePackage(frame, type, data);
                     portService.sendToControlBoard(packet);
                 }
@@ -218,8 +219,8 @@ public class AppNotSufficientActivity extends BaseActivity implements Observer {
         }
     }
     private void onCom2Received102DataFromServer(ArrayList<Byte> data) {
-        if (BusinessInstruct.ControlModel(mContext,data)){
-            if (FormatToken.ShowTDS==0){
+        if (ConsumeInformationUtils.controlModel(mContext,data)){
+            if (FormatInformationBean.ShowTDS==0){
                 layout_TDS.setVisibility(View.GONE);
             }else {
                 layout_TDS.setVisibility(View.VISIBLE);
@@ -228,42 +229,43 @@ public class AppNotSufficientActivity extends BaseActivity implements Observer {
     }
     private void onCom1Received104DataFromControllBoard(ArrayList<Byte> data) {
         try {
-            if(FormatCommandUtil.convertCom1ReceivedDataToFormatToken(data)){
-                String stringWork= DataCalculateUtils.IntToBinary(FormatToken.Updateflag3);
+            if(data!=null&&data.size()>0){
+                FormatInformationUtil.saveCom1ReceivedDataToFormatInformation(data);
+                String stringWork= DataCalculateUtils.IntToBinary(FormatInformationBean.Updateflag3);
                 if (!DataCalculateUtils.isEvent(stringWork,3)){
-                    if (FormatToken.Balance<=1){
-                        if (FormatToken.ConsumptionType==1){
+                    if (FormatInformationBean.Balance<=1){
+                        if (FormatInformationBean.ConsumptionType==1){
                             Intent intent=new Intent(mContext,NotSufficientActivity.class);
                             startActivityForResult(intent,1);
                             finish();
                         }else {
-                            double balance= DataCalculateUtils.TwoDecinmal2(FormatToken.Balance/100.0);
+                            double balance= DataCalculateUtils.TwoDecinmal2(FormatInformationBean.Balance/100.0);
                             tv_balance.setText(String.valueOf(balance));
                         }
                     }else {
-                        if (FormatToken.ConsumptionType==1){
+                        if (FormatInformationBean.ConsumptionType==1){
                             Intent intent=new Intent(mContext,IcCardoutWaterActivity.class);
                             startActivityForResult(intent,1);
                             finish();
-                        }else if (FormatToken.ConsumptionType==3){
+                        }else if (FormatInformationBean.ConsumptionType==3){
                             Intent intent=new Intent(mContext,AppOutWaterActivity.class);
                             startActivityForResult(intent,1);
                             finish();
-                        }else if (FormatToken.ConsumptionType==5){
+                        }else if (FormatInformationBean.ConsumptionType==5){
                             Intent intent=new Intent(mContext,DeliverOutWaterActivity.class);
                             startActivityForResult(intent,1);
                             finish();
                         }
                     }
                 }else {
-                    if (FormatToken.ConsumptionType==1){
+                    if (FormatInformationBean.ConsumptionType==1){
                         //刷卡结账
                         CalculateData();    //没联网计算取缓存数据
-                        double consumption=FormatToken.ConsumptionAmount/100.0;
-                        double waterVolume=FormatToken.WaterYield*volume;
+                        double consumption= FormatInformationBean.ConsumptionAmount/100.0;
+                        double waterVolume= FormatInformationBean.WaterYield*volume;
                         String afterAmount=String.valueOf(DataCalculateUtils.TwoDecinmal2(consumption));
                         String afterWater=String.valueOf(DataCalculateUtils.TwoDecinmal2(waterVolume));
-                        String mAccount=String.valueOf(FormatToken.StringCardNo);
+                        String mAccount=String.valueOf(FormatInformationBean.StringCardNo);
                         Intent intent=new Intent(mContext,PaySuccessActivity.class);
                         intent.putExtra("afterAmount",afterAmount) ;
                         intent.putExtra("afetrWater",afterWater);
@@ -280,8 +282,8 @@ public class AppNotSufficientActivity extends BaseActivity implements Observer {
         }
     }
     private void CalculateData() {
-        String waterVolume= CachePreferencesUtil.getStringData(this,CachePreferencesUtil.Volume,"5");
-        String Time=CachePreferencesUtil.getStringData(this,CachePreferencesUtil.outWaterTime,"30");
+        String waterVolume= CachePreferencesUtil.getStringData(this,CachePreferencesUtil.VOLUME,"5");
+        String Time=CachePreferencesUtil.getStringData(this,CachePreferencesUtil.OUT_WATER_TIME,"30");
         int mVolume=Integer.valueOf(waterVolume).intValue();
         int mTime=Integer.valueOf(Time).intValue();
         volume=DataCalculateUtils.getWaterVolume(mVolume,mTime);
@@ -303,10 +305,11 @@ public class AppNotSufficientActivity extends BaseActivity implements Observer {
     }
     private void onCom1Received105DataFromControllBoard(ArrayList<Byte> data) {
         try {
-            if (FormatCommandUtil.convertStatusCommandToFormatToken(data)){
-                tv_InTDS.setText(String.valueOf(FormatToken.OriginTDS));
-                tv_OutTDS.setText(String.valueOf(FormatToken.PurificationTDS));
-                String stringWork= DataCalculateUtils.IntToBinary(FormatToken.WorkState);
+            if (data!=null&&data.size()!=0){
+                FormatInformationUtil.saveStatusInformationToFormatInformation(data);
+                tv_InTDS.setText(String.valueOf(FormatInformationBean.OriginTDS));
+                tv_OutTDS.setText(String.valueOf(FormatInformationBean.PurificationTDS));
+                String stringWork= DataCalculateUtils.IntToBinary(FormatInformationBean.WorkState);
                 if (!DataCalculateUtils.isEvent(stringWork,6)){
                     Intent intent=new Intent(mContext, CannotBuyWaterActivity.class);
                     startActivityForResult(intent,1);
@@ -356,9 +359,9 @@ public class AppNotSufficientActivity extends BaseActivity implements Observer {
         tv_time=(TextView)findViewById(R.id.id_time) ;
         tv_balance=(TextView)findViewById(R.id.id_balance_amount);
         tv_customerNo=(TextView)findViewById(R.id.id_tv_customerNo);
-        double balance= DataCalculateUtils.TwoDecinmal2(FormatToken.AppBalance/100.0);
+        double balance= DataCalculateUtils.TwoDecinmal2(FormatInformationBean.AppBalance/100.0);
         tv_balance.setText(String.valueOf(balance));
-        tv_customerNo.setText(FormatToken.StringCardNo);
+        tv_customerNo.setText(FormatInformationBean.StringCardNo);
         myCountDownTimer.start();
     }
     private void endTimeCount(){

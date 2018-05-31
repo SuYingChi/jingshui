@@ -9,14 +9,14 @@ import java.util.ArrayList;
  * Created by hong on 2017/12/10.
  */
 
-public class BusinessInstruct {
-    public static boolean CalaculateBusiness(ArrayList<Byte> byteArrayList){
-        if (byteArrayList.size()!=0&&byteArrayList!=null){
-            FormatToken.BusinessType=ByteUtils.byteToInt(byteArrayList.get(0));
-            if (FormatToken.BusinessType==1){
-                FormatToken.ConsumptionType=3;
-            }else if (FormatToken.BusinessType==2){
-                FormatToken.ConsumptionType=5;  //消费类型
+public class ConsumeInformationUtils {
+    public static void saveConsumptionInformationToFormatInformation(ArrayList<Byte> byteArrayList){
+        if (byteArrayList!=null&&byteArrayList.size()!=0){
+            FormatInformationBean.BusinessType=ByteUtils.byteToInt(byteArrayList.get(0));
+            if (FormatInformationBean.BusinessType==1){
+                FormatInformationBean.ConsumptionType=3;
+            }else if (FormatInformationBean.BusinessType==2){
+                FormatInformationBean.ConsumptionType=5;  //消费类型
             }
             byte[] account=new  byte[8];
             account[0]=byteArrayList.get(1);
@@ -27,9 +27,9 @@ public class BusinessInstruct {
             account[5]=byteArrayList.get(6);
             account[6]=byteArrayList.get(7);
             account[7]=byteArrayList.get(8);
-            FormatToken.phoneType=account;
+            FormatInformationBean.phoneType=account;
             try {
-                FormatToken.StringCardNo=getbigNumber(account);
+                FormatInformationBean.StringCardNo=getbigNumber(account);
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -38,29 +38,29 @@ public class BusinessInstruct {
             Balance[1]=byteArrayList.get(10);
             Balance[2]=byteArrayList.get(11);
             Balance[3]=byteArrayList.get(12);
-           // FormatToken.Balance=ByteUtils.byte4ToInt(Balance);
-            FormatToken.AppBalance=ByteUtils.byte4ToInt(Balance);
+           // FormatInformationBean.Balance=ByteUtils.byte4ToInt(Balance);
+            FormatInformationBean.AppBalance=ByteUtils.byte4ToInt(Balance);
 
             byte[] recharge=new byte[4];
             recharge[0]=byteArrayList.get(13);
             recharge[1]=byteArrayList.get(14);
             recharge[2]=byteArrayList.get(15);
             recharge[3]=byteArrayList.get(16);
-            FormatToken.rechargeAmount=ByteUtils.byte4ToInt(recharge);
+            FormatInformationBean.rechargeAmount=ByteUtils.byte4ToInt(recharge);
 
             byte[] DeviceId=new byte[4];
             DeviceId[0]=byteArrayList.get(21);
             DeviceId[1]=byteArrayList.get(22);
             DeviceId[2]=byteArrayList.get(23);
             DeviceId[3]=byteArrayList.get(24);
-            FormatToken.DeviceId=ByteUtils.byte4ToInt(DeviceId);
-            FormatToken.PriceNum=ByteUtils.byteToInt(byteArrayList.get(25));
-            FormatToken.OutWaterTime=ByteUtils.byteToInt(byteArrayList.get(26));
-            FormatToken.WaterNum=ByteUtils.byteToInt(byteArrayList.get(27));
+            FormatInformationBean.DeviceId=ByteUtils.byte4ToInt(DeviceId);
+            FormatInformationBean.PriceNum=ByteUtils.byteToInt(byteArrayList.get(25));
+            FormatInformationBean.OutWaterTime=ByteUtils.byteToInt(byteArrayList.get(26));
+            FormatInformationBean.WaterNum=ByteUtils.byteToInt(byteArrayList.get(27));
             byte[] water=new byte[2];
             water[0]=byteArrayList.get(28);
             water[1]=byteArrayList.get(29);
-            FormatToken.Waterweight=ByteUtils.byte2ToInt(water);
+            FormatInformationBean.Waterweight=ByteUtils.byte2ToInt(water);
 
             byte[] orderNo=new  byte[8];
             orderNo[0]=byteArrayList.get(30);
@@ -71,26 +71,23 @@ public class BusinessInstruct {
             orderNo[5]=byteArrayList.get(35);
             orderNo[6]=byteArrayList.get(36);
             orderNo[7]=byteArrayList.get(37);
-            FormatToken.orderType=orderNo;
+            FormatInformationBean.orderType=orderNo;
             try {
-                FormatToken.OrderNoString=getbigNumber(orderNo);
+                FormatInformationBean.OrderNoString=getbigNumber(orderNo);
             } catch (Exception e) {
                 e.printStackTrace();
             }
-            return true;
-        }else {
-            return false;
         }
     }
-    public static boolean CalaculateRecharge(ArrayList<Byte> byteArrayList){
+    public static boolean calaculateRecharge(ArrayList<Byte> byteArrayList){
         if (byteArrayList.size()!=0&&byteArrayList!=null){
-            FormatToken.BusinessType=ByteUtils.byteToInt(byteArrayList.get(0));
+            FormatInformationBean.BusinessType=ByteUtils.byteToInt(byteArrayList.get(0));
             byte[] recharge=new byte[4];
             recharge[0]=byteArrayList.get(13);
             recharge[1]=byteArrayList.get(14);
             recharge[2]=byteArrayList.get(15);
             recharge[3]=byteArrayList.get(16);
-            FormatToken.rechargeAmount=ByteUtils.byte4ToInt(recharge);
+            FormatInformationBean.rechargeAmount=ByteUtils.byte4ToInt(recharge);
             return true;
         }else {
             return false;
@@ -99,8 +96,8 @@ public class BusinessInstruct {
     public static String getbigNumber(byte[] numbyte)throws Exception{
         BigInteger bigInteger=new BigInteger(numbyte);
         long intNum=bigInteger.longValue();
-        String Account=String.valueOf(intNum);
-        return Account;
+        String account=String.valueOf(intNum);
+        return account;
     }
     public static  byte[] settleData(byte[] settledata,byte[] settleorder){
         byte[] data=new byte[38];
@@ -145,19 +142,19 @@ public class BusinessInstruct {
         }
         return data;
     }
-    public static boolean ControlModel(Context context,ArrayList<Byte> byteArrayList){
+    public static boolean controlModel(Context context, ArrayList<Byte> byteArrayList){
 
-        if (byteArrayList.size()!=0&&byteArrayList!=null){
-            byte[] DeviceId=new byte[4];
-            DeviceId[0]=byteArrayList.get(0);
-            DeviceId[1]=byteArrayList.get(1);
-            DeviceId[2]=byteArrayList.get(2);
-            DeviceId[3]=byteArrayList.get(3);
-            FormatToken.FreeDeviceNo=ByteUtils.byte4ToInt(DeviceId);
-            FormatToken.ChargeMode=ByteUtils.byteToInt(byteArrayList.get(4));
-            FormatToken.ShowTDS=ByteUtils.byteToInt(byteArrayList.get(5));
-            CachePreferencesUtil.putChargeMode(context,CachePreferencesUtil.ChargeMode,FormatToken.ChargeMode);
-            CachePreferencesUtil.putChargeMode(context,CachePreferencesUtil.ShowTds,FormatToken.ShowTDS);
+        if (byteArrayList!=null&&byteArrayList.size()!=0){
+            byte[] deviceId=new byte[4];
+            deviceId[0]=byteArrayList.get(0);
+            deviceId[1]=byteArrayList.get(1);
+            deviceId[2]=byteArrayList.get(2);
+            deviceId[3]=byteArrayList.get(3);
+            FormatInformationBean.FreeDeviceNo=ByteUtils.byte4ToInt(deviceId);
+            FormatInformationBean.ChargeMode=ByteUtils.byteToInt(byteArrayList.get(4));
+            FormatInformationBean.ShowTDS=ByteUtils.byteToInt(byteArrayList.get(5));
+            CachePreferencesUtil.putChargeMode(context,CachePreferencesUtil.CHARGEMODE, FormatInformationBean.ChargeMode);
+            CachePreferencesUtil.putChargeMode(context,CachePreferencesUtil.SHOWTDS, FormatInformationBean.ShowTDS);
             return true;
         }else {
             return false;

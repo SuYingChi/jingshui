@@ -2,10 +2,15 @@ package com.msht.watersystem.widget;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.TimeUnit;
 
 import android.app.Activity;
 import android.content.Context;
 import android.os.Parcelable;
+import android.support.annotation.NonNull;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.util.AttributeSet;
@@ -18,14 +23,15 @@ import android.view.View;
  * @author Administrator
  * 
  */
-public class MyImgScroll extends ViewPager {
+public class MyImgScrollViewPager extends ViewPager {
 	Activity mActivity;
 	List<View> mListViews;
 	int mScrollTime = 0;
-	Timer timer;
+	//Timer timer;
+	ScheduledExecutorService scheduledExecutorService;
 	int oldIndex = 0;
 	int curIndex = 0;
-	public MyImgScroll(Context context, AttributeSet attrs) {
+	public MyImgScrollViewPager(Context context, AttributeSet attrs) {
 		super(context, attrs);
 	}
 	public void start(Activity mainActivity, List<View> imgList,int scrollTime) {
@@ -37,7 +43,8 @@ public class MyImgScroll extends ViewPager {
 			new FixedSpeedScroller(mActivity).setDuration(this, 500);
 			startTimer();
 			this.setOnTouchListener(new OnTouchListener() {
-				public boolean onTouch(View v, MotionEvent event) {
+				@Override
+                public boolean onTouch(View v, MotionEvent event) {
 					if (event.getAction() == MotionEvent.ACTION_UP) {
 						startTimer();
 					} else {
@@ -56,34 +63,58 @@ public class MyImgScroll extends ViewPager {
 		return curIndex;
 	}
 	public void stopTimer() {
-		if (timer != null) {
+		/*if (timer != null) {
 			timer.cancel();
 			timer = null;
-		}
+		}*/
+		if(scheduledExecutorService!=null){
+		    scheduledExecutorService.shutdown();
+		    scheduledExecutorService = null;
+        }
 	}
 	public void startTimer() {
-		timer = new Timer();
+	/*	timer = new Timer();
 		timer.schedule(new TimerTask() {
 			public void run() {
 				mActivity.runOnUiThread(new Runnable() {
 					public void run() {
-						MyImgScroll.this.setCurrentItem(MyImgScroll.this
+						MyImgScrollViewPager.this.setCurrentItem(MyImgScrollViewPager.this
 								.getCurrentItem() + 1);
 					}
 				});
 			}
-		}, mScrollTime, mScrollTime);
+		}, mScrollTime, mScrollTime);*/
+	scheduledExecutorService = new ScheduledThreadPoolExecutor(1, new ThreadFactory() {
+        @Override
+        public Thread newThread(@NonNull Runnable r) {
+            return new Thread(r,Thread.currentThread().getName());
+        }
+    });
+	scheduledExecutorService.scheduleAtFixedRate(new TimerTask() {
+        @Override
+        public void run() {
+            mActivity.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    MyImgScrollViewPager.this.setCurrentItem(MyImgScrollViewPager.this
+                            .getCurrentItem() + 1);
+                }
+            });
+        }
+    }, mScrollTime, mScrollTime, TimeUnit.MILLISECONDS);
 	}
 
 	private class MyPagerAdapter extends PagerAdapter {
 		public void finishUpdate(View arg0) {
 		}
 
-		public void notifyDataSetChanged() {
+		@Override
+        public void notifyDataSetChanged() {
 			super.notifyDataSetChanged();
 		}
 
-		public int getCount() {
+		@Override
+        public int getCount() {
 			if (mListViews.size() == 1) {
 				return mListViews.size();
 			}
@@ -99,14 +130,17 @@ public class MyImgScroll extends ViewPager {
 			return mListViews.get(i % mListViews.size());
 		}
 
-		public boolean isViewFromObject(View arg0, Object arg1) {
+		@Override
+        public boolean isViewFromObject(View arg0, Object arg1) {
 			return arg0 == (arg1);
 		}
 
-		public void restoreState(Parcelable arg0, ClassLoader arg1) {
+		@Override
+        public void restoreState(Parcelable arg0, ClassLoader arg1) {
 		}
 
-		public Parcelable saveState() {
+		@Override
+        public Parcelable saveState() {
 			return null;
 		}
 
