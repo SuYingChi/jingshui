@@ -593,11 +593,13 @@ public class MainSerialPortActivity extends BaseActivity implements Observer, io
     @Override
     public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
         Log.d(TAG, "surfaceChanged");
-        if(mMediaPlayer==null){
+        if (mMediaPlayer == null) {
             initMediaPlayer();
             mIsVideoSizeKnown = true;
             mIsVideoReadyToBePlayed = true;
-            startVideoPlayback();
+            if(mMediaPlayer!=null) {
+                startVideoPlayback();
+            }
         }
     }
 
@@ -609,6 +611,9 @@ public class MainSerialPortActivity extends BaseActivity implements Observer, io
 
     private void initMediaPlayer() {
         doCleanUp();
+        if (TextUtils.isEmpty(videoFilePath)) {
+            return;
+        }
         try {
             mMediaPlayer = new io.vov.vitamio.MediaPlayer(this);
             mMediaPlayer.setDataSource(videoFilePath);
@@ -632,7 +637,7 @@ public class MainSerialPortActivity extends BaseActivity implements Observer, io
     public void onPrepared(io.vov.vitamio.MediaPlayer mp) {
         Log.d(TAG, "onPrepared called");
         mIsVideoReadyToBePlayed = true;
-        if (mIsVideoReadyToBePlayed && mIsVideoSizeKnown) {
+        if (mIsVideoReadyToBePlayed && mIsVideoSizeKnown&&mMediaPlayer!=null) {
             startVideoPlayback();
         }
     }
