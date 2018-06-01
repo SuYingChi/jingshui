@@ -593,6 +593,12 @@ public class MainSerialPortActivity extends BaseActivity implements Observer, io
     @Override
     public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
         Log.d(TAG, "surfaceChanged");
+        if(mMediaPlayer==null){
+            initMediaPlayer();
+            mIsVideoSizeKnown = true;
+            mIsVideoReadyToBePlayed = true;
+            startVideoPlayback();
+        }
     }
 
     @Override
