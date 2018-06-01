@@ -2,6 +2,7 @@ package com.msht.watersystem.Utils;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileFilter;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
@@ -10,6 +11,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.net.FileNameMap;
+import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -378,5 +381,50 @@ public final class FileUtil {
         }
         File file = new File(path);
         return (file.exists() && file.isFile() ? file.length() : -1);
+    }
+    private final static String PREFIX_VIDEO="video/";
+
+    /**
+     * Get the Mime Type from a File
+     * @param fileName 文件名
+     * @return 返回MIME类型
+     * thx https://www.oschina.net/question/571282_223549
+     * add by fengwenhua 2017年5月3日09:55:01
+     */
+    private static String getMimeType(String fileName) {
+        FileNameMap fileNameMap = URLConnection.getFileNameMap();
+        String type = fileNameMap.getContentTypeFor(fileName);
+        return type;
+    }
+
+    /**
+     * 根据文件后缀名判断 文件是否是视频文件
+     * @param fileName 文件名
+     * @return 是否是视频文件
+     */
+    public static boolean isVideoFile(String fileName){
+        String mimeType = getMimeType(fileName);
+        if (!TextUtils.isEmpty(fileName)&&mimeType.contains(PREFIX_VIDEO)){
+            return true;
+        }
+        return false;
+    }
+    public static String getVideoFilePath() {
+        String path = "";
+        File videoDirectory = new File(Environment.getExternalStorageDirectory().getPath() + "/waterSystem/video/");
+        if (videoDirectory.exists())
+
+        {
+            File[] fileList = videoDirectory.listFiles(new FileFilter() {
+                @Override
+                public boolean accept(File pathname) {
+                    return FileUtil.isVideoFile(pathname.getName());
+                }
+            });
+            path = fileList[0].getAbsolutePath();
+        } else if (!videoDirectory.exists()) {
+            videoDirectory.mkdirs();
+        }
+        return path;
     }
 }
