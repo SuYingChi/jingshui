@@ -72,6 +72,10 @@ public class MainSerialPortActivity extends BaseActivity implements Observer, io
     private boolean mIsVideoSizeKnown = false;
     private boolean mIsVideoReadyToBePlayed = false;
     private long currentPosition = 0;
+    private String videoFilePath2;
+    boolean toStartPath = true;
+    boolean toStartPath2 = false;
+    private boolean changeVideo = false;
 
 
     @Override
@@ -83,10 +87,12 @@ public class MainSerialPortActivity extends BaseActivity implements Observer, io
         bindAndAddObserverToPortService();
 
         videoCenterLayout = (CenterLayout) findViewById(R.id.cideo_center_layout);
-        videoFilePath = FileUtil.getVideoFilePath();
+        String[] strings= FileUtil.getVideoFilePath();
+        videoFilePath = strings[0];
+        videoFilePath2 = strings[1];
         if (!LibsChecker.checkVitamioLibs(this)) {
             return;
-        } else if (TextUtils.isEmpty(videoFilePath)) {
+        } else if (TextUtils.isEmpty(videoFilePath)||TextUtils.isEmpty(videoFilePath2)) {
             videoCenterLayout.setVisibility(View.INVISIBLE);
         } else {
             videoCenterLayout.setVisibility(View.VISIBLE);
@@ -616,7 +622,7 @@ public class MainSerialPortActivity extends BaseActivity implements Observer, io
         }
         try {
             mMediaPlayer = new io.vov.vitamio.MediaPlayer(this);
-            mMediaPlayer.setDataSource(videoFilePath);
+            setDataSourcePath();
             mMediaPlayer.setDisplay(holder);
             mMediaPlayer.prepareAsync();
             mMediaPlayer.setOnCompletionListener(this);
@@ -644,7 +650,9 @@ public class MainSerialPortActivity extends BaseActivity implements Observer, io
 
     private void startVideoPlayback() {
         Log.v(TAG, "startVideoPlayback");
-        if (currentPosition != 0) {
+        if(changeVideo){
+            changeVideo =false;
+        }else if(currentPosition != 0){
             mMediaPlayer.seekTo(currentPosition);
         }
         mMediaPlayer.start();
@@ -653,8 +661,13 @@ public class MainSerialPortActivity extends BaseActivity implements Observer, io
     @Override
     public void onCompletion(io.vov.vitamio.MediaPlayer mp) {
         Log.d(TAG, "onCompletion called");
-        mMediaPlayer.seekTo(0);
-        mMediaPlayer.start();
+        releaseMediaPlayer();
+        toStartPath = !toStartPath;
+        toStartPath2 = !toStartPath2;
+        initMediaPlayer();
+        mIsVideoSizeKnown = true;
+        mIsVideoReadyToBePlayed = true;
+        changeVideo = true;
     }
 
     @Override
@@ -681,6 +694,22 @@ public class MainSerialPortActivity extends BaseActivity implements Observer, io
             currentPosition = mMediaPlayer.getCurrentPosition();
             mMediaPlayer.release();
             mMediaPlayer = null;
+        }
+    }
+
+    private void setDataSourcePath(){
+        if(toStartPath2){
+            try {
+                mMediaPlayer.setDataSource(videoFilePath2);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }else {
+            try {
+                mMediaPlayer.setDataSource(videoFilePath);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 }

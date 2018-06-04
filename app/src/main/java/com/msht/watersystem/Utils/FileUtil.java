@@ -409,8 +409,8 @@ public final class FileUtil {
         }
         return false;
     }
-    public static String getVideoFilePath() {
-        String path = "";
+    public static String[] getVideoFilePath() {
+        String[] files= new String[2];
         File videoDirectory = new File(Environment.getExternalStorageDirectory().getPath() + "/waterSystem/video/");
         if (videoDirectory.exists())
 
@@ -421,10 +421,11 @@ public final class FileUtil {
                     return FileUtil.isVideoFile(pathname.getName());
                 }
             });
-            path = fileList[0].getAbsolutePath();
+            files[0] = fileList[0].getAbsolutePath();
+            files[1] = fileList[1].getAbsolutePath();
         } else if (!videoDirectory.exists()) {
             videoDirectory.mkdirs();
         }
-        return path;
+        return files;
     }
 }
