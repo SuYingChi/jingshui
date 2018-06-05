@@ -73,7 +73,7 @@ public class FormatInformationUtil {
             deductByte[0]=byteArrayList.get(35);
             deductByte[1]=byteArrayList.get(36);
             FormatInformationBean.SetDeductAmount=ByteUtils.byte2ToInt(deductByte);
-            FormatInformationBean.Blacklist=ByteUtils.byteToInt(byteArrayList.get(37));
+            FormatInformationBean.blackCard=ByteUtils.byteToInt(byteArrayList.get(37));
             FormatInformationBean.KeyCode=ByteUtils.byteToInt(byteArrayList.get(38));
             FormatInformationBean.Updateflag1=ByteUtils.byteToInt(byteArrayList.get(42));
             FormatInformationBean.Updateflag2=ByteUtils.byteToInt(byteArrayList.get(43));
@@ -83,8 +83,11 @@ public class FormatInformationUtil {
             FormatInformationBean.Updateflag6=ByteUtils.byteToInt(byteArrayList.get(47));
         }
     }
-    /*
-    *@param  byteList  状态指令
+    /**
+     * 〈状态指令解析
+     * 〈功能详细描述〉
+     * @param byteList  状态指令
+     * @return  
      */
     public static void saveStatusInformationToFormatInformation(ArrayList<Byte> byteList){
         if (byteList!=null&&byteList.size()!=0){

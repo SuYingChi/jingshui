@@ -421,6 +421,9 @@ public final class FileUtil {
                     return FileUtil.isVideoFile(pathname.getName());
                 }
             });
+            if(fileList.length!=2){
+                return null;
+            }
             files[0] = fileList[0].getAbsolutePath();
             files[1] = fileList[1].getAbsolutePath();
         } else if (!videoDirectory.exists()) {

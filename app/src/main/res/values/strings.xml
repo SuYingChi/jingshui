@@ -29,5 +29,6 @@ limitations under the License.\n
     <string name="advertisement_text">民生净水，品质人生</string>
     <string name="default_bg_digital">888888.88</string>
     <string name="free_pay_instruction">本台设备可使用民生宝免费扫码购水</string>
+    <string name="black_card_tip">此卡已挂失，如需取水请重新换卡!!</string>
 
 </resources>

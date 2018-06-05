@@ -46,7 +46,7 @@ public class FormatInformationBean {
     public static int SetFilter;
     public static int SetFilterLevel;
     public static int SetDeductAmount;
-    public static int Blacklist;
+    public static int blackCard;
     public static int KeyCode;
     public static int Updateflag1;
     public static int Updateflag2;

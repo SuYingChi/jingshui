@@ -83,27 +83,31 @@ public class MainSerialPortActivity extends BaseActivity implements Observer, io
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main_serial_port);
         textView = findViewById(R.id.textView);
-        initViewImages();
+       // initViewImages();
         bindAndAddObserverToPortService();
-
         videoCenterLayout = (CenterLayout) findViewById(R.id.cideo_center_layout);
         String[] strings= FileUtil.getVideoFilePath();
-        videoFilePath = strings[0];
-        videoFilePath2 = strings[1];
+        if(strings==null){
+            videoCenterLayout.setVisibility(View.GONE);
+            findViewById(R.id.id_layout_frame).setVisibility(View.VISIBLE);
+        }else {
+            videoFilePath = strings[0];
+            videoFilePath2 = strings[1];
+        }
         if (!LibsChecker.checkVitamioLibs(this)) {
             return;
         } else if (TextUtils.isEmpty(videoFilePath)||TextUtils.isEmpty(videoFilePath2)) {
-            videoCenterLayout.setVisibility(View.INVISIBLE);
+            videoCenterLayout.setVisibility(View.GONE);
+            findViewById(R.id.id_layout_frame).setVisibility(View.VISIBLE);
         } else {
             videoCenterLayout.setVisibility(View.VISIBLE);
+            findViewById(R.id.id_layout_frame).setVisibility(View.GONE);
         }
         mPreview = (SurfaceView) findViewById(R.id.surface);
         holder = mPreview.getHolder();
         holder.addCallback(this);
         holder.setFormat(PixelFormat.RGBA_8888);
     }
-
-
     private void initViewImages() {
         myPager = findViewById(R.id.myvp);
         textView = findViewById(R.id.textView);
@@ -119,7 +123,6 @@ public class MainSerialPortActivity extends BaseActivity implements Observer, io
             textView.setVisibility(View.VISIBLE);
         }
     }
-
     private void initImageViewList() {
         imageViewList = new ArrayList<View>();
         List<String> fileImagelist = new ArrayList<String>();
@@ -216,7 +219,6 @@ public class MainSerialPortActivity extends BaseActivity implements Observer, io
                     VariableUtil.byteArray = packet2.getData();
                     onCom2Received107DataFromServer(packet2.getData());
                 } else if (Arrays.equals(packet2.getCmd(), new byte[]{0x02, 0x06})) {
-                    Log.d("com206", CreateOrderType.getPacketString(packet2));
                     //后端主动发送206，设置显示屏的系统时间
                     onCom2Received206DataFromServer(packet2.getData());
                 }
@@ -242,7 +244,6 @@ public class MainSerialPortActivity extends BaseActivity implements Observer, io
             }
         }
     }
-
     private void onCom1Received204DataFromControllBoard() {
         if (buyStatus) {
             buyStatus = false;
@@ -264,7 +265,6 @@ public class MainSerialPortActivity extends BaseActivity implements Observer, io
             }
         }
     }
-
     //Scan code
     private void onCom2Received107DataFromServer(ArrayList<Byte> data) {
         if (data != null && data.size() != 0) {
@@ -331,7 +331,6 @@ public class MainSerialPortActivity extends BaseActivity implements Observer, io
             }
         }
     }
-
     private void onCom2Received203DataFromServer(ArrayList<Byte> data) {
         // setEquipmentData(data.get(4));
         try {
@@ -479,7 +478,6 @@ public class MainSerialPortActivity extends BaseActivity implements Observer, io
         int mTime = Integer.valueOf(time);
         volume = DataCalculateUtils.getWaterVolume(mVolume, mTime);
     }
-
     private void onCom2Received205DataFromServer() {
 
     }

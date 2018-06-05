@@ -10,19 +10,19 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_weight="1"
         android:background="@drawable/water_advertisement"
         android:orientation="horizontal">
         <LinearLayout
-            android:layout_weight="1"
-            android:layout_width="0dp"
+            android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:orientation="vertical"
             android:background="@color/white">
             <FrameLayout
+                android:id="@+id/id_layout_frame"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:background="@color/white">
+                android:background="@color/white"
+                android:visibility="gone">
                 <com.msht.watersystem.widget.MyImgScrollViewPager
                     android:id="@+id/myvp"
                     android:layout_width="match_parent"
@@ -33,22 +33,31 @@
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:gravity="center"
-                    android:text="@string/advertisement_text"
+                    android:contentDescription="@string/advertisement_text"
                     android:src="@drawable/water_advertisement" />
+                <TextClock
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:format24Hour="kk:mm"
+                    android:layout_marginTop="@dimen/margin_width10"
+                    android:layout_marginEnd="@dimen/margin_width10"
+                    android:layout_gravity="top|end"
+                    android:textColor="@color/color_red"
+                    android:textSize="@dimen/text_width12"/>
             </FrameLayout>
+            <io.vov.vitamio.widget.CenterLayout
+                android:id="@+id/cideo_center_layout"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical"
+                >
+                <SurfaceView
+                    android:id="@+id/surface"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center" >
+                </SurfaceView>
+            </io.vov.vitamio.widget.CenterLayout>
         </LinearLayout>
     </LinearLayout>
-    <io.vov.vitamio.widget.CenterLayout
-        android:id="@+id/cideo_center_layout"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="vertical" >
-
-        <SurfaceView
-            android:id="@+id/surface"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center" >
-        </SurfaceView>
-    </io.vov.vitamio.widget.CenterLayout>
 </RelativeLayout>

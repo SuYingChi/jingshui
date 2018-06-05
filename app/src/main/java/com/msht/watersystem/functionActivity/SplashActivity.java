@@ -40,7 +40,6 @@ public class SplashActivity extends BaseActivity  implements Observer{
             CachePreferencesUtil.putStringData(this,CachePreferencesUtil.OUT_WATER_TIME,"30");
         }
     }
-
     @Override
     public void update(Observable observable, Object arg) {
         PortService.MyObservable myObservable = (PortService.MyObservable) observable;
@@ -81,7 +80,6 @@ public class SplashActivity extends BaseActivity  implements Observer{
         });
         bindService(new Intent(mContext, PortService.class), serviceConnection,
                 BIND_AUTO_CREATE);
-
     }
     private void unbindPortServiceAndRemoveObserver(){
         if (serviceConnection != null && portService != null) {

@@ -6,6 +6,7 @@ import android.content.pm.PackageManager;
 import android.os.CountDownTimer;
 import android.os.Handler;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.ImageView;
@@ -212,11 +213,10 @@ public class BuyWaterActivity extends BaseActivity implements Observer{
                     VariableUtil.byteArray.clear();
                     VariableUtil.byteArray=packet2.getData();
                     onCom2Received107DataFromServer(packet2.getData());
-                   // Log.d("com107",CreateOrderType.getPacketString(packet2));
                 }else if (Arrays.equals(packet2.getCmd(),new byte[]{0x01,0x04})){
                     String stringWork= DataCalculateUtils.IntToBinary(ByteUtils.byteToInt(packet2.getData().get(45)));
                     if (DataCalculateUtils.isRechargeData(stringWork,5,6)){
-                        response204ToServer(packet2.getFrame());   //回复
+                        response204ToServer(packet2.getFrame());
                     }
                     onCom2Received104Data(packet2.getData());
                 }else if (Arrays.equals(packet2.getCmd(),new byte[]{0x01,0x02})){

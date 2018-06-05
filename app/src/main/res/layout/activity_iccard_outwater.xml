@@ -8,7 +8,6 @@
     android:orientation="vertical"
     android:padding="@dimen/margin_width15"
     tools:context="com.msht.watersystem.functionActivity.IcCardoutWaterActivity">
-
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
@@ -42,7 +41,6 @@
             android:layout_width="@dimen/margin_width15"
             android:layout_height="match_parent"
             android:background="#00ffffff" />
-
         <LinearLayout
             android:layout_width="0dp"
             android:layout_height="match_parent"
@@ -115,7 +113,6 @@
                         android:textSize="@dimen/text_width16" />
                 </LinearLayout>
             </RelativeLayout>
-
             <RelativeLayout
                 android:id="@+id/id_re_code"
                 android:layout_width="match_parent"
@@ -123,7 +120,6 @@
                 android:layout_gravity="center"
                 android:layout_weight="1"
                 android:background="@drawable/water_back_xh">
-
                 <TextView
                     android:id="@+id/id_waster_status"
                     android:layout_width="wrap_content"
@@ -133,7 +129,6 @@
                     android:text="参考出水量"
                     android:textColor="@color/white"
                     android:textSize="@dimen/text_width16" />
-
                 <com.msht.watersystem.widget.LEDView
                     android:id="@+id/id_waster_yield"
                     android:layout_width="@dimen/margin_width200"
@@ -142,8 +137,8 @@
                     android:layout_marginLeft="@dimen/margin_width15"
                     android:layout_marginTop="@dimen/margin_width15"
                     android:background="@drawable/dark_green_bg"
-                    android:padding="@dimen/margin_width6"></com.msht.watersystem.widget.LEDView>
-
+                    android:padding="@dimen/margin_width6">
+                </com.msht.watersystem.widget.LEDView>
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -155,7 +150,6 @@
                     android:text="升"
                     android:textColor="@color/white"
                     android:textSize="@dimen/text_width18" />
-
                 <TextView
                     android:id="@+id/id_should_text"
                     android:layout_width="wrap_content"
@@ -176,8 +170,8 @@
                     android:layout_marginTop="@dimen/margin_width15"
                     android:background="@drawable/dark_green_bg"
                     android:padding="@dimen/margin_width6"
-                    android:visibility="gone"></com.msht.watersystem.widget.LEDView>
-
+                    android:visibility="gone">
+                </com.msht.watersystem.widget.LEDView>
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -190,14 +184,25 @@
                     android:textColor="@color/white"
                     android:textSize="@dimen/text_width18"
                     android:visibility="gone" />
-
+                <TextView
+                    android:id="@+id/id_blackCard_text"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerHorizontal="true"
+                    android:layout_marginLeft="@dimen/margin_width20"
+                    android:layout_marginRight="@dimen/margin_width20"
+                    android:layout_below="@+id/id_waster_yield"
+                    android:layout_marginTop="@dimen/margin_width60"
+                    android:textColor="@color/color_yellow"
+                    android:textSize="@dimen/text_width16"
+                    android:text="@string/black_card_tip"
+                    android:visibility="gone"/>
                 <RelativeLayout
                     android:id="@+id/id_re_notices1"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_alignParentBottom="true"
                     android:layout_marginBottom="@dimen/margin_width20">
-
                     <TextView
                         android:id="@+id/id_text3"
                         android:layout_width="wrap_content"
