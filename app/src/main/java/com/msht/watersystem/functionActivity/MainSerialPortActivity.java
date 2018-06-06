@@ -83,30 +83,26 @@ public class MainSerialPortActivity extends BaseActivity implements Observer, io
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main_serial_port);
         textView = findViewById(R.id.textView);
-       // initViewImages();
         bindAndAddObserverToPortService();
+        initViewImages();
         videoCenterLayout = (CenterLayout) findViewById(R.id.cideo_center_layout);
         String[] strings= FileUtil.getVideoFilePath();
-        if(strings==null){
+        if(strings==null&&strings.length!=2){
             videoCenterLayout.setVisibility(View.GONE);
-            findViewById(R.id.id_layout_frame).setVisibility(View.VISIBLE);
         }else {
+            videoCenterLayout.setVisibility(View.VISIBLE);
             videoFilePath = strings[0];
             videoFilePath2 = strings[1];
         }
         if (!LibsChecker.checkVitamioLibs(this)) {
             return;
-        } else if (TextUtils.isEmpty(videoFilePath)||TextUtils.isEmpty(videoFilePath2)) {
-            videoCenterLayout.setVisibility(View.GONE);
-            findViewById(R.id.id_layout_frame).setVisibility(View.VISIBLE);
-        } else {
-            videoCenterLayout.setVisibility(View.VISIBLE);
-            findViewById(R.id.id_layout_frame).setVisibility(View.GONE);
         }
         mPreview = (SurfaceView) findViewById(R.id.surface);
         holder = mPreview.getHolder();
         holder.addCallback(this);
-        holder.setFormat(PixelFormat.RGBA_8888);
+        holder.setFormat(PixelFormat.RGBX_8888);
+
+        Log.d(TAG, "actiivty onCreate: ");
     }
     private void initViewImages() {
         myPager = findViewById(R.id.myvp);
@@ -158,13 +154,23 @@ public class MainSerialPortActivity extends BaseActivity implements Observer, io
         bindStatus = true;
     }
 
-    @Override
+/*    @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         bindAndAddObserverToPortService();
         if (pageStatus) {
             myPager.startTimer();
         }
+    }*/
+
+    @Override
+    protected void onRestart() {
+        super.onRestart();
+        bindAndAddObserverToPortService();
+        if (pageStatus) {
+            myPager.startTimer();
+        }
+        Log.d(TAG, "activity onRestart: ");
     }
 
     @Override
@@ -249,8 +255,9 @@ public class MainSerialPortActivity extends BaseActivity implements Observer, io
             buyStatus = false;
             if (FormatInformationBean.ConsumptionType == 1) {
                 Intent intent = new Intent(mContext, IcCardoutWaterActivity.class);
-                startActivityForResult(intent, 1);
+                //startActivityForResult(intent, 1);
                 unbindPortServiceAndRemoveObserver();
+                startActivity(intent);
                 myPager.stopTimer();
             } else if (FormatInformationBean.ConsumptionType == 3) {
                 Intent intent = new Intent(mContext, AppOutWaterActivity.class);
@@ -418,7 +425,6 @@ public class MainSerialPortActivity extends BaseActivity implements Observer, io
 
         }
     }
-
     private void onCom1Received104DataFromControllBoard(ArrayList<Byte> data) {
         try {
             if (data != null && data.size() > 0) {
@@ -536,20 +542,27 @@ public class MainSerialPortActivity extends BaseActivity implements Observer, io
             return false;
         } else if (keyCode == KeyEvent.KEYCODE_MENU) {
             startBuyWater();
+            return true;
         } else if (keyCode == KeyEvent.KEYCODE_DPAD_UP) {
             startBuyWater();
+            return true;
         } else if (keyCode == KeyEvent.KEYCODE_DPAD_DOWN) {
             startBuyWater();
+            return true;
         } else if (keyCode == KeyEvent.KEYCODE_F1) {
             startBuyWater();
+            return true;
+        }else {
+            return super.onKeyDown(keyCode, event);
         }
-        return super.onKeyDown(keyCode, event);
+
     }
 
     private void startBuyWater() {
         Intent intent = new Intent(mContext, BuyWaterActivity.class);
-        startActivityForResult(intent, 1);
+        //startActivityForResult(intent, 1);
         unbindPortServiceAndRemoveObserver();
+        startActivity(intent);
         myPager.stopTimer();
     }
 
@@ -568,24 +581,12 @@ public class MainSerialPortActivity extends BaseActivity implements Observer, io
     }
 
     @Override
-    protected void attachBaseContext(Context newBase) {
-        super.attachBaseContext(new ContextWrapper(newBase) {
-            @Override
-            public Object getSystemService(String name) {
-                if (Context.AUDIO_SERVICE.equals(name)) {
-                    return getApplicationContext().getSystemService(name);
-                }
-                return super.getSystemService(name);
-            }
-        });
-    }
-
-    @Override
     protected void onDestroy() {
         super.onDestroy();
         unbindPortServiceAndRemoveObserver();
         releaseMediaPlayer();
         doCleanUp();
+        Log.d(TAG, "activity onDestroy: ");
     }
 
     @Override
@@ -683,7 +684,7 @@ public class MainSerialPortActivity extends BaseActivity implements Observer, io
         super.onPause();
         releaseMediaPlayer();
         doCleanUp();
-        Log.v(TAG, "onPause");
+        Log.v(TAG, "activity onPause");
 
     }
 

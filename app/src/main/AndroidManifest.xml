@@ -41,7 +41,8 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".functionActivity.MainSerialPortActivity" />
+        <activity android:name=".functionActivity.MainSerialPortActivity"
+            android:theme="@style/FullscreenTheme"/>
         <!-- 开机启动 屏幕解锁 -->
         <receiver android:name=".receiver.BootReceiver">
             <intent-filter>
