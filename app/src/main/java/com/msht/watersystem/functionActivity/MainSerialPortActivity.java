@@ -84,15 +84,14 @@ public class MainSerialPortActivity extends BaseActivity implements Observer, io
         initViewImages();
         videoCenterLayout = (CenterLayout) findViewById(R.id.cideo_center_layout);
         String[] strings= FileUtil.getVideoFilePath();
-        if(strings==null||strings.length!=2){
+        if (!LibsChecker.checkVitamioLibs(this)) {
+            return;
+        } else if(strings==null||strings.length!=2){
             videoCenterLayout.setVisibility(View.GONE);
         }else {
             videoCenterLayout.setVisibility(View.VISIBLE);
             videoFilePath = strings[0];
             videoFilePath2 = strings[1];
-        }
-        if (!LibsChecker.checkVitamioLibs(this)) {
-            return;
         }
         surfaceView = (SurfaceView) findViewById(R.id.surface);
         holder = surfaceView.getHolder();
