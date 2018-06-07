@@ -1,7 +1,5 @@
 package com.msht.watersystem.functionActivity;
 
-import android.content.Context;
-import android.content.ContextWrapper;
 import android.content.Intent;
 
 import android.graphics.PixelFormat;
@@ -32,7 +30,6 @@ import com.msht.watersystem.Utils.BitmapUtil;
 import com.msht.watersystem.Utils.ConsumeInformationUtils;
 import com.msht.watersystem.Utils.ByteUtils;
 import com.msht.watersystem.Utils.CachePreferencesUtil;
-import com.msht.watersystem.Utils.CreateOrderType;
 import com.msht.watersystem.Utils.FileUtil;
 import com.msht.watersystem.Utils.FormatInformationBean;
 import com.msht.watersystem.Utils.FormatInformationUtil;
@@ -65,7 +62,7 @@ public class MainSerialPortActivity extends BaseActivity implements Observer, io
     private boolean pageStatus = false;
     private ComServiceConnection serviceConnection;
     private CenterLayout videoCenterLayout;
-    private SurfaceView mPreview;
+    private SurfaceView surfaceView;
     private SurfaceHolder holder;
     private String videoFilePath;
     private io.vov.vitamio.MediaPlayer mMediaPlayer;
@@ -97,11 +94,10 @@ public class MainSerialPortActivity extends BaseActivity implements Observer, io
         if (!LibsChecker.checkVitamioLibs(this)) {
             return;
         }
-        mPreview = (SurfaceView) findViewById(R.id.surface);
-        holder = mPreview.getHolder();
+        surfaceView = (SurfaceView) findViewById(R.id.surface);
+        holder = surfaceView.getHolder();
         holder.addCallback(this);
         holder.setFormat(PixelFormat.RGBX_8888);
-
         Log.d(TAG, "actiivty onCreate: ");
     }
     private void initViewImages() {
@@ -154,14 +150,6 @@ public class MainSerialPortActivity extends BaseActivity implements Observer, io
         bindStatus = true;
     }
 
-/*    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        bindAndAddObserverToPortService();
-        if (pageStatus) {
-            myPager.startTimer();
-        }
-    }*/
 
     @Override
     protected void onRestart() {
@@ -255,20 +243,19 @@ public class MainSerialPortActivity extends BaseActivity implements Observer, io
             buyStatus = false;
             if (FormatInformationBean.ConsumptionType == 1) {
                 Intent intent = new Intent(mContext, IcCardoutWaterActivity.class);
-                //startActivityForResult(intent, 1);
                 unbindPortServiceAndRemoveObserver();
-                startActivity(intent);
                 myPager.stopTimer();
+                startActivity(intent);
             } else if (FormatInformationBean.ConsumptionType == 3) {
                 Intent intent = new Intent(mContext, AppOutWaterActivity.class);
-                startActivityForResult(intent, 1);
                 unbindPortServiceAndRemoveObserver();
                 myPager.stopTimer();
+                startActivity(intent);
             } else if (FormatInformationBean.ConsumptionType == 5) {
                 Intent intent = new Intent(mContext, DeliverOutWaterActivity.class);
-                startActivityForResult(intent, 1);
                 unbindPortServiceAndRemoveObserver();
                 myPager.stopTimer();
+                startActivity(intent);
             }
         }
     }
@@ -284,9 +271,9 @@ public class MainSerialPortActivity extends BaseActivity implements Observer, io
                 if (FormatInformationBean.AppBalance < 20) {
                     //提示余额不足
                     Intent intent = new Intent(mContext, AppNotSufficientActivity.class);
-                    startActivityForResult(intent, 1);
                     unbindPortServiceAndRemoveObserver();
                     myPager.stopTimer();
+                    startActivity(intent);
                 } else {
                     //给主控板发指令，取水
                     sendBuyWaterCommand104ToControlBoard(1);
@@ -419,9 +406,9 @@ public class MainSerialPortActivity extends BaseActivity implements Observer, io
         //判断是否为关机指令
         if (switch2 == CLOSE_MECHINE && DataCalculateUtils.isEvent(stringWork, 0)) {
             Intent intent = new Intent(mContext, CloseSystemActivity.class);
-            startActivityForResult(intent, 1);
             unbindPortServiceAndRemoveObserver();
             myPager.stopTimer();
+            startActivity(intent);
 
         }
     }
@@ -431,27 +418,27 @@ public class MainSerialPortActivity extends BaseActivity implements Observer, io
                 FormatInformationUtil.saveCom1ReceivedDataToFormatInformation(data);
                 if (FormatInformationBean.Balance <= 1) {
                     Intent intent = new Intent(mContext, NotSufficientActivity.class);
-                    startActivityForResult(intent, 1);
                     unbindPortServiceAndRemoveObserver();
                     myPager.stopTimer();
+                    startActivity(intent);
                 } else {
                     String stringWork = DataCalculateUtils.IntToBinary(FormatInformationBean.Updateflag3);
                     if (!DataCalculateUtils.isEvent(stringWork, 3)) {
                         if (FormatInformationBean.ConsumptionType == 1) {
                             Intent intent = new Intent(mContext, IcCardoutWaterActivity.class);
-                            startActivityForResult(intent, 1);
                             unbindPortServiceAndRemoveObserver();
                             myPager.stopTimer();
+                            startActivity(intent);
                         } else if (FormatInformationBean.ConsumptionType == 3) {
                             Intent intent = new Intent(mContext, AppOutWaterActivity.class);
-                            startActivityForResult(intent, 1);
                             unbindPortServiceAndRemoveObserver();
                             myPager.stopTimer();
+                            startActivity(intent);
                         } else if (FormatInformationBean.ConsumptionType == 5) {
                             Intent intent = new Intent(mContext, DeliverOutWaterActivity.class);
-                            startActivityForResult(intent, 1);
                             unbindPortServiceAndRemoveObserver();
                             myPager.stopTimer();
+                            startActivity(intent);
                         }
                     } else {
                         //刷卡结账
@@ -466,9 +453,9 @@ public class MainSerialPortActivity extends BaseActivity implements Observer, io
                         intent.putExtra("afetrWater", afterWater);
                         intent.putExtra("mAccount", mAccount);
                         intent.putExtra("sign", "0");
-                        startActivityForResult(intent, 1);
                         unbindPortServiceAndRemoveObserver();
                         myPager.stopTimer();
+                        startActivity(intent);
                     }
                 }
             }
@@ -495,9 +482,9 @@ public class MainSerialPortActivity extends BaseActivity implements Observer, io
                 String stringWork = DataCalculateUtils.IntToBinary(FormatInformationBean.WorkState);
                 if (!DataCalculateUtils.isEvent(stringWork, 6)) {
                     Intent intent = new Intent(mContext, CannotBuyWaterActivity.class);
-                    startActivityForResult(intent, 1);
                     unbindPortServiceAndRemoveObserver();
                     myPager.stopTimer();
+                    startActivity(intent);
                 }
             }
         } catch (Exception e) {
@@ -560,10 +547,9 @@ public class MainSerialPortActivity extends BaseActivity implements Observer, io
 
     private void startBuyWater() {
         Intent intent = new Intent(mContext, BuyWaterActivity.class);
-        //startActivityForResult(intent, 1);
         unbindPortServiceAndRemoveObserver();
-        startActivity(intent);
         myPager.stopTimer();
+        startActivity(intent);
     }
 
     private void exitApp() {   //退出app
@@ -616,7 +602,7 @@ public class MainSerialPortActivity extends BaseActivity implements Observer, io
 
     private void initMediaPlayer() {
         doCleanUp();
-        if (TextUtils.isEmpty(videoFilePath)) {
+        if (TextUtils.isEmpty(videoFilePath)||TextUtils.isEmpty(videoFilePath2)) {
             return;
         }
         try {
