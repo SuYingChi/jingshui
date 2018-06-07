@@ -47,6 +47,7 @@ import java.util.Observable;
 import java.util.Observer;
 
 import io.vov.vitamio.LibsChecker;
+import io.vov.vitamio.MediaPlayer;
 import io.vov.vitamio.widget.CenterLayout;
 
 public class MainSerialPortActivity extends BaseActivity implements Observer, io.vov.vitamio.MediaPlayer.OnCompletionListener, io.vov.vitamio.MediaPlayer.OnPreparedListener, io.vov.vitamio.MediaPlayer.OnVideoSizeChangedListener, SurfaceHolder.Callback {
@@ -608,6 +609,7 @@ public class MainSerialPortActivity extends BaseActivity implements Observer, io
             mMediaPlayer = new io.vov.vitamio.MediaPlayer(this);
             setDataSourcePath();
             mMediaPlayer.setDisplay(holder);
+            mMediaPlayer.setVideoQuality(MediaPlayer.VIDEOCHROMA_RGB565);
             mMediaPlayer.prepareAsync();
             mMediaPlayer.setOnCompletionListener(this);
             mMediaPlayer.setOnPreparedListener(this);
