@@ -84,7 +84,7 @@ public class MainSerialPortActivity extends BaseActivity implements Observer, io
         initViewImages();
         videoCenterLayout = (CenterLayout) findViewById(R.id.cideo_center_layout);
         String[] strings= FileUtil.getVideoFilePath();
-        if(strings==null&&strings.length!=2){
+        if(strings==null||strings.length!=2){
             videoCenterLayout.setVisibility(View.GONE);
         }else {
             videoCenterLayout.setVisibility(View.VISIBLE);
