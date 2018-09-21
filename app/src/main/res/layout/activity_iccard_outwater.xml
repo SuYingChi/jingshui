@@ -7,11 +7,10 @@
     android:background="@mipmap/water_background"
     android:orientation="vertical"
     android:padding="@dimen/margin_width15"
-    tools:context="com.msht.watersystem.functionActivity.IcCardoutWaterActivity">
+    tools:context="com.msht.watersystem.functionActivity.IcCardOutWaterActivity">
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
+        android:layout_height="match_parent"
         android:background="@mipmap/water_background"
         android:orientation="horizontal">
 
@@ -20,23 +19,20 @@
             android:layout_height="match_parent"
             android:layout_weight="0.65"
             android:background="@color/white">
-
-            <com.msht.watersystem.widget.MyImgScrollViewPager
-                android:id="@+id/myvp"
+            <com.msht.watersystem.widget.BannerM
+                android:id="@+id/id_banner"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"></com.msht.watersystem.widget.MyImgScrollViewPager>
-
+                android:layout_height="match_parent">
+            </com.msht.watersystem.widget.BannerM>
             <ImageView
                 android:id="@+id/textView"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:layout_centerInParent="true"
+                android:contentDescription="@string/ad_picture"
                 android:gravity="center"
                 android:src="@drawable/water_advertisement" />
-
-            <include layout="@layout/layout_water_quality_detecton" />
+            <include layout="@layout/layout_water_quality_detection" />
         </FrameLayout>
-
         <View
             android:layout_width="@dimen/margin_width15"
             android:layout_height="match_parent"
@@ -47,7 +43,6 @@
             android:layout_weight="0.35"
             android:background="@color/windows_color"
             android:orientation="vertical">
-
             <RelativeLayout
                 android:id="@+id/id_re_text"
                 android:layout_width="match_parent"
@@ -55,7 +50,6 @@
                 android:background="@color/sky_blue"
                 android:orientation="horizontal"
                 android:paddingBottom="@dimen/margin_width15">
-
                 <TextView
                     android:id="@+id/id_text_welcome"
                     android:layout_width="wrap_content"

@@ -15,7 +15,9 @@ import java.io.IOException;
 import java.io.OutputStream;
 
 /**
- * Created by hong on 2017/10/28.
+ *
+ * @author hong
+ * @date 2017/10/28
  */
 
 public class RestartAppUtil {
@@ -30,7 +32,7 @@ public class RestartAppUtil {
        //退出程序
        AlarmManager mgr = (AlarmManager)mContext.getSystemService(Context.ALARM_SERVICE);
        mgr.set(AlarmManager.RTC, System.currentTimeMillis() + 600,
-               pendingIntent); // 6m秒钟后重启应用
+               pendingIntent);
       ((AppContext) mContext.getApplicationContext()).KillProcess();
     }
     public static void  restartSystem(){
@@ -54,7 +56,7 @@ public class RestartAppUtil {
 
     /**
      * 重启整个APP
-     * @param context
+     * @param context 上下文
      * @param delayed 延迟多少毫秒
      */
     public static void restartWaterSystem(Context context,long delayed){
@@ -64,13 +66,19 @@ public class RestartAppUtil {
         killSelfServiceIntent.putExtra("PackageName",context.getPackageName());
         killSelfServiceIntent.putExtra("Delayed",delayed);
         context.startService(killSelfServiceIntent);
-
         /**杀死整个进程**/
         android.os.Process.killProcess(android.os.Process.myPid());
     }
     /***重启整个APP*/
     public static void restartWaterSystem(Context context){
         restartWaterSystem(context,600);
+    }
+
+
+    public static void restartWaterApp(Context mContext){
+        final Intent intent = mContext.getPackageManager().getLaunchIntentForPackage(mContext.getPackageName());
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        mContext.startActivity(intent);
     }
 
 }

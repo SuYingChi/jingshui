@@ -2,6 +2,7 @@ package com.msht.watersystem.functionActivity;
 
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.os.CountDownTimer;
 import android.os.Bundle;
 import android.view.KeyEvent;
@@ -25,23 +26,35 @@ import com.msht.watersystem.Utils.FormatInformationBean;
 import com.msht.watersystem.Utils.FormatInformationUtil;
 import com.msht.watersystem.Utils.DataCalculateUtils;
 import com.msht.watersystem.Utils.VariableUtil;
+import com.msht.watersystem.widget.BannerM;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
 
+/**
+ * Demo class
+ * 〈一句话功能简述〉
+ * 〈功能详细描述〉
+ * @author hong
+ * @date 2018/8/9 
+ */
 public class NotSufficientActivity extends BaseActivity implements Observer {
-    private boolean     buyStatus=false;
-    private TextView    tv_Balalance;
-    private TextView    tv_CardNo;
-    private TextView    tv_time;
-    private TextView    tv_Success;
-    private TextView    tv_Notbalance;
-    private ImageView   imageView;
-    private ImageView   textView;
-    private boolean     bindStatus=false;
-    private Context     mContext;
+    private boolean  buyStatus=false;
+    /**
+     * @parame  mAppFrame 扫码发送104帧序
+     */
+    private byte[]  mAppFrame;
+    private TextView tvBalance;
+    private TextView tvCardNo;
+    private TextView tvTime;
+    private TextView tvSuccess;
+    private TextView tvNotBalance;
+    private ImageView imageView;
+    private boolean   bindStatus=false;
+    private Context   mContext;
     private MyCountDownTimer myCountDownTimer;
     private PortService      portService;
     private ComServiceConnection serviceConnection;
@@ -52,6 +65,7 @@ public class NotSufficientActivity extends BaseActivity implements Observer {
         mContext=this;
         myCountDownTimer=new MyCountDownTimer(30000,1000);
         initView();
+        initBannerView();
         initWaterQuality();
         bindPortService();
     }
@@ -70,17 +84,35 @@ public class NotSufficientActivity extends BaseActivity implements Observer {
     }
     private void initView() {
         imageView=(ImageView)findViewById(R.id.id_erwei_code);
-        tv_Success=(TextView)findViewById(R.id.id_success_text);
-        tv_Notbalance=(TextView) findViewById(R.id.id_not_balance);
-        tv_Balalance=(TextView)findViewById(R.id.id_balance_amount);
-        tv_CardNo=(TextView)findViewById(R.id.id_tv_customerNo);
-        tv_time=(TextView)findViewById(R.id.id_time) ;
-        double balance= DataCalculateUtils.TwoDecinmal2(FormatInformationBean.Balance/100.0);
-        tv_Balalance.setText(String.valueOf(balance));
-        tv_CardNo.setText(String.valueOf(FormatInformationBean.StringCardNo));
+        tvSuccess =(TextView)findViewById(R.id.id_success_text);
+        tvNotBalance =(TextView) findViewById(R.id.id_not_balance);
+        tvBalance =(TextView)findViewById(R.id.id_balance_amount);
+        tvCardNo =(TextView)findViewById(R.id.id_tv_customerNo);
+        tvTime =(TextView)findViewById(R.id.id_time) ;
+        double balance= DataCalculateUtils.getTwoDecimal(FormatInformationBean.Balance/100.0);
+        tvBalance.setText(String.valueOf(balance));
+        tvCardNo.setText(String.valueOf(FormatInformationBean.StringCardNo));
         myCountDownTimer.start();
     }
 
+    private void initBannerView() {
+        BannerM mBanner = (BannerM) findViewById(R.id.id_banner);
+        ImageView advertImage = findViewById(R.id.textView);
+        List<Bitmap> imageList= VariableUtil.imageViewList;
+        if (imageList!=null&& imageList.size() > 0) {
+            mBanner.setBannerBeanList(VariableUtil.imageViewList)
+                    .setDefaultImageResId(R.drawable.water_advertisement)
+                    .setIndexPosition(BannerM.INDEX_POSITION_BOTTOM)
+                    .setIndexColor(getResources().getColor(R.color.colorPrimary))
+                    .setIntervalTime(10)
+                    .show();
+            mBanner.setVisibility(View.VISIBLE);
+            advertImage.setVisibility(View.GONE);
+        } else {
+            mBanner.setVisibility(View.GONE);
+            advertImage.setVisibility(View.VISIBLE);
+        }
+    }
     @Override
     public void update(Observable observable, Object arg) {
         PortService.MyObservable myObservable = (PortService.MyObservable) observable;
@@ -94,13 +126,13 @@ public class NotSufficientActivity extends BaseActivity implements Observer {
                 }else if (Arrays.equals(packet1.getCmd(),new byte[]{0x01,0x05})){
                     onCom1Received105DataFromControllBoard(packet1.getData());
                 }else if (Arrays.equals(packet1.getCmd(),new byte[]{0x02,0x04})){
-                    onCom1Received204DataFromControllBoard();
+                    onCom1Received204DataFromControlBoard(packet1.getFrame());
                 }
             }
             Packet packet2 = myObservable.getCom2Packet();
             if (packet2 != null) {
                if (Arrays.equals(packet2.getCmd(),new byte[]{0x01,0x04})){
-                    String stringWork= DataCalculateUtils.IntToBinary(ByteUtils.byteToInt(packet2.getData().get(45)));
+                    String stringWork= DataCalculateUtils.intToBinary(ByteUtils.byteToInt(packet2.getData().get(45)));
                     if (DataCalculateUtils.isRechargeData(stringWork,5,6)){
                         response204ToServer(packet2.getFrame());
                     }
@@ -115,21 +147,23 @@ public class NotSufficientActivity extends BaseActivity implements Observer {
             }
         }
     }
-    private void onCom1Received204DataFromControllBoard() {
-        if (buyStatus){
-            buyStatus=false;
-            if (FormatInformationBean.ConsumptionType==1){
-                Intent intent=new Intent(mContext,IcCardoutWaterActivity.class);
-                startActivityForResult(intent,1);
-                finish();
-            }else if (FormatInformationBean.ConsumptionType==3){
-                Intent intent=new Intent(mContext,AppOutWaterActivity.class);
-                startActivityForResult(intent,1);
-                finish();
-            }else if (FormatInformationBean.ConsumptionType==5){
-                Intent intent=new Intent(mContext,DeliverOutWaterActivity.class);
-                startActivityForResult(intent,1);
-                finish();
+    private void onCom1Received204DataFromControlBoard(byte[] frame) {
+        if (Arrays.equals(frame,mAppFrame)){
+            if (buyStatus){
+                buyStatus=false;
+                if (FormatInformationBean.ConsumptionType==1){
+                    Intent intent=new Intent(mContext,IcCardOutWaterActivity.class);
+                    startActivity(intent);
+                    finish();
+                }else if (FormatInformationBean.ConsumptionType==3){
+                    Intent intent=new Intent(mContext,AppOutWaterActivity.class);
+                    startActivity(intent);
+                    finish();
+                }else if (FormatInformationBean.ConsumptionType==5){
+                    Intent intent=new Intent(mContext,DeliverOutWaterActivity.class);
+                    startActivity(intent);
+                    finish();
+                }
             }
         }
     }
@@ -151,9 +185,9 @@ public class NotSufficientActivity extends BaseActivity implements Observer {
     private void onCom2Received102DataFromServer(ArrayList<Byte> data) {
         if (ConsumeInformationUtils.controlModel(mContext,data)){
             if (FormatInformationBean.ShowTDS==0){
-                layout_TDS.setVisibility(View.GONE);
+                layoutTDS.setVisibility(View.GONE);
             }else {
-                layout_TDS.setVisibility(View.VISIBLE);
+                layoutTDS.setVisibility(View.VISIBLE);
             }
         }
     }
@@ -162,16 +196,16 @@ public class NotSufficientActivity extends BaseActivity implements Observer {
             ConsumeInformationUtils.saveConsumptionInformationToFormatInformation(data);
             if (FormatInformationBean.BusinessType==3){
                 FormatInformationBean.Balance= FormatInformationBean.Balance+ FormatInformationBean.rechargeAmount;
-                double balance= DataCalculateUtils.TwoDecinmal2(FormatInformationBean.Balance/100.0);
-                tv_Balalance.setText(String.valueOf(balance));
+                double balance= DataCalculateUtils.getTwoDecimal(FormatInformationBean.Balance/100.0);
+                tvBalance.setText(String.valueOf(balance));
                 if (FormatInformationBean.AppBalance<20){
                     imageView.setVisibility(View.VISIBLE);
-                    tv_Notbalance.setVisibility(View.VISIBLE);
-                    tv_Success.setVisibility(View.GONE);
+                    tvNotBalance.setVisibility(View.VISIBLE);
+                    tvSuccess.setVisibility(View.GONE);
                 }else {
                     imageView.setVisibility(View.GONE);
-                    tv_Notbalance.setVisibility(View.INVISIBLE);
-                    tv_Success.setVisibility(View.VISIBLE);
+                    tvNotBalance.setVisibility(View.INVISIBLE);
+                    tvSuccess.setVisibility(View.VISIBLE);
                 }
             }else {
                 VariableUtil.byteArray.clear();
@@ -179,8 +213,8 @@ public class NotSufficientActivity extends BaseActivity implements Observer {
                 buyStatus=true;
                 if (FormatInformationBean.BusinessType==1){
                     if (FormatInformationBean.AppBalance<20){
-                        double balance= DataCalculateUtils.TwoDecinmal2(FormatInformationBean.AppBalance/100.0);
-                        tv_Balalance.setText(String.valueOf(balance));
+                        double balance= DataCalculateUtils.getTwoDecimal(FormatInformationBean.AppBalance/100.0);
+                        tvBalance.setText(String.valueOf(balance));
                     }else {
                         setBusiness(1);
                     }
@@ -194,6 +228,7 @@ public class NotSufficientActivity extends BaseActivity implements Observer {
         if (portService != null) {
             try {
                 byte[] frame = FrameUtils.getFrame(mContext);
+                mAppFrame=frame;
                 byte[] type = new byte[]{0x01, 0x04};
                 if (business==1){
                     byte[] data= FormatInformationUtil.setConsumeType01();
@@ -233,29 +268,29 @@ public class NotSufficientActivity extends BaseActivity implements Observer {
             if(   data!=null&&data.size()>0){
                 FormatInformationUtil.saveCom1ReceivedDataToFormatInformation(data);
                     if (FormatInformationBean.Balance<20){
-                        double balance= DataCalculateUtils.TwoDecinmal2(FormatInformationBean.Balance/100.0);
-                        tv_Balalance.setText(String.valueOf(balance));
-                        tv_CardNo.setText(String.valueOf(FormatInformationBean.StringCardNo));
+                        double balance= DataCalculateUtils.getTwoDecimal(FormatInformationBean.Balance/100.0);
+                        tvBalance.setText(String.valueOf(balance));
+                        tvCardNo.setText(String.valueOf(FormatInformationBean.StringCardNo));
                     }else {
-                        String stringWork= DataCalculateUtils.IntToBinary(FormatInformationBean.Updateflag3);
+                        String stringWork= DataCalculateUtils.intToBinary(FormatInformationBean.Updateflag3);
                         if (DataCalculateUtils.isEvent(stringWork,3)){
-                            double balance= DataCalculateUtils.TwoDecinmal2(FormatInformationBean.Balance/100.0);
-                            tv_Balalance.setText(String.valueOf(balance));
-                            tv_CardNo.setText(String.valueOf(FormatInformationBean.StringCardNo));
+                            double balance= DataCalculateUtils.getTwoDecimal(FormatInformationBean.Balance/100.0);
+                            tvBalance.setText(String.valueOf(balance));
+                            tvCardNo.setText(String.valueOf(FormatInformationBean.StringCardNo));
                         }else {
                             if (FormatInformationBean.ConsumptionType==1){
-                                Intent intent=new Intent(mContext,IcCardoutWaterActivity.class);
-                                startActivityForResult(intent,1);
+                                Intent intent=new Intent(mContext,IcCardOutWaterActivity.class);
+                                startActivity(intent);
                                 myCountDownTimer.cancel();
                                 finish();
                             }else if (FormatInformationBean.ConsumptionType==3){
                                 Intent intent=new Intent(mContext,AppOutWaterActivity.class);
-                                startActivityForResult(intent,1);
+                                startActivity(intent);
                                 myCountDownTimer.cancel();
                                 finish();
                             }else if (FormatInformationBean.ConsumptionType==5){
                                 Intent intent=new Intent(mContext,DeliverOutWaterActivity.class);
-                                startActivityForResult(intent,1);
+                                startActivity(intent);
                                 myCountDownTimer.cancel();
                                 finish();
                             }
@@ -285,12 +320,12 @@ public class NotSufficientActivity extends BaseActivity implements Observer {
         try {
             if (data!=null&&data.size()!=0){
                 FormatInformationUtil.saveStatusInformationToFormatInformation(data);
-                tv_InTDS.setText(String.valueOf(FormatInformationBean.OriginTDS));
-                tv_OutTDS.setText(String.valueOf(FormatInformationBean.PurificationTDS));
-                String stringWork= DataCalculateUtils.IntToBinary(FormatInformationBean.WorkState);
+                tvInTDS.setText(String.valueOf(FormatInformationBean.OriginTDS));
+                tvOutTDS.setText(String.valueOf(FormatInformationBean.PurificationTDS));
+                String stringWork= DataCalculateUtils.intToBinary(FormatInformationBean.WorkState);
                 if (!DataCalculateUtils.isEvent(stringWork,6)){
                     Intent intent=new Intent(mContext, CannotBuyWaterActivity.class);
-                    startActivityForResult(intent,1);
+                    startActivity(intent);
                     finish();
                 }
             }
@@ -299,7 +334,7 @@ public class NotSufficientActivity extends BaseActivity implements Observer {
         }
     }
     private void onCom2Received104DataFromServer(ArrayList<Byte> data) {
-        String stringWork= DataCalculateUtils.IntToBinary(ByteUtils.byteToInt(data.get(45)));
+        String stringWork= DataCalculateUtils.intToBinary(ByteUtils.byteToInt(data.get(45)));
         int Switch=ByteUtils.byteToInt(data.get(31));
         if (Switch==2&&DataCalculateUtils.isEvent(stringWork,0)){
             Intent intent=new Intent(mContext, CloseSystemActivity.class);
@@ -322,7 +357,7 @@ public class NotSufficientActivity extends BaseActivity implements Observer {
         }
         @Override
         public void onTick(long millisUntilFinished) {  //计时过程
-            tv_time.setText(millisUntilFinished/1000+"");
+            tvTime.setText(millisUntilFinished/1000+"");
         }
         @Override
         public void onFinish() {

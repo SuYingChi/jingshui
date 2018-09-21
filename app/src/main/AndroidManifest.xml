@@ -33,16 +33,13 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".functionActivity.SplashActivity"
-            >
+        <activity android:name=".functionActivity.SplashActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".functionActivity.MainSerialPortActivity"
-            android:theme="@style/FullscreenTheme"/>
         <!-- 开机启动 屏幕解锁 -->
         <receiver android:name=".receiver.BootReceiver">
             <intent-filter>
@@ -59,8 +56,14 @@
             android:enabled="true"
             android:exported="true" />
 
+        <activity
+            android:name="io.vov.vitamio.activity.InitActivity"
+            android:configChanges="orientation|screenSize|smallestScreenSize|keyboard|keyboardHidden|navigation"
+            android:launchMode="singleTop"
+            android:theme="@android:style/Theme.NoTitleBar"
+            android:windowSoftInputMode="stateAlwaysHidden" />
         <activity android:name=".functionActivity.BuyWaterActivity" />
-        <activity android:name=".functionActivity.IcCardoutWaterActivity" />
+        <activity android:name=".functionActivity.IcCardOutWaterActivity" />
         <activity android:name=".functionActivity.CannotBuyWaterActivity" />
         <activity android:name=".functionActivity.DeliverOutWaterActivity" />
         <activity android:name=".functionActivity.NotSufficientActivity" />
@@ -68,12 +71,17 @@
         <activity android:name=".functionActivity.AppNotSufficientActivity" />
 
         <service android:name="com.mcloyal.serialport.service.PortService" />
+
         <activity android:name=".functionActivity.AppOutWaterActivity" />
         <activity android:name=".functionActivity.CloseSystemActivity" />
+
         <service
-            android:name=".service.MyIntentService"
-            android:exported="false">
-        </service>
-        <service android:name=".service.KillSelfService"/>
+            android:name=".service.ResendDataService"
+            android:exported="false" />
+        <service android:name=".service.KillSelfService" />
+
+        <activity android:name=".functionActivity.MainMyVideoActivity" />
+        <activity android:name=".functionActivity.MainWaterVideoActivity"></activity>
     </application>
+
 </manifest>

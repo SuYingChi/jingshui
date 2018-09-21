@@ -15,15 +15,25 @@ import com.msht.watersystem.Interface.ResendDataEvent;
 import com.msht.watersystem.R;
 import com.msht.watersystem.Utils.CachePreferencesUtil;
 import com.msht.watersystem.Utils.FormatInformationBean;
+import com.msht.watersystem.entity.OrderInfo;
 import com.msht.watersystem.widget.LoadingDialog;
+
+import java.util.List;
 
 /**
  * Created by huangzhong on 2015/9/17.
  */
-public abstract class BaseActivity extends AppCompatActivity implements ResendDataEvent {
-    public TextView  tv_InTDS;
-    public TextView  tv_OutTDS;
-    public View      layout_TDS;
+/**
+ * Demo class
+ * 〈一句话功能简述〉
+ * 〈功能详细描述〉
+ * @author hong
+ * @date 2018/7/2  
+ */
+public abstract class BaseActivity extends AppCompatActivity  {
+    public TextView tvInTDS;
+    public TextView tvOutTDS;
+    public View layoutTDS;
     public Context   mContext;
     public AppLibsContext appLibsContext;
     public AppPreferences appPreferences;
@@ -43,7 +53,6 @@ public abstract class BaseActivity extends AppCompatActivity implements ResendDa
             window.setAttributes(params);
         }*/
         ((AppContext)getApplication()).addActivity(this);
-        event=this;
         mContext = this;
         appLibsContext = (AppLibsContext) this.getApplicationContext();
         appPreferences = AppPreferences.getInstance(appLibsContext);
@@ -51,26 +60,24 @@ public abstract class BaseActivity extends AppCompatActivity implements ResendDa
         loadingdialog = new LoadingDialog(mContext);
     }
     protected void initWaterQuality() {
-        tv_InTDS=(TextView)findViewById(R.id.id_in_tds);
-        tv_OutTDS=(TextView)findViewById(R.id.id_out_tds);
-        layout_TDS=findViewById(R.id.id_tds_layout);
-        tv_InTDS.setText(String.valueOf(FormatInformationBean.OriginTDS));
-        tv_OutTDS.setText(String.valueOf(FormatInformationBean.PurificationTDS));
+        tvInTDS =(TextView)findViewById(R.id.id_in_tds);
+        tvOutTDS =(TextView)findViewById(R.id.id_out_tds);
+        layoutTDS =findViewById(R.id.id_tds_layout);
+        tvInTDS.setText(String.valueOf(FormatInformationBean.OriginTDS));
+        tvOutTDS.setText(String.valueOf(FormatInformationBean.PurificationTDS));
         int tds= CachePreferencesUtil.getChargeMode(this,CachePreferencesUtil.SHOWTDS,0);
         if (tds==0){
-            layout_TDS.setVisibility(View.GONE);
+            layoutTDS.setVisibility(View.GONE);
         }else {
-            layout_TDS.setVisibility(View.VISIBLE);
+            layoutTDS.setVisibility(View.VISIBLE);
         }
     }
     @Override
-    public void onHavaDataChange(boolean netMobile) {
-
-    }
     protected void onResume() {
         super.onResume();
     }
 
+    @Override
     protected void onPause() {
         super.onPause();
     }

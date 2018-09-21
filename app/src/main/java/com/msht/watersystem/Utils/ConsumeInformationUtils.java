@@ -4,11 +4,12 @@ import android.content.Context;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
-
 /**
- * Created by hong on 2017/12/10.
+ * Demo class
+ *
+ * @author  hong
+ * @date 2017/12/10
  */
-
 public class ConsumeInformationUtils {
     public static void saveConsumptionInformationToFormatInformation(ArrayList<Byte> byteArrayList){
         if (byteArrayList!=null&&byteArrayList.size()!=0){
@@ -16,7 +17,8 @@ public class ConsumeInformationUtils {
             if (FormatInformationBean.BusinessType==1){
                 FormatInformationBean.ConsumptionType=3;
             }else if (FormatInformationBean.BusinessType==2){
-                FormatInformationBean.ConsumptionType=5;  //消费类型
+                //消费类型
+                FormatInformationBean.ConsumptionType=5;
             }
             byte[] account=new  byte[8];
             account[0]=byteArrayList.get(1);
@@ -29,17 +31,17 @@ public class ConsumeInformationUtils {
             account[7]=byteArrayList.get(8);
             FormatInformationBean.phoneType=account;
             try {
-                FormatInformationBean.StringCardNo=getbigNumber(account);
+                FormatInformationBean.StringCardNo= getBigNumber(account);
             } catch (Exception e) {
                 e.printStackTrace();
             }
-            byte[] Balance=new byte[4];
-            Balance[0]=byteArrayList.get(9);
-            Balance[1]=byteArrayList.get(10);
-            Balance[2]=byteArrayList.get(11);
-            Balance[3]=byteArrayList.get(12);
+            byte[] byteBalance=new byte[4];
+            byteBalance[0]=byteArrayList.get(9);
+            byteBalance[1]=byteArrayList.get(10);
+            byteBalance[2]=byteArrayList.get(11);
+            byteBalance[3]=byteArrayList.get(12);
            // FormatInformationBean.Balance=ByteUtils.byte4ToInt(Balance);
-            FormatInformationBean.AppBalance=ByteUtils.byte4ToInt(Balance);
+            FormatInformationBean.AppBalance=ByteUtils.byte4ToInt(byteBalance);
 
             byte[] recharge=new byte[4];
             recharge[0]=byteArrayList.get(13);
@@ -48,12 +50,12 @@ public class ConsumeInformationUtils {
             recharge[3]=byteArrayList.get(16);
             FormatInformationBean.rechargeAmount=ByteUtils.byte4ToInt(recharge);
 
-            byte[] DeviceId=new byte[4];
-            DeviceId[0]=byteArrayList.get(21);
-            DeviceId[1]=byteArrayList.get(22);
-            DeviceId[2]=byteArrayList.get(23);
-            DeviceId[3]=byteArrayList.get(24);
-            FormatInformationBean.DeviceId=ByteUtils.byte4ToInt(DeviceId);
+            byte[] byteDeviceId=new byte[4];
+            byteDeviceId[0]=byteArrayList.get(21);
+            byteDeviceId[1]=byteArrayList.get(22);
+            byteDeviceId[2]=byteArrayList.get(23);
+            byteDeviceId[3]=byteArrayList.get(24);
+            FormatInformationBean.DeviceId=ByteUtils.byte4ToInt(byteDeviceId);
             FormatInformationBean.PriceNum=ByteUtils.byteToInt(byteArrayList.get(25));
             FormatInformationBean.OutWaterTime=ByteUtils.byteToInt(byteArrayList.get(26));
             FormatInformationBean.WaterNum=ByteUtils.byteToInt(byteArrayList.get(27));
@@ -73,14 +75,14 @@ public class ConsumeInformationUtils {
             orderNo[7]=byteArrayList.get(37);
             FormatInformationBean.orderType=orderNo;
             try {
-                FormatInformationBean.OrderNoString=getbigNumber(orderNo);
+                FormatInformationBean.OrderNoString= getBigNumber(orderNo);
             } catch (Exception e) {
                 e.printStackTrace();
             }
         }
     }
     public static boolean calaculateRecharge(ArrayList<Byte> byteArrayList){
-        if (byteArrayList.size()!=0&&byteArrayList!=null){
+        if (byteArrayList!=null&&byteArrayList.size()!=0){
             FormatInformationBean.BusinessType=ByteUtils.byteToInt(byteArrayList.get(0));
             byte[] recharge=new byte[4];
             recharge[0]=byteArrayList.get(13);
@@ -93,11 +95,10 @@ public class ConsumeInformationUtils {
             return false;
         }
     }
-    public static String getbigNumber(byte[] numbyte)throws Exception{
-        BigInteger bigInteger=new BigInteger(numbyte);
+    public static String getBigNumber(byte[] numByte)throws Exception{
+        BigInteger bigInteger=new BigInteger(numByte);
         long intNum=bigInteger.longValue();
-        String account=String.valueOf(intNum);
-        return account;
+        return String.valueOf(intNum);
     }
     public static  byte[] settleData(byte[] settledata,byte[] settleorder){
         byte[] data=new byte[38];

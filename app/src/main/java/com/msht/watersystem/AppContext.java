@@ -16,10 +16,11 @@ import com.msht.watersystem.Utils.MyLogUtil;
 import com.msht.watersystem.gen.DaoMaster;
 import com.msht.watersystem.gen.DaoSession;
 import com.msht.watersystem.receiver.PortReceiver;
-import com.tencent.bugly.crashreport.CrashReport;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import io.vov.vitamio.Vitamio;
 
 /**
  * Created by rain on 2017/11/6.
@@ -42,16 +43,17 @@ public class AppContext extends AppLibsContext {
         super.onCreate();
         mActivityList=new ArrayList<>();
         initPortBroadcast();
-        CaughtExceptionTool.getInstance().init(this);  //异常捕获
+       // CaughtExceptionTool.getInstance().init(this);  //异常捕获
         instances = this;
         mContext = getApplicationContext();
+        /*初始化视频播放*/
+        Vitamio.initialize(mContext);
        // LogUtils.initLogs(this,true,true,true,true,true,true);
         LogUtils.initLogs(this,false,false,false,false,false,true);
        // GreenDaoManager.getInstance();    //数据库存储订单数据
        /* ArrayList<byte[]> types = new ArrayList<>();
         types.add(new byte[]{0x01, 0x04});//如果需要新增其他类型的特例则使用 add 方法叠加即可
         SpecialUtils.addTypes(types);*/
-        CrashReport.initCrashReport(getApplicationContext(), "ea80077b78", true);
     }
     /**
      * 初始化广播事件以及后台服务事件监听串口接收程序

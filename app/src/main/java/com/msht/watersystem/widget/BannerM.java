@@ -1,4 +1,4 @@
-package com.landptf.view;
+package com.msht.watersystem.widget;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
@@ -19,14 +19,11 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewParent;
-import android.view.ViewStub;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
-import android.widget.TextView;
 
-import com.landptf.R;
-import com.landptf.util.ConvertM;
+import com.msht.watersystem.R;
+import com.msht.watersystem.Utils.ThreadPoolManager;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -70,6 +67,7 @@ public class BannerM extends RelativeLayout {
     //private TextView tvText;
     //自动滑动的定时器
   //  private ScheduledExecutorService scheduledExecutorService;
+    private  ScheduledExecutorService scheduledThreadPool;
     //当前加载到第几页
     private int currentIndex = 0;
     //默认背景图
@@ -180,7 +178,6 @@ public class BannerM extends RelativeLayout {
         this.imageList = list;
         return this;
     }
-
     /**
      * 设置图片的点击事件
      * @param listener
@@ -189,7 +186,6 @@ public class BannerM extends RelativeLayout {
         mOnItemClickListener = listener;
         return this;
     }
-
     public void show() {
         if (imageList != null && imageList.size() != 0) {
             initImageViewList();
@@ -198,10 +194,11 @@ public class BannerM extends RelativeLayout {
             adapter = new ViewPagerAdapter();
             vpBanner.setAdapter(adapter);
             //定时器开始工作
-            startPlay();
+           // startPlay();
+            ThreadPoolManager.getInstance(mContext.getApplicationContext()).onThreadPoolInitiate(handler,intervalTime);
+            //ThreadPoolManager.onThreadPoolStart(handler,intervalTime);
         }
     }
-
     /**
      * 初始化圆点指示器，根据indexPosition来加载不同的布局
      */
@@ -233,7 +230,6 @@ public class BannerM extends RelativeLayout {
         } else {
             gradientDrawableSelected.setColor(mContext.getResources().getColor(R.color.mainColor));
         }
-
         /*for (int i = 0; i < count; i++) {
             View view = new View(mContext);
             LinearLayout.LayoutParams lpView = new LinearLayout.LayoutParams(ConvertM.dp2px(mContext, 8), ConvertM.dp2px(mContext, 8));
@@ -249,7 +245,6 @@ public class BannerM extends RelativeLayout {
             llIndex.addView(view);
         }*/
     }
-
     /**
      * 初始化ImageView，使用Picasso下载图片，只在SdCard中缓存
      */
@@ -258,7 +253,7 @@ public class BannerM extends RelativeLayout {
         ivList = new ArrayList<>(count);
         for (int i = 0; i < count; i++) {
             final ImageView imageView = new ImageView(mContext);
-            imageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
+            imageView.setScaleType(ImageView.ScaleType.FIT_XY);
             ivList.add(imageView);
             imageView.setOnClickListener(new OnClickListener() {
                 @Override
@@ -269,9 +264,8 @@ public class BannerM extends RelativeLayout {
             imageView.setImageBitmap(imageList.get(i));
         }
     }
-
     private void startPlay() {
-        ScheduledExecutorService scheduledThreadPool = new ScheduledThreadPoolExecutor(3, new ThreadFactory() {
+         scheduledThreadPool = new ScheduledThreadPoolExecutor(4, new ThreadFactory() {
             @Override
             public Thread newThread(@NonNull Runnable  r) {
                 return new Thread(r,Thread.currentThread().getName());
@@ -286,7 +280,6 @@ public class BannerM extends RelativeLayout {
                                                 }, intervalTime, intervalTime,
                 TimeUnit.SECONDS);
     }
-
     /**
      * 获取点击图片的位置
      * @param item
@@ -300,13 +293,13 @@ public class BannerM extends RelativeLayout {
         }
         return -1;
     }
-
     @SuppressLint("HandlerLeak")
     private Handler handler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
             switch (msg.what) {
                 case HANDLE_UPDATE_INDEX:
+                    currentIndex++;
                     vpBanner.setCurrentItem(currentIndex);
                     break;
                 default:
@@ -331,13 +324,10 @@ public class BannerM extends RelativeLayout {
             tvText.setText("测试");
         }*/
     }
-
         @Override
         public void onPageScrollStateChanged(int state) {
         }
     }
-
-
     private class ViewPagerAdapter extends PagerAdapter {
         @Override
         public void destroyItem(View container, int position, Object object) {
@@ -358,12 +348,10 @@ public class BannerM extends RelativeLayout {
             ((ViewPager) container).addView(imageView);
             return imageView;
         }
-
         @Override
         public int getCount() {
             return Integer.MAX_VALUE;
         }
-
         @Override
         public boolean isViewFromObject(View arg0, Object arg1) {
             return arg0 == arg1;
@@ -374,17 +362,23 @@ public class BannerM extends RelativeLayout {
         public Parcelable saveState() {
             return null;
         }
-
         @Override
-        public void startUpdate(View arg0) {
-        }
-
+        public void startUpdate(View arg0) {}
         @Override
         public void finishUpdate(View arg0) {
         }
     }
-
     public interface OnItemClickListener {
+        /**
+         * 触发回调
+         * @param position
+         */
         void onItemClick(int position);
     }
+
+   /* public void onShutDown(){
+        if (scheduledThreadPool!=null){
+            scheduledThreadPool.shutdown();
+        }
+    }*/
 }

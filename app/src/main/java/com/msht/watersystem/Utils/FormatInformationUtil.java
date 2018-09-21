@@ -6,9 +6,11 @@ import java.util.ArrayList;
  * Created by hong on 2017/10/28.
  */
 public class FormatInformationUtil {
-    /*
-   *@param  byteList  控制指令
-    */
+    private static final int CONTROL_INSTRUCT_LENGTH=48;
+    /**
+     * 解析控制指令
+     * @param byteArrayList 控制指令
+     */
     public static  void saveCom1ReceivedDataToFormatInformation(ArrayList<Byte> byteArrayList){
 
         if (byteArrayList!=null&&byteArrayList.size()!=0){
@@ -34,8 +36,8 @@ public class FormatInformationUtil {
             balanceByte[0]=byteArrayList.get(16);
             balanceByte[1]=byteArrayList.get(17);
             FormatInformationBean.Balance=ByteUtils.byte2ToInt(balanceByte);
-
-            FormatInformationBean.AmountType=ByteUtils.byteToInt(byteArrayList.get(18));//金额类型
+            //金额类型
+            FormatInformationBean.AmountType=ByteUtils.byteToInt(byteArrayList.get(18));
 
             byte[] amountByte=new byte[2];
             amountByte[0]=byteArrayList.get(19);
@@ -62,7 +64,8 @@ public class FormatInformationUtil {
             installIdByte[1]=byteArrayList.get(28);
             FormatInformationBean.MotifyInstall=ByteUtils.byte2ToInt(installIdByte);
 
-            FormatInformationBean.MotifyPrice=ByteUtils.byteToInt(byteArrayList.get(29));  //修改单价
+            //修改单价
+            FormatInformationBean.MotifyPrice=ByteUtils.byteToInt(byteArrayList.get(29));
             FormatInformationBean.MotifyOzoneTime=ByteUtils.byteToInt(byteArrayList.get(30));
             FormatInformationBean.Switch=ByteUtils.byteToInt(byteArrayList.get(31));
             FormatInformationBean.EnableGet=ByteUtils.byteToInt(byteArrayList.get(32));
@@ -112,7 +115,10 @@ public class FormatInformationUtil {
             byte[] purification=new byte[2];
             purification[0]=byteList.get(12);
             purification[1]=byteList.get(13);
-            FormatInformationBean.PurificationTDS=ByteUtils.byte2ToInt(purification);
+            if (isMakeWater(ByteUtils.byteToInt(byteList.get(ConstantUtil.FOURTEEN)))){
+                FormatInformationBean.PurificationTDS=ByteUtils.byte2ToInt(purification);
+            }
+           // FormatInformationBean.PurificationTDS=ByteUtils.byte2ToInt(purification);
             FormatInformationBean.OriginTDS0=ByteUtils.byteToInt(byteList.get(10));
             FormatInformationBean.OriginTDS1=ByteUtils.byteToInt(byteList.get(11));
             FormatInformationBean.PurificationTDS0=ByteUtils.byteToInt(byteList.get(12));
@@ -124,8 +130,11 @@ public class FormatInformationUtil {
             FormatInformationBean.MakeWater=ByteUtils.byte2ToInt(makewater);
         }
     }
-    /*
-    *Ic卡编码数据转换
+
+    /**
+     * Ic卡编码数据转换
+     * @param byteArrayList
+     * @return
      */
     private static String saveIcCardCodeDataToFormatInformation(ArrayList<Byte> byteArrayList) {
         String stringNo="";
@@ -207,7 +216,8 @@ public class FormatInformationUtil {
         byte[] control=new byte[48];
         for (int i=0;i<48;i++){
             if (i==0){
-                control[i]=VariableUtil.byteArray.get(21);  //设备号
+                //设备号
+                control[i]=VariableUtil.byteArray.get(21);
             }else if (i==1){
                 control[i]=VariableUtil.byteArray.get(22);
             }else if (i==2){
@@ -215,7 +225,7 @@ public class FormatInformationUtil {
             }else if (i==3){
                 control[i]=VariableUtil.byteArray.get(24);
             }else if (i==15){
-                control[i]=(byte)0x03;   //
+                control[i]=(byte)0x03;
             }else if (i==16){
                 control[i]=twobyte[0];
             }else if (i==17){
@@ -223,15 +233,19 @@ public class FormatInformationUtil {
             }else if (i==18){
                 control[i]=(byte)0x01;
             }else if (i==29){
-                control[i]=VariableUtil.byteArray.get(25);  //单价
-            }else if (i==42){         //flag,设备号变化
+                //单价
+                control[i]=VariableUtil.byteArray.get(25);
+                //flag,设备号变化
+            }else if (i==42){
                 control[i]=(byte)0x0f;
             } else if (i==43){
-                control[i]=(byte)0x80;      //消费类型
+                //消费类型
+                control[i]=(byte)0x80;
             }else if (i==44){
                 control[i]=(byte)0x03;
             }else if (i==45){
-                control[i]=(byte)0x20;      //单价，
+                //单价，
+                control[i]=(byte)0x20;
             }else {
                 control[i]=(byte)0x00;
             }
@@ -249,7 +263,8 @@ public class FormatInformationUtil {
         byte[] control=new byte[48];
         for (int i=0;i<48;i++){
             if (i==0){
-                control[i]=VariableUtil.byteArray.get(21);  //设备号
+                //设备号
+                control[i]=VariableUtil.byteArray.get(21);
             }else if (i==1){
                 control[i]=VariableUtil.byteArray.get(22);
             }else if (i==2){
@@ -269,16 +284,19 @@ public class FormatInformationUtil {
             }else if (i==20){
                 control[i]=twobyte[1];
             }else if (i==29){
-                control[i]=VariableUtil.byteArray.get(25);  //单价
-            }else if (i==42){         //flag,设备号变化
+                //单价
+                control[i]=VariableUtil.byteArray.get(25);
+                //flag,设备号变化
+            }else if (i==42){
                 control[i]=(byte)0x0f;
             } else if (i==43){
                 control[i]=(byte)0x80;
             }else if (i==44){
                 control[i]=(byte)0x03;
-               // Control[i]=(byte)0x1c;      //本次消费金额，
+               // Control[i]=(byte)0x1c;     ，
             } else if (i==45){
-                control[i]=(byte)0x20;      //单价，
+                //单价，
+                control[i]=(byte)0x20;
             } else {
                 control[i]=(byte)0x00;
             }
@@ -296,8 +314,32 @@ public class FormatInformationUtil {
         }
         return date;
     }
-    /*
-    *@param  byteArrayList 时间指令
+
+    /**
+     * 屏幕背光控制
+     * @param switchState
+     * @return
+     */
+    public static byte[] setCloseScreenData(int switchState){
+        byte[] data=new byte[CONTROL_INSTRUCT_LENGTH];
+        for (int i=0;i<CONTROL_INSTRUCT_LENGTH;i++){
+            if (i==39){
+                if (switchState==1){
+                    data[i]=(byte)0x01;
+                }else {
+                    data[i]=(byte)0x02;
+                }
+            }else if (i==46){
+                data[i]=(byte)0x80;
+            }else {
+                data[i]=(byte)0x00;
+            }
+        }
+        return data;
+    }
+    /**
+     *
+     * @param byteArrayList  时间指令
      */
     public static void saveTimeInformationToFormatInformation(ArrayList<Byte> byteArrayList){
         if (byteArrayList!=null&&byteArrayList.size()!=0){
@@ -311,5 +353,9 @@ public class FormatInformationUtil {
             FormatInformationBean.TimeWeek=ByteUtils.byteToInt(byteArrayList.get(7));
             FormatInformationBean.TimeZone=ByteUtils.byteToInt(byteArrayList.get(8));
         }
+    }
+    public static boolean isMakeWater(int i){
+        String stringWork= DataCalculateUtils.intToBinary(i);
+        return DataCalculateUtils.isEvent(stringWork,3);
     }
 }

@@ -10,23 +10,27 @@
     tools:context="com.msht.watersystem.functionActivity.PaySuccessActivity">
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
+        android:layout_height="match_parent"
         android:background="@mipmap/water_background"
         android:orientation="horizontal">
         <FrameLayout
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:layout_weight="0.65"
+            android:layout_weight="0.7"
             android:background="@color/white">
+            <com.msht.watersystem.widget.BannerM
+                android:id="@+id/id_banner"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+            </com.msht.watersystem.widget.BannerM>
             <ImageView
                 android:id="@+id/textView"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:layout_centerInParent="true"
+                android:contentDescription="@string/ad_picture"
                 android:gravity="center"
                 android:src="@drawable/water_advertisement" />
-            <include layout="@layout/layout_water_quality_detecton"/>
+            <include layout="@layout/layout_water_quality_detection"/>
         </FrameLayout>
         <View
             android:layout_width="@dimen/margin_width12"
@@ -35,7 +39,7 @@
         <LinearLayout
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:layout_weight="0.35"
+            android:layout_weight="0.3"
             android:background="@color/windows_color"
             android:orientation="vertical">
             <RelativeLayout

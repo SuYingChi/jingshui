@@ -98,10 +98,12 @@ public class DateTimeUtils {
         int minuteOfDay=hour*60+minute;
         final int start=hour1*60+minute1;
         final int end=hour2*60+minute2;
-        if (minuteOfDay>=start&&minuteOfDay<end){
+       // boolean iSDate=minuteOfDay>=start&&minuteOfDay<end;
+        return minuteOfDay>=start&&minuteOfDay<end;
+        /*if (minuteOfDay>=start&&minuteOfDay<end){
             return true;
         }else {
             return false;
-        }
+        }*/
     }
 }

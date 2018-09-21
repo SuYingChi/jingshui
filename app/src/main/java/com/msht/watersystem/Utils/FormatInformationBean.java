@@ -1,7 +1,9 @@
 package com.msht.watersystem.Utils;
 
 /**
- * Created by hong on 2017/10/24.
+ *
+ * @author hong
+ * @date 2017/10/24
  */
 
 public class FormatInformationBean {
@@ -12,11 +14,11 @@ public class FormatInformationBean {
     public static int temperature;
     public static int Ozonetime;
     public static int humidity;
+    public static int OriginTDS;
+    public static int PurificationTDS;
     public static int OriginTDS0;
     public static int OriginTDS1;
     public static int PurificationTDS0;
-    public static int OriginTDS;
-    public static int PurificationTDS;
     public static int PurificationTDS1;
     public static int WorkState;
     public static int MakeWater;

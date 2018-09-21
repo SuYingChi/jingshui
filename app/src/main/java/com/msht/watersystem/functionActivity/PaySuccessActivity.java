@@ -2,6 +2,7 @@ package com.msht.watersystem.functionActivity;
 
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.os.CountDownTimer;
 import android.os.Bundle;
 import android.view.KeyEvent;
@@ -25,28 +26,40 @@ import com.msht.watersystem.Utils.FormatInformationBean;
 import com.msht.watersystem.Utils.FormatInformationUtil;
 import com.msht.watersystem.Utils.DataCalculateUtils;
 import com.msht.watersystem.Utils.VariableUtil;
+import com.msht.watersystem.widget.BannerM;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
 
+/**
+ * Demo class
+ * 〈一句话功能简述〉
+ * 〈功能详细描述〉
+ * @author hong
+ * @date 2018/4/2  
+ */
 public class PaySuccessActivity extends BaseActivity implements Observer {
     private boolean     buyStatus=false;
     private boolean     bindStatus=false;
     private Context     mContext;
     private MyCountDownTimer myCountDownTimer;
-    private ImageView   textView;
-    private TextView    tv_time;
-    private TextView    tv_customerNo;
-    private TextView    tv_water;
-    private TextView    tv_amount;
-    private TextView    tv_balance;
-    private TextView    tv_success;
-    private String      mAccount;
-    private String      sign;
-    private String      afterAmount;
-    private String      afetrWater;
+    private TextView tvTime;
+    private TextView tvCustomerNo;
+    private TextView tvWater;
+    private TextView tvAmount;
+    private TextView tvBalance;
+    private TextView tvSuccess;
+    private String   mAccount;
+    private String   sign;
+    private String   afterAmount;
+    private String   afterWater;
+    /**
+     * @parame  mAppFrame 扫码发送104帧序
+     */
+    private byte[]  mAppFrame;
     private PortService portService;
     private ComServiceConnection serviceConnection;
     @Override
@@ -54,11 +67,12 @@ public class PaySuccessActivity extends BaseActivity implements Observer {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_pay_success);
         mContext=this;
-        afetrWater=getIntent().getStringExtra("afetrWater");
+        afterWater=getIntent().getStringExtra("afetrWater");
         afterAmount=getIntent().getStringExtra("afterAmount");
         mAccount=getIntent().getStringExtra("mAccount");
         sign=getIntent().getStringExtra("sign");
         initView();
+        initBannerView();
         initWaterQuality();
         bindPortService();
         myCountDownTimer=new MyCountDownTimer(30000,1000);
@@ -78,44 +92,61 @@ public class PaySuccessActivity extends BaseActivity implements Observer {
         bindStatus=true;
     }
     private void initView() {
-        tv_success=(TextView)findViewById(R.id.id_success) ;
-        tv_balance=(TextView)findViewById(R.id.id_amount) ;
-        tv_amount=(TextView)findViewById(R.id.id_consumption) ;
-        tv_water =(TextView)findViewById(R.id.id_water_num);
-        tv_customerNo=(TextView)findViewById(R.id.id_tv_customerNo);
-        tv_time=(TextView)findViewById(R.id.id_time);
-        tv_customerNo.setText(mAccount);
+        tvSuccess =(TextView)findViewById(R.id.id_success) ;
+        tvBalance =(TextView)findViewById(R.id.id_amount) ;
+        tvAmount =(TextView)findViewById(R.id.id_consumption) ;
+        tvWater =(TextView)findViewById(R.id.id_water_num);
+        tvCustomerNo =(TextView)findViewById(R.id.id_tv_customerNo);
+        tvTime =(TextView)findViewById(R.id.id_time);
+        tvCustomerNo.setText(mAccount);
         if (sign.equals("0")){
-            tv_success.setText("付款成功");
-            tv_amount.setVisibility(View.VISIBLE);
-            tv_amount.setText("成功消费了"+afterAmount+"元");
-            tv_water.setText("共购买了"+afetrWater+"升的水");
-            double afterconsumpte= FormatInformationBean.AfterAmount/100.0;
-            tv_balance.setText(String.valueOf(DataCalculateUtils.TwoDecinmal2(afterconsumpte)));
+            tvSuccess.setText("付款成功");
+            tvAmount.setVisibility(View.VISIBLE);
+            tvAmount.setText("成功消费了"+afterAmount+"元");
+            tvWater.setText("共购买了"+afterWater+"升的水");
+            double afterConsumption= FormatInformationBean.AfterAmount/100.0;
+            tvBalance.setText(String.valueOf(DataCalculateUtils.getTwoDecimal(afterConsumption)));
         }else if (sign.equals("1")){
-            tv_success.setText("付款成功");
-            tv_amount.setVisibility(View.VISIBLE);
-            tv_amount.setText("成功消费了"+afterAmount+"元");
-            tv_water.setText("共购买了"+afetrWater+"升的水");
-            double afterconsumpte= FormatInformationBean.AppBalance/100.0;
-            tv_balance.setText(String.valueOf(DataCalculateUtils.TwoDecinmal2(afterconsumpte)));
+            tvSuccess.setText("付款成功");
+            tvAmount.setVisibility(View.VISIBLE);
+            tvAmount.setText("成功消费了"+afterAmount+"元");
+            tvWater.setText("共购买了"+afterWater+"升的水");
+            double afterConsumption= FormatInformationBean.AppBalance/100.0;
+            tvBalance.setText(String.valueOf(DataCalculateUtils.getTwoDecimal(afterConsumption)));
         }else if (sign.equals("2")){
-            tv_amount.setVisibility(View.INVISIBLE);
-            tv_success.setText("充值成功");
+            tvAmount.setVisibility(View.INVISIBLE);
+            tvSuccess.setText("充值成功");
             double rechargeAmount= FormatInformationBean.rechargeAmount/100.0;
-            tv_water.setText("成功充值了"+String.valueOf(DataCalculateUtils.TwoDecinmal2(rechargeAmount))+"元");
-            double afterconsumpte= FormatInformationBean.Balance/100.0;
-            tv_balance.setText(String.valueOf(DataCalculateUtils.TwoDecinmal2(afterconsumpte)));
+            tvWater.setText("成功充值了"+String.valueOf(DataCalculateUtils.getTwoDecimal(rechargeAmount))+"元");
+            double afterConsumption= FormatInformationBean.Balance/100.0;
+            tvBalance.setText(String.valueOf(DataCalculateUtils.getTwoDecimal(afterConsumption)));
         }else if (sign.equals("3")){
-            tv_success.setText("付款成功");
-            tv_amount.setVisibility(View.VISIBLE);
-            tv_amount.setText("成功消费了"+afterAmount+"元");
-            tv_water.setText("共购买了"+afetrWater+"升的水");
-            double afterconsumpte= FormatInformationBean.Balance/100.0;
-            tv_balance.setText(String.valueOf(DataCalculateUtils.TwoDecinmal2(afterconsumpte)));
+            tvSuccess.setText("付款成功");
+            tvAmount.setVisibility(View.VISIBLE);
+            tvAmount.setText("成功消费了"+afterAmount+"元");
+            tvWater.setText("共购买了"+afterWater+"升的水");
+            double afterConsumption= FormatInformationBean.Balance/100.0;
+            tvBalance.setText(String.valueOf(DataCalculateUtils.getTwoDecimal(afterConsumption)));
         }
     }
-
+    private void initBannerView() {
+        BannerM mBanner = (BannerM) findViewById(R.id.id_banner);
+        ImageView advertImage = findViewById(R.id.textView);
+        List<Bitmap> imageList= VariableUtil.imageViewList;
+        if (imageList!=null&& imageList.size() > 0) {
+            mBanner.setBannerBeanList(VariableUtil.imageViewList)
+                    .setDefaultImageResId(R.drawable.water_advertisement)
+                    .setIndexPosition(BannerM.INDEX_POSITION_BOTTOM)
+                    .setIndexColor(getResources().getColor(R.color.colorPrimary))
+                    .setIntervalTime(10)
+                    .show();
+            mBanner.setVisibility(View.VISIBLE);
+            advertImage.setVisibility(View.GONE);
+        } else {
+            mBanner.setVisibility(View.GONE);
+            advertImage.setVisibility(View.VISIBLE);
+        }
+    }
     @Override
     public void update(Observable observable, Object arg) {
 
@@ -130,7 +161,7 @@ public class PaySuccessActivity extends BaseActivity implements Observer {
                 }else if (Arrays.equals(packet1.getCmd(),new byte[]{0x01,0x05})){
                     onCom1Received105DataFromControllBoard(packet1.getData());
                 }else if (Arrays.equals(packet1.getCmd(),new byte[]{0x02,0x04})){
-                    onCom1Received204DataFromControllBoard();
+                    onCom1Received204DataFromControlBoard(packet1.getFrame());
                 }
             }
             Packet packet2 = myObservable.getCom2Packet();
@@ -138,7 +169,7 @@ public class PaySuccessActivity extends BaseActivity implements Observer {
                 if (Arrays.equals(packet2.getCmd(),new byte[]{0x02,0x05})){
                     onCom2Received205DataFromServer();
                 }else  if (Arrays.equals(packet2.getCmd(),new byte[]{0x01,0x04})){
-                    String stringWork= DataCalculateUtils.IntToBinary(ByteUtils.byteToInt(packet2.getData().get(45)));
+                    String stringWork= DataCalculateUtils.intToBinary(ByteUtils.byteToInt(packet2.getData().get(45)));
                     if (DataCalculateUtils.isRechargeData(stringWork,5,6)){
                         response204ToServer(packet2.getFrame());
                     }
@@ -154,21 +185,23 @@ public class PaySuccessActivity extends BaseActivity implements Observer {
             }
         }
     }
-    private void onCom1Received204DataFromControllBoard() {
-        if (buyStatus){
-            buyStatus=false;
-            if (FormatInformationBean.ConsumptionType==1){
-                Intent intent=new Intent(mContext,IcCardoutWaterActivity.class);
-                startActivityForResult(intent,1);
-                finish();
-            }else if (FormatInformationBean.ConsumptionType==3){
-                Intent intent=new Intent(mContext,AppOutWaterActivity.class);
-                startActivityForResult(intent,1);
-                finish();
-            }else if (FormatInformationBean.ConsumptionType==5){
-                Intent intent=new Intent(mContext,DeliverOutWaterActivity.class);
-                startActivityForResult(intent,1);
-                finish();
+    private void onCom1Received204DataFromControlBoard(byte[] frame) {
+        if (Arrays.equals(frame,mAppFrame)){
+            if (buyStatus){
+                buyStatus=false;
+                if (FormatInformationBean.ConsumptionType==1){
+                    Intent intent=new Intent(mContext,IcCardOutWaterActivity.class);
+                    startActivity(intent);
+                    finish();
+                }else if (FormatInformationBean.ConsumptionType==3){
+                    Intent intent=new Intent(mContext,AppOutWaterActivity.class);
+                    startActivity(intent);
+                    finish();
+                }else if (FormatInformationBean.ConsumptionType==5){
+                    Intent intent=new Intent(mContext,DeliverOutWaterActivity.class);
+                    startActivity(intent);
+                    finish();
+                }
             }
         }
     }
@@ -205,9 +238,9 @@ public class PaySuccessActivity extends BaseActivity implements Observer {
     private void onCom2Received102DataFromServer(ArrayList<Byte> data) {
         if (ConsumeInformationUtils.controlModel(mContext,data)){
             if (FormatInformationBean.ShowTDS==0){
-                layout_TDS.setVisibility(View.GONE);
+                layoutTDS.setVisibility(View.GONE);
             }else {
-                layout_TDS.setVisibility(View.VISIBLE);
+                layoutTDS.setVisibility(View.VISIBLE);
             }
         }
     }
@@ -218,7 +251,7 @@ public class PaySuccessActivity extends BaseActivity implements Observer {
                 if (sign.equals("0")){
                     FormatInformationBean.AfterAmount= FormatInformationBean.AfterAmount+ FormatInformationBean.rechargeAmount;
                     double afterconsumpte= FormatInformationBean.AfterAmount/100.0;
-                    tv_balance.setText(String.valueOf(DataCalculateUtils.TwoDecinmal2(afterconsumpte)));
+                    tvBalance.setText(String.valueOf(DataCalculateUtils.getTwoDecimal(afterconsumpte)));
                 }
             }else {
                 VariableUtil.byteArray.clear();
@@ -227,7 +260,7 @@ public class PaySuccessActivity extends BaseActivity implements Observer {
                 if (FormatInformationBean.BusinessType==1){
                     if (FormatInformationBean.AppBalance<20){
                         Intent intent=new Intent(mContext,AppNotSufficientActivity.class);
-                        startActivityForResult(intent,1);
+                        startActivity(intent);
                         finish();
                     }else {
                         setBusiness(1);
@@ -242,6 +275,7 @@ public class PaySuccessActivity extends BaseActivity implements Observer {
         if (portService != null) {
             try {
                 byte[] frame = FrameUtils.getFrame(mContext);
+                mAppFrame=frame;
                 byte[] type = new byte[]{0x01, 0x04};
                 if (business==1){
                     byte[] data= FormatInformationUtil.setConsumeType01();
@@ -277,9 +311,9 @@ public class PaySuccessActivity extends BaseActivity implements Observer {
         }
     }
     private void onCom2Received104DataFromServer(ArrayList<Byte> data) {
-        String stringWork= DataCalculateUtils.IntToBinary(ByteUtils.byteToInt(data.get(45)));
-        int Switch=ByteUtils.byteToInt(data.get(31));
-        if (Switch==2&&DataCalculateUtils.isEvent(stringWork,0)){
+        String stringWork= DataCalculateUtils.intToBinary(ByteUtils.byteToInt(data.get(45)));
+        int switchStatus=ByteUtils.byteToInt(data.get(31));
+        if (switchStatus==2&&DataCalculateUtils.isEvent(stringWork,0)){
             Intent intent=new Intent(mContext, CloseSystemActivity.class);
             startActivityForResult(intent,2);
             finish();
@@ -289,12 +323,12 @@ public class PaySuccessActivity extends BaseActivity implements Observer {
     private void onCom1Received105DataFromControllBoard(ArrayList<Byte> data) {
         if (data!=null&&data.size()!=0){
             FormatInformationUtil.saveStatusInformationToFormatInformation(data);
-            tv_InTDS.setText(String.valueOf(FormatInformationBean.OriginTDS));
-            tv_OutTDS.setText(String.valueOf(FormatInformationBean.PurificationTDS));
-            String stringWork= DataCalculateUtils.IntToBinary(FormatInformationBean.WorkState);
+            tvInTDS.setText(String.valueOf(FormatInformationBean.OriginTDS));
+            tvOutTDS.setText(String.valueOf(FormatInformationBean.PurificationTDS));
+            String stringWork= DataCalculateUtils.intToBinary(FormatInformationBean.WorkState);
             if (!DataCalculateUtils.isEvent(stringWork,6)){
                 Intent intent=new Intent(mContext, CannotBuyWaterActivity.class);
-                startActivityForResult(intent,1);
+                startActivity(intent);
                 finish();
             }
         }
@@ -303,29 +337,29 @@ public class PaySuccessActivity extends BaseActivity implements Observer {
         try {
             if( data!=null&&data.size()>0){
                 FormatInformationUtil.saveCom1ReceivedDataToFormatInformation(data);
-                    String stringWork= DataCalculateUtils.IntToBinary(FormatInformationBean.Updateflag3);
+                    String stringWork= DataCalculateUtils.intToBinary(FormatInformationBean.Updateflag3);
                     if (DataCalculateUtils.isEvent(stringWork,3)){
                         if (FormatInformationBean.ConsumptionType==1){
                             double afterconsumpte= FormatInformationBean.AfterAmount/100.0;
-                            tv_balance.setText(String.valueOf(DataCalculateUtils.TwoDecinmal2(afterconsumpte)));
+                            tvBalance.setText(String.valueOf(DataCalculateUtils.getTwoDecimal(afterconsumpte)));
                         }
                     }else {
                         if (FormatInformationBean.Balance<=20){
                             Intent intent=new Intent(mContext,NotSufficientActivity.class);
-                            startActivityForResult(intent,1);
+                            startActivity(intent);
                             finish();
                         }else {
                             if (FormatInformationBean.ConsumptionType==1){
-                                Intent intent=new Intent(mContext,IcCardoutWaterActivity.class);
-                                startActivityForResult(intent,1);
+                                Intent intent=new Intent(mContext,IcCardOutWaterActivity.class);
+                                startActivity(intent);
                                 finish();
                             }else if (FormatInformationBean.ConsumptionType==3){
                                 Intent intent=new Intent(mContext,AppOutWaterActivity.class);
-                                startActivityForResult(intent,1);
+                                startActivity(intent);
                                 finish();
                             }else if (FormatInformationBean.ConsumptionType==5){
                                 Intent intent=new Intent(mContext,DeliverOutWaterActivity.class);
-                                startActivityForResult(intent,1);
+                                startActivity(intent);
                                 finish();
                             }
                         }
@@ -341,11 +375,11 @@ public class PaySuccessActivity extends BaseActivity implements Observer {
         }
         @Override
         public void onTick(long millisUntilFinished) {  //计时过程
-            tv_time.setText(millisUntilFinished/1000+"");
+            tvTime.setText(millisUntilFinished/1000+"");
         }
         @Override
         public void onFinish() {
-            tv_time.setText("60");
+            tvTime.setText("60");
             finish();
         }
     }

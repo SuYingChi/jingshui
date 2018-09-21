@@ -3,6 +3,7 @@ package com.msht.watersystem.Utils;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.Locale;
 
 /**
  * Created by hong on 2017/11/20.
@@ -90,30 +91,27 @@ public class DataCalculateUtils {
         mael[0]=byteList.get(19);
         mael[1]=byteList.get(20);
         int amount=ByteUtils.byte2ToInt(mael);
-        double doubleamount=amount/100.0;
-        return doubleamount;
+        return amount/100.0;
     }
 
-    public static double TwoDecinmal2(double amount) {   //保留两位小数
+    public static double getTwoDecimal(double amount) {   //保留两位小数
         BigDecimal bg=new BigDecimal(amount);
-        double double1=bg.setScale(2,BigDecimal.ROUND_HALF_UP).doubleValue();
-        return double1;
+        return bg.setScale(2,BigDecimal.ROUND_HALF_UP).doubleValue();
     }
     public static double getWaterVolume(int volume,int time){
-        double outwaterNum=volume*1.0;
-        double outwaterTime=time*1.0;
-        double perSecond=outwaterNum/outwaterTime;
-        double perdouble=DataCalculateUtils.TwoDecinmal2(perSecond);
+        double outWaterNum=volume*1.0;
+        double outWaterTime=time*1.0;
+        double perSecond=outWaterNum/outWaterTime;
+        double perdouble=DataCalculateUtils.getTwoDecimal(perSecond);
         return perSecond;
     }
     public static double getWaterPrice(int price){
         double priceNum=price*1.0;
-        double perSecond=1.0/priceNum;
-        return perSecond;
+        return 1.0/priceNum;
     }
     public static boolean getBusinessData(ArrayList<Byte> byteArrayList){
 
-        if (byteArrayList.size()!=0&&byteArrayList!=null){
+        if (byteArrayList!=null&&byteArrayList.size()!=0){
             FormatInformationBean.BusinessType=ByteUtils.byteToInt(byteArrayList.get(0));
             byte[] account=new byte[8];
             account[0]=byteArrayList.get(1);
@@ -125,7 +123,7 @@ public class DataCalculateUtils {
             account[6]=byteArrayList.get(7);
             account[7]=byteArrayList.get(8);
             try {
-                FormatInformationBean.StringCardNo=getbigNumber(account);
+                FormatInformationBean.StringCardNo= getBigNumberData(account);
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -145,12 +143,12 @@ public class DataCalculateUtils {
             AfterByte[1]=byteArrayList.get(14);
             FormatInformationBean.AfterAmount=ByteUtils.byte2ToInt(AfterByte);
 
-            byte[] DeviceId=new byte[4];
-            DeviceId[0]=byteArrayList.get(15);
-            DeviceId[1]=byteArrayList.get(16);
-            DeviceId[2]=byteArrayList.get(17);
-            DeviceId[3]=byteArrayList.get(18);
-            FormatInformationBean.DeviceId=ByteUtils.byte4ToInt(DeviceId);
+            byte[] mDeviceId=new byte[4];
+            mDeviceId[0]=byteArrayList.get(15);
+            mDeviceId[1]=byteArrayList.get(16);
+            mDeviceId[2]=byteArrayList.get(17);
+            mDeviceId[3]=byteArrayList.get(18);
+            FormatInformationBean.DeviceId=ByteUtils.byte4ToInt(mDeviceId);
             FormatInformationBean.PriceNum=ByteUtils.byteToInt(byteArrayList.get(19));
             FormatInformationBean.OutWaterTime=ByteUtils.byteToInt(byteArrayList.get(20));
             FormatInformationBean.WaterNum=ByteUtils.byteToInt(byteArrayList.get(21));
@@ -161,11 +159,10 @@ public class DataCalculateUtils {
 
     }
 
-    public static String getbigNumber(byte[] account)throws Exception{
+    public static String getBigNumberData(byte[] account)throws Exception{
         BigInteger bigInteger=new BigInteger(account);
         long intNum=bigInteger.longValue();
-        String Account=String.valueOf(intNum);
-        return Account;
+        return String.valueOf(intNum);
     }
     public static byte[] ArrayToByte(ArrayList<Byte> byteList){
         int size=byteList.size();
@@ -176,24 +173,23 @@ public class DataCalculateUtils {
         return  byteArray;
     }
     //十进制转八位二进制
-    public static String IntToBinary(int input) {
-        String binaryString = Integer.toBinaryString(input);//1111
-        int binaryInt = Integer.parseInt(binaryString);//1111
-        return String.format("%08d",binaryInt);
+    public static String intToBinary(int input) {
+        //11110000
+        String binaryString = Integer.toBinaryString(input);
+        int binaryInt = Integer.parseInt(binaryString);
+        return String.format(Locale.CHINA,"%08d",binaryInt);
     }
     //判断Flag位
     public static boolean isEvent(String s,int index){
+        boolean isOneValue;
         if (s.length()>=8){
             char charIndex=s.charAt(index);
             String stringIndex=String.valueOf(charIndex);
-            if (stringIndex.equals("1")){
-                return true;
-            }else {
-                return false;
-            }
+            isOneValue=stringIndex.equals(ConstantUtil.ONE_VALUE);
         }else {
-            return false;
+            isOneValue=false;
         }
+        return isOneValue;
     }
     //判断Flag位
     public static boolean isRechargeData(String s,int index1,int index2){
@@ -202,7 +198,7 @@ public class DataCalculateUtils {
             char charIndex2=s.charAt(index2);
             String stringIndex1=String.valueOf(charIndex1);
             String stringIndex2=String.valueOf(charIndex2);
-            if (stringIndex1.equals("1")||stringIndex2.equals("1")){
+            if (stringIndex1.equals(ConstantUtil.ONE_VALUE)||stringIndex2.equals(ConstantUtil.ONE_VALUE)){
                 return false;
             }else {
                 return true;

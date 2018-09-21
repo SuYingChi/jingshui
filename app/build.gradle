@@ -3,13 +3,13 @@ apply plugin: 'com.android.application'
 
 android {
     compileSdkVersion 27
-   // buildToolsVersion '27.0.3'
+    // buildToolsVersion '27.0.3'
     defaultConfig {
         applicationId "com.msht.watersystem"
         minSdkVersion 17
         targetSdkVersion 27
-        versionCode 19
-        versionName "v2.9"
+        versionCode 27
+        versionName "v3.6"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         ndk {
             // 设置支持的SO库架构
@@ -56,10 +56,7 @@ dependencies {
     implementation 'com.google.zxing:core:3.2.1'
     implementation 'org.greenrobot:greendao:3.0.1'
     implementation 'org.greenrobot:greendao-generator:3.0.0'
+    implementation 'org.greenrobot:eventbus:3.0.0'
     testImplementation 'junit:junit:4.12'
-    implementation 'com.tencent.bugly:crashreport:latest.release'
-    //其中latest.release指代最新Bugly SDK版本号，也可以指定明确的版本号，例如2.2.0
-    implementation 'com.tencent.bugly:nativecrashreport:latest.release'
-    //其中latest.release指代最新Bugly NDK版本号，也可以指定明确的版本号，例如3.0
     implementation project(':vitamio')
 }

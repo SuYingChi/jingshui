@@ -5,9 +5,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
 import android.os.AsyncTask;
-import android.os.Message;
 import android.text.TextUtils;
-import android.widget.Toast;
 
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.EncodeHintType;
@@ -111,8 +109,8 @@ public class CodeUtils {
             @Override
             protected void onPostExecute(Bitmap bitmap) {
                 if (bitmap != null&&(!bitmap.isRecycled())) {
-                    VariableUtil.QrCodebitmap=bitmap;
-                    if (VariableUtil.QrCodebitmap!=null&&(!VariableUtil.QrCodebitmap.isRecycled())){
+                    VariableUtil.qrCodeBitmap =bitmap;
+                    if (VariableUtil.qrCodeBitmap !=null&&(!VariableUtil.qrCodeBitmap.isRecycled())){
                         bitmapListener.onResultSuccess(successStatus);
                     }
                 } else {

@@ -8,19 +8,4 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
-    <ViewStub
-        android:id="@+id/vs_index_right"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout="@layout/viewstub_banner_m_index_right" />
-
-    <ViewStub
-        android:id="@+id/vs_index_bottom"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-
-        android:layout="@layout/viewstub_banner_m_index_bottom" />
-
 </RelativeLayout>

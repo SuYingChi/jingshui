@@ -3,10 +3,10 @@ package com.msht.watersystem.functionActivity;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
 import android.os.CountDownTimer;
 import android.os.Handler;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.ImageView;
@@ -32,22 +32,29 @@ import com.msht.watersystem.Utils.FormatInformationBean;
 import com.msht.watersystem.Utils.FormatInformationUtil;
 import com.msht.watersystem.Utils.DataCalculateUtils;
 import com.msht.watersystem.Utils.VariableUtil;
+import com.msht.watersystem.widget.BannerM;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
 
 public class BuyWaterActivity extends BaseActivity implements Observer{
-    private TextView    tv_time;
-    private boolean     buyStatus=false;
-    private boolean     bindStatus=false;
-    private View        layout_online;
-    private ImageView   ImageCode;
-    private TextView    tv_freecharge;
+    private TextView tvTime;
+    private boolean  buyStatus=false;
+    private boolean  bindStatus=false;
+    /**
+     * @parame  mAppFrame 扫码发送104帧序
+     */
+    private byte[]  mAppFrame;
+    private View     layoutOnline;
+    private List<Bitmap> imageList= new ArrayList<Bitmap>();
+    private ImageView imageCode;
+    private TextView tvFreeCharge;
     private PortService portService;
     private ComServiceConnection serviceConnection;
     private MyCountDownTimer myCountDownTimer;
@@ -58,14 +65,14 @@ public class BuyWaterActivity extends BaseActivity implements Observer{
         public void run() {
             if(portService!=null){
                 if (portService.isConnection()){
-                    ImageCode.setVisibility(View.VISIBLE);
-                    layout_online.setVisibility(View.GONE);
+                    imageCode.setVisibility(View.VISIBLE);
+                    layoutOnline.setVisibility(View.GONE);
                     if (VariableUtil.setEquipmentStatus){
-                        initsetData();
+                        initSetData();
                     }
                 }else {
-                    ImageCode.setVisibility(View.GONE);
-                    layout_online.setVisibility(View.VISIBLE);
+                    imageCode.setVisibility(View.GONE);
+                    layoutOnline.setVisibility(View.VISIBLE);
                 }
             }
             handler.postDelayed(this,1000);
@@ -77,15 +84,36 @@ public class BuyWaterActivity extends BaseActivity implements Observer{
         setContentView(R.layout.activity_buy_water);
         mContext=this;
         VariableUtil.mPos=0;
-       // initViewImages();
         myCountDownTimer=new MyCountDownTimer(120000,1000);
         initView();
+        initViewImages();
         initWaterQuality();
-        bindPortService();
+        bindAndAddObserverToPortService();
         initNetWork();
         initData();
     }
-    private void initsetData() {
+
+    private void initViewImages() {
+       // myPager = findViewById(R.id.myvp);
+        BannerM mBanner = (BannerM) findViewById(R.id.id_banner);
+        ImageView advertImage = findViewById(R.id.textView);
+        imageList=VariableUtil.imageViewList;
+        if (imageList!=null&& imageList.size() > 0) {
+            mBanner.setBannerBeanList(VariableUtil.imageViewList)
+                        .setDefaultImageResId(R.drawable.water_advertisement)
+                        .setIndexPosition(BannerM.INDEX_POSITION_BOTTOM)
+                        .setIndexColor(getResources().getColor(R.color.colorPrimary))
+                        .setIntervalTime(10)
+                        .show();
+            mBanner.setVisibility(View.VISIBLE);
+            advertImage.setVisibility(View.GONE);
+        } else {
+            mBanner.setVisibility(View.GONE);
+            advertImage.setVisibility(View.VISIBLE);
+        }
+    }
+
+    private void initSetData() {
         if (portService != null) {
             if (portService.isConnection()){
                 try {
@@ -106,7 +134,7 @@ public class BuyWaterActivity extends BaseActivity implements Observer{
     private void initNetWork() {
         handler.post(runnable);
     }
-    private void bindPortService(){
+    private void bindAndAddObserverToPortService(){
         serviceConnection = new ComServiceConnection(BuyWaterActivity.this, new ComServiceConnection.ConnectionCallBack() {
             @Override
             public void onServiceConnected(PortService service) {
@@ -120,32 +148,29 @@ public class BuyWaterActivity extends BaseActivity implements Observer{
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        bindPortService();
-        ShowUi();
-        myCountDownTimer.start();
         if (requestCode==2){
             initNetWork();
         }
     }
     private void initView() {
-        TextView tv_version=findViewById(R.id.id_tv_version);
-        tv_freecharge=findViewById(R.id.id_free_charge);
-        tv_time=findViewById(R.id.id_time) ;
-        ImageCode=findViewById(R.id.id_erwei_code) ;
-        layout_online=findViewById(R.id.id_online_view);
+        TextView tvVersion=findViewById(R.id.id_tv_version);
+        tvFreeCharge =findViewById(R.id.id_free_charge);
+        tvTime =findViewById(R.id.id_time) ;
+        imageCode =findViewById(R.id.id_erwei_code) ;
+        layoutOnline =findViewById(R.id.id_online_view);
         ((TextView)findViewById(R.id.id_equipment)).setText(String.valueOf(FormatInformationBean.DeviceId));
-        int ChargeMode= CachePreferencesUtil.getChargeMode(this,CachePreferencesUtil.CHARGEMODE,0);
-        if (ChargeMode==1){
-            tv_freecharge.setVisibility(View.VISIBLE);
+        int chargeMode= CachePreferencesUtil.getChargeMode(this,CachePreferencesUtil.CHARGEMODE,0);
+        if (chargeMode==1){
+            tvFreeCharge.setVisibility(View.VISIBLE);
         }else {
-            tv_freecharge.setVisibility(View.GONE);
+            tvFreeCharge.setVisibility(View.GONE);
         }
         try {
             PackageManager pm = mContext.getPackageManager();
             PackageInfo pi = pm.getPackageInfo(getPackageName(), 0);
-            String Name=pi.versionName;
-            if (Name!=null){
-                tv_version.setText("version:"+Name);
+            String name=pi.versionName;
+            if (name!=null){
+                tvVersion.setText("version:"+name);
             }
         }catch (Exception e){
             e.printStackTrace();
@@ -153,10 +178,10 @@ public class BuyWaterActivity extends BaseActivity implements Observer{
     }
     private void initData() {
         myCountDownTimer.start();
-        String downloadapp="http://msbapp.cn/download/success.html?QRCodeJson=";
-        String result=downloadapp+ creatQRCodeMessageJson();
-        if (VariableUtil.QrCodebitmap!=null&&!VariableUtil.QrCodebitmap.isRecycled()){
-            ImageCode.setImageBitmap(VariableUtil.QrCodebitmap);
+        String downloadApp="http://msbapp.cn/download/success.html?QRCodeJson=";
+        String result=downloadApp+ createQRCodeMessageJson();
+        if (VariableUtil.qrCodeBitmap !=null&&!VariableUtil.qrCodeBitmap.isRecycled()){
+            imageCode.setImageBitmap(VariableUtil.qrCodeBitmap);
         }else {
             createQRCodeWithLogo(result);
         }
@@ -165,7 +190,7 @@ public class BuyWaterActivity extends BaseActivity implements Observer{
         CodeUtils.createQRCodeBitmap(mContext, result, new BitmapListener() {
             @Override
             public void onResultSuccess(boolean successStatus) {
-                ImageCode.setImageBitmap(VariableUtil.QrCodebitmap);
+                imageCode.setImageBitmap(VariableUtil.qrCodeBitmap);
             }
             @Override
             public void onResultFail(boolean failStatus) {
@@ -173,35 +198,34 @@ public class BuyWaterActivity extends BaseActivity implements Observer{
             }
         });
     }
-    private String creatQRCodeMessageJson() {
-        String jsonresult="";
-        String QrcodeType="1";
+    private String createQRCodeMessageJson() {
+        String jsonResult="";
+        String qrCodeType="1";
         String equipmentNo=String.valueOf(FormatInformationBean.DeviceId);
         JSONObject object=new JSONObject();
         try{
-            JSONObject jsondata=new JSONObject();
-            object.put("QrcodeType",QrcodeType);
-            jsondata.put("equipmentNo",equipmentNo);
-            object.put("data",jsondata);
-            jsonresult=object.toString();
+            JSONObject jsonData=new JSONObject();
+            object.put("QrcodeType",qrCodeType);
+            jsonData.put("equipmentNo",equipmentNo);
+            object.put("data",jsonData);
+            jsonResult=object.toString();
         }catch (JSONException e){
             e.printStackTrace();
         }
-        return jsonresult;
+        return jsonResult;
     }
-
     @Override
     public void update(Observable observable, Object arg) {
         PortService.MyObservable myObservable = (PortService.MyObservable) observable;
         if (myObservable != null) {
-            VariableUtil.skeyEnable = myObservable.isSKeyEnable();
+            VariableUtil.mKeyEnable = myObservable.isSKeyEnable();
             Packet packet1 = myObservable.getCom1Packet();
             if (packet1 != null) {
                 if (Arrays.equals(packet1.getCmd(),new byte[]{0x01,0x04})){
                    // MyLogUtil.d("主板控制指令104：", CreateOrderType.getPacketString(packet1));
-                    onCom1Received104dataFromControllBoard(packet1.getData());
+                    onCom1Received104dataFromControlBoard(packet1.getData());
                 }else if (Arrays.equals(packet1.getCmd(),new byte[]{0x02,0x04})){
-                    onCom1Received204DataControllBoard();
+                    onCom1Received204DataControlBoard(packet1.getFrame());
                 }else if (Arrays.equals(packet1.getCmd(),new byte[]{0x01,0x05})){
                     onCom1Received105DataControllBoard(packet1.getData());
                 }
@@ -214,7 +238,7 @@ public class BuyWaterActivity extends BaseActivity implements Observer{
                     VariableUtil.byteArray=packet2.getData();
                     onCom2Received107DataFromServer(packet2.getData());
                 }else if (Arrays.equals(packet2.getCmd(),new byte[]{0x01,0x04})){
-                    String stringWork= DataCalculateUtils.IntToBinary(ByteUtils.byteToInt(packet2.getData().get(45)));
+                    String stringWork= DataCalculateUtils.intToBinary(ByteUtils.byteToInt(packet2.getData().get(45)));
                     if (DataCalculateUtils.isRechargeData(stringWork,5,6)){
                         response204ToServer(packet2.getFrame());
                     }
@@ -234,9 +258,9 @@ public class BuyWaterActivity extends BaseActivity implements Observer{
             if(data!=null&&data.size()>0){
                 FormatInformationUtil.saveDeviceInformationToFormatInformation(data);
                 String waterVolume=String.valueOf(FormatInformationBean.WaterNum);
-                String Time=String.valueOf(FormatInformationBean.OutWaterTime);
+                String outTime=String.valueOf(FormatInformationBean.OutWaterTime);
                 CachePreferencesUtil.putStringData(this,CachePreferencesUtil.VOLUME,waterVolume);
-                CachePreferencesUtil.putStringData(this,CachePreferencesUtil.OUT_WATER_TIME,Time);
+                CachePreferencesUtil.putStringData(this,CachePreferencesUtil.OUT_WATER_TIME,outTime);
                 CachePreferencesUtil.putChargeMode(this,CachePreferencesUtil.CHARGEMODE, FormatInformationBean.ChargeMode);
                 CachePreferencesUtil.putChargeMode(this,CachePreferencesUtil.SHOWTDS, FormatInformationBean.ShowTDS);
                 VariableUtil.setEquipmentStatus=false;
@@ -264,21 +288,21 @@ public class BuyWaterActivity extends BaseActivity implements Observer{
     }
     private void onCom2Received102Data(ArrayList<Byte> data) {
         if (ConsumeInformationUtils.controlModel(mContext,data)){
-            ShowUi();
+            onShowDTS();
         }
     }
-    private void ShowUi() {       //判断显示TDS
+    private void onShowDTS() {       //判断显示TDS
         int tds= CachePreferencesUtil.getChargeMode(this,CachePreferencesUtil.SHOWTDS,0);
-        int ChargeMode= CachePreferencesUtil.getChargeMode(this,CachePreferencesUtil.CHARGEMODE,0);
-        if (ChargeMode==1){
-            tv_freecharge.setVisibility(View.VISIBLE);
+        int chargeMode= CachePreferencesUtil.getChargeMode(this,CachePreferencesUtil.CHARGEMODE,0);
+        if (chargeMode==1){
+            tvFreeCharge.setVisibility(View.VISIBLE);
         }else {
-            tv_freecharge.setVisibility(View.GONE);
+            tvFreeCharge.setVisibility(View.GONE);
         }
         if (tds==0){
-            layout_TDS.setVisibility(View.GONE);
+            layoutTDS.setVisibility(View.GONE);
         }else {
-            layout_TDS.setVisibility(View.VISIBLE);
+            layoutTDS.setVisibility(View.VISIBLE);
         }
     }
     private void response102ToServer(byte[] frame) {
@@ -312,9 +336,9 @@ public class BuyWaterActivity extends BaseActivity implements Observer{
         }
     }
     private void onCom2Received104Data(ArrayList<Byte> data) {
-        String stringWork= DataCalculateUtils.IntToBinary(ByteUtils.byteToInt(data.get(45)));
-        int Switch=ByteUtils.byteToInt(data.get(31));
-        if (Switch==2&&DataCalculateUtils.isEvent(stringWork,0)){
+        String stringWork= DataCalculateUtils.intToBinary(ByteUtils.byteToInt(data.get(45)));
+        int switchStatus=ByteUtils.byteToInt(data.get(31));
+        if (switchStatus==2&&DataCalculateUtils.isEvent(stringWork,0)){
             Intent intent=new Intent(mContext, CloseSystemActivity.class);
             startActivityForResult(intent,2);
             unbindPortServiceAndRemoveObserver();
@@ -340,9 +364,9 @@ public class BuyWaterActivity extends BaseActivity implements Observer{
         try {
             if (data!=null&&data.size()!=0){
                 FormatInformationUtil.saveStatusInformationToFormatInformation(data);
-                tv_InTDS.setText(String.valueOf(FormatInformationBean.OriginTDS));
-                tv_OutTDS.setText(String.valueOf(FormatInformationBean.PurificationTDS));
-                String stringWork= DataCalculateUtils.IntToBinary(FormatInformationBean.WorkState);
+                tvInTDS.setText(String.valueOf(FormatInformationBean.OriginTDS));
+                tvOutTDS.setText(String.valueOf(FormatInformationBean.PurificationTDS));
+                String stringWork= DataCalculateUtils.intToBinary(FormatInformationBean.WorkState);
                 if (!DataCalculateUtils.isEvent(stringWork,6)){
                     Intent intent=new Intent(mContext, CannotBuyWaterActivity.class);
                     startActivityForResult(intent,2);
@@ -355,24 +379,26 @@ public class BuyWaterActivity extends BaseActivity implements Observer{
             e.printStackTrace();
         }
     }
-    private void onCom1Received204DataControllBoard() {
-        if (buyStatus){
-            buyStatus=false;
-            if (FormatInformationBean.ConsumptionType==1){
-                Intent intent=new Intent(mContext,IcCardoutWaterActivity.class);
-                startActivityForResult(intent,1);
-                unbindPortServiceAndRemoveObserver();
-                myCountDownTimer.cancel();
-            }else if (FormatInformationBean.ConsumptionType==3){
-                Intent intent=new Intent(mContext,AppOutWaterActivity.class);
-                startActivityForResult(intent,1);
-                unbindPortServiceAndRemoveObserver();
-                myCountDownTimer.cancel();
-            }else if (FormatInformationBean.ConsumptionType==5){
-                Intent intent=new Intent(mContext,DeliverOutWaterActivity.class);
-                startActivityForResult(intent,1);
-                unbindPortServiceAndRemoveObserver();
-                myCountDownTimer.cancel();
+    private void onCom1Received204DataControlBoard(byte[] frame) {
+        if (Arrays.equals(frame,mAppFrame)){
+            if (buyStatus){
+                buyStatus=false;
+                if (FormatInformationBean.ConsumptionType==1){
+                    Intent intent=new Intent(mContext,IcCardOutWaterActivity.class);
+                    startActivity(intent);
+                    unbindPortServiceAndRemoveObserver();
+                    myCountDownTimer.cancel();
+                }else if (FormatInformationBean.ConsumptionType==3){
+                    Intent intent=new Intent(mContext,AppOutWaterActivity.class);
+                    startActivity(intent);
+                    unbindPortServiceAndRemoveObserver();
+                    myCountDownTimer.cancel();
+                }else if (FormatInformationBean.ConsumptionType==5){
+                    Intent intent=new Intent(mContext,DeliverOutWaterActivity.class);
+                    startActivity(intent);
+                    unbindPortServiceAndRemoveObserver();
+                    myCountDownTimer.cancel();
+                }
             }
         }
     }
@@ -384,7 +410,7 @@ public class BuyWaterActivity extends BaseActivity implements Observer{
             if (FormatInformationBean.BusinessType==1){
                 if (FormatInformationBean.AppBalance<20){
                     Intent intent=new Intent(mContext,AppNotSufficientActivity.class);
-                    startActivityForResult(intent,1);
+                    startActivity(intent);
                     unbindPortServiceAndRemoveObserver();
                     myCountDownTimer.cancel();
                 }else {
@@ -399,6 +425,7 @@ public class BuyWaterActivity extends BaseActivity implements Observer{
         if (portService != null) {
             try {
                 byte[] frame = FrameUtils.getFrame(mContext);
+                mAppFrame=frame;
                 byte[] type = new byte[]{0x01, 0x04};
                 if (business==1){
                     byte[] data= FormatInformationUtil.setConsumeType01();
@@ -418,31 +445,31 @@ public class BuyWaterActivity extends BaseActivity implements Observer{
             }
         }
     }
-    private void onCom1Received104dataFromControllBoard(ArrayList<Byte> data) {
+    private void onCom1Received104dataFromControlBoard(ArrayList<Byte> data) {
         try {
                 if(data!=null&&data.size()>0){
                     FormatInformationUtil.saveCom1ReceivedDataToFormatInformation(data);
                     if (FormatInformationBean.Balance<=1){
                         Intent intent=new Intent(mContext,NotSufficientActivity.class);
-                        startActivityForResult(intent,1);
+                        startActivity(intent);
                         unbindPortServiceAndRemoveObserver();
                         myCountDownTimer.cancel();
                     }else {
-                        String stringWork= DataCalculateUtils.IntToBinary(FormatInformationBean.Updateflag3);
+                        String stringWork= DataCalculateUtils.intToBinary(FormatInformationBean.Updateflag3);
                         if (!DataCalculateUtils.isEvent(stringWork,3)){
                             if (FormatInformationBean.ConsumptionType==1){
-                                Intent intent=new Intent(mContext,IcCardoutWaterActivity.class);
-                                startActivityForResult(intent,1);
+                                Intent intent=new Intent(mContext,IcCardOutWaterActivity.class);
+                                startActivity(intent);
                                 unbindPortServiceAndRemoveObserver();
                                 myCountDownTimer.cancel();
                             }else if (FormatInformationBean.ConsumptionType==3){
                                 Intent intent=new Intent(mContext,AppOutWaterActivity.class);
-                                startActivityForResult(intent,1);
+                                startActivity(intent);
                                 unbindPortServiceAndRemoveObserver();
                                 myCountDownTimer.cancel();
                             }else if (FormatInformationBean.ConsumptionType==5){
                                 Intent intent=new Intent(mContext,DeliverOutWaterActivity.class);
-                                startActivityForResult(intent,1);
+                                startActivity(intent);
                                 unbindPortServiceAndRemoveObserver();
                                 myCountDownTimer.cancel();
                             }
@@ -451,15 +478,15 @@ public class BuyWaterActivity extends BaseActivity implements Observer{
                             calculateData();    //没联网计算取缓存数据
                             double consumption= FormatInformationBean.ConsumptionAmount/100.0;
                             double waterVolume= FormatInformationBean.WaterYield*volume;
-                            String afterAmount=String.valueOf(DataCalculateUtils.TwoDecinmal2(consumption));
-                            String afterWater=String.valueOf(DataCalculateUtils.TwoDecinmal2(waterVolume));
+                            String afterAmount=String.valueOf(DataCalculateUtils.getTwoDecimal(consumption));
+                            String afterWater=String.valueOf(DataCalculateUtils.getTwoDecimal(waterVolume));
                             String mAccount=String.valueOf(FormatInformationBean.StringCardNo);
                             Intent intent=new Intent(mContext,PaySuccessActivity.class);
                             intent.putExtra("afterAmount",afterAmount) ;
                             intent.putExtra("afetrWater",afterWater);
                             intent.putExtra("mAccount",mAccount);
                             intent.putExtra("sign","0");
-                            startActivityForResult(intent,1);
+                            startActivity(intent);
                             unbindPortServiceAndRemoveObserver();
                             myCountDownTimer.cancel();
 
@@ -477,13 +504,30 @@ public class BuyWaterActivity extends BaseActivity implements Observer{
         int mTime=Integer.valueOf(time);
         volume=DataCalculateUtils.getWaterVolume(mVolume,mTime);
     }
+    private void onControlScreenBackground(int status){
+        if (portService!=null){
+            try {
+                byte[] frame = FrameUtils.getFrame(mContext);
+                byte[] type = new byte[]{0x01, 0x04};
+                byte[] data = FormatInformationUtil.setCloseScreenData(status);
+                byte[] packet = PacketUtils.makePackage(frame, type, data);
+                portService.sendToControlBoard(packet);
+            } catch (CRCException e) {
+                e.printStackTrace();
+            } catch (FrameException e) {
+                e.printStackTrace();
+            } catch (CmdTypeException e) {
+                e.printStackTrace();
+            }
+        }
+    }
     class MyCountDownTimer extends CountDownTimer {
-        public MyCountDownTimer(long millisInFuture, long countDownInterval) {
+        private MyCountDownTimer(long millisInFuture, long countDownInterval) {
             super(millisInFuture, countDownInterval);
         }
         @Override
         public void onTick(long millisUntilFinished) {  //计时过程
-            tv_time.setText(millisUntilFinished/1000+"");
+            tvTime.setText(millisUntilFinished/1000+"");
         }
         @Override
         public void onFinish() {
@@ -496,6 +540,7 @@ public class BuyWaterActivity extends BaseActivity implements Observer{
             finish();
             return false;
         }else if (keyCode==KeyEvent.KEYCODE_MENU){
+
         }else if (keyCode==KeyEvent.KEYCODE_DPAD_UP){
             //上一个
             finish();
@@ -506,7 +551,7 @@ public class BuyWaterActivity extends BaseActivity implements Observer{
         }
         return super.onKeyDown(keyCode, event);
     }
-    private void removeback() {
+    private void removeBack() {
         if (handler!=null){
             handler.removeCallbacks(runnable);
         }
@@ -525,13 +570,20 @@ public class BuyWaterActivity extends BaseActivity implements Observer{
             }
         }
     }
+
+    @Override
+    protected void onRestart() {
+        super.onRestart();
+        bindAndAddObserverToPortService();
+        onShowDTS();
+        myCountDownTimer.start();
+    }
     @Override
     protected void onDestroy() {
         super.onDestroy();
         unbindPortServiceAndRemoveObserver();
-        removeback();
+        removeBack();
         endTimeCount();
+
     }
-
-
 }

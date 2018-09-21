@@ -22,6 +22,13 @@ import java.util.Arrays;
 import java.util.Observable;
 import java.util.Observer;
 
+/**
+ * Demo class
+ * 〈一句话功能简述〉
+ * 〈功能详细描述〉
+ * @author hong
+ * @date 2018/4/2  
+ */
 public class CloseSystemActivity extends BaseActivity implements Observer{
     private PortService portService;
     private boolean  bindStatus=false;
@@ -35,7 +42,6 @@ public class CloseSystemActivity extends BaseActivity implements Observer{
         loadingdialog.show();
         bindPortService();
     }
-
     @Override
     public void update(Observable observable, Object arg) {
         PortService.MyObservable myObservable = (PortService.MyObservable) observable;
@@ -56,9 +62,9 @@ public class CloseSystemActivity extends BaseActivity implements Observer{
                     onCom2Received204DataFromServer();
                 }else if (Arrays.equals(packet2.getCmd(),new byte[]{0x01,0x04})){
                   //  MyLogUtil.d("服务端控制指令104：", CreateOrderType.getPacketString(packet2));
-                    String stringWork= DataCalculateUtils.IntToBinary(ByteUtils.byteToInt(packet2.getData().get(45)));
+                    String stringWork= DataCalculateUtils.intToBinary(ByteUtils.byteToInt(packet2.getData().get(45)));
                     if (DataCalculateUtils.isRechargeData(stringWork,5,6)){
-                        response204ToServer(packet2.getFrame());   //回复
+                        response204ToServer(packet2.getFrame());
                     }
                     onCom2Received104DataFromServer(packet2.getData());
                 }
@@ -85,9 +91,9 @@ public class CloseSystemActivity extends BaseActivity implements Observer{
     }
 
     private void onCom2Received104DataFromServer(ArrayList<Byte> data) {
-        String stringWork= DataCalculateUtils.IntToBinary(ByteUtils.byteToInt(data.get(45)));
-        int Switch= ByteUtils.byteToInt(data.get(31));
-        if (Switch==1&&DataCalculateUtils.isEvent(stringWork,0)){
+        String stringWork= DataCalculateUtils.intToBinary(ByteUtils.byteToInt(data.get(45)));
+        int switchStatus= ByteUtils.byteToInt(data.get(31));
+        if (switchStatus==1&&DataCalculateUtils.isEvent(stringWork,0)){
             if (loadingdialog != null && loadingdialog.isShowing()) {
                 loadingdialog.dismiss();
             }

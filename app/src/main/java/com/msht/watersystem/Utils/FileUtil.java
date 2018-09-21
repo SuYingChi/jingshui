@@ -14,11 +14,22 @@ import java.io.OutputStream;
 import java.net.FileNameMap;
 import java.net.URLConnection;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.TimeUnit;
 
+import android.graphics.Bitmap;
 import android.os.Environment;
+import android.os.Handler;
+import android.support.annotation.NonNull;
 import android.text.TextUtils;
+
+import com.msht.watersystem.filetool.FileCompatator;
+import com.msht.watersystem.widget.BannerM;
 
 
 public final class FileUtil {
@@ -409,11 +420,11 @@ public final class FileUtil {
         }
         return false;
     }
-    public static String[] getVideoFilePath() {
+    public static List<String> getVideoFilePath() {
         String[] files= new String[2];
+        List<String> pathList= new ArrayList<String>();
         File videoDirectory = new File(Environment.getExternalStorageDirectory().getPath() + "/waterSystem/video/");
         if (videoDirectory.exists())
-
         {
             File[] fileList = videoDirectory.listFiles(new FileFilter() {
                 @Override
@@ -421,14 +432,35 @@ public final class FileUtil {
                     return FileUtil.isVideoFile(pathname.getName());
                 }
             });
-            if(fileList.length!=2){
+            fileList = FileUtil.sort(fileList);
+            if(fileList.length<1){
                 return null;
+            }
+            for (File file : fileList) {
+                String path = file.getAbsolutePath();
+                pathList.add(path);
             }
             files[0] = fileList[0].getAbsolutePath();
             files[1] = fileList[1].getAbsolutePath();
         } else if (!videoDirectory.exists()) {
             videoDirectory.mkdirs();
         }
-        return files;
+        return pathList;
+    }
+    /**
+     * 按文件名排列
+     * @param fileLists
+     * @return
+     */
+    public static File[] sort(File[] fileLists) {
+
+        //将数组转为集合
+        List<File> files = Arrays.asList(fileLists);
+
+        //利用集合工具类排序
+        Collections.sort(files, new FileCompatator());
+        //将文件重新转为数组
+        File[] fileList = files.toArray(new File[files.size()]);
+        return fileList;
     }
 }

@@ -8,39 +8,39 @@
     android:padding="@dimen/margin_width15"
     android:orientation="vertical"
     tools:context="com.msht.watersystem.functionActivity.BuyWaterActivity">
-
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
+        android:layout_height="match_parent"
         android:background="#00ffffff"
         android:orientation="horizontal">
-
         <FrameLayout
+            android:id="@+id/id_layout_left"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="0.65"
             android:background="@color/white">
-            <com.msht.watersystem.widget.MyImgScrollViewPager
-                android:id="@+id/myvp"
+            <com.msht.watersystem.widget.BannerM
+                android:id="@+id/id_banner"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent">
-            </com.msht.watersystem.widget.MyImgScrollViewPager>
+            </com.msht.watersystem.widget.BannerM>
             <ImageView
                 android:id="@+id/textView"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:layout_centerInParent="true"
+                android:layout_gravity="center"
+                android:scaleType="fitXY"
                 android:gravity="center"
+                android:contentDescription="@string/ad_picture"
                 android:src="@drawable/water_advertisement" />
-            <include layout="@layout/layout_water_quality_detecton" />
+            <include layout="@layout/layout_water_quality_detection"
+                android:id="@+id/id_layout_detection"/>
         </FrameLayout>
 
         <View
             android:layout_width="@dimen/margin_width15"
             android:layout_height="match_parent"
             android:background="#00ffffff" />
-
         <LinearLayout
             android:layout_width="0dp"
             android:layout_height="match_parent"
@@ -185,7 +185,6 @@
                     </RelativeLayout>
                 </RelativeLayout>
             </RelativeLayout>
-
             <RelativeLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"

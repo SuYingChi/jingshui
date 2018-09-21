@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".functionActivity.MyVideoActivity">
+    tools:context=".functionActivity.MainMyVideoActivity">
     <RelativeLayout
         android:id="@+id/id_video_layout"
         android:layout_width="match_parent"
@@ -52,4 +52,13 @@
             android:textColor="@color/color_red"
             android:textSize="@dimen/text_width12"/>
     </FrameLayout>
+    <TextClock
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:format24Hour="kk:mm"
+        android:layout_marginTop="@dimen/margin_width10"
+        android:layout_marginEnd="@dimen/margin_width10"
+        android:layout_gravity="top|end"
+        android:textColor="@color/color_red"
+        android:textSize="@dimen/text_width12"/>
 </FrameLayout>

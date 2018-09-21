@@ -2,9 +2,11 @@ package com.msht.watersystem.functionActivity;
 
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.view.KeyEvent;
 import android.view.View;
+import android.widget.ImageView;
 
 import com.mcloyal.serialport.entity.Packet;
 import com.mcloyal.serialport.exception.CRCException;
@@ -20,9 +22,12 @@ import com.msht.watersystem.Utils.ByteUtils;
 import com.msht.watersystem.Utils.DataCalculateUtils;
 import com.msht.watersystem.Utils.FormatInformationBean;
 import com.msht.watersystem.Utils.FormatInformationUtil;
+import com.msht.watersystem.Utils.VariableUtil;
+import com.msht.watersystem.widget.BannerM;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
 
@@ -37,8 +42,27 @@ public class CannotBuyWaterActivity extends BaseActivity implements Observer {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_cannot_buywater);
         mContext=this;
+        initBannerView();
         initWaterQuality();
         bindPortService();
+    }
+    private void initBannerView() {
+        BannerM mBanner = (BannerM) findViewById(R.id.id_banner);
+        ImageView advertImage = findViewById(R.id.textView);
+        List<Bitmap> imageList= VariableUtil.imageViewList;
+        if (imageList!=null&& imageList.size() > 0) {
+            mBanner.setBannerBeanList(VariableUtil.imageViewList)
+                    .setDefaultImageResId(R.drawable.water_advertisement)
+                    .setIndexPosition(BannerM.INDEX_POSITION_BOTTOM)
+                    .setIndexColor(getResources().getColor(R.color.colorPrimary))
+                    .setIntervalTime(10)
+                    .show();
+            mBanner.setVisibility(View.VISIBLE);
+            advertImage.setVisibility(View.GONE);
+        } else {
+            mBanner.setVisibility(View.GONE);
+            advertImage.setVisibility(View.VISIBLE);
+        }
     }
     private void bindPortService(){
         serviceConnection = new ComServiceConnection(CannotBuyWaterActivity.this, new ComServiceConnection.ConnectionCallBack() {
@@ -77,7 +101,7 @@ public class CannotBuyWaterActivity extends BaseActivity implements Observer {
                     onCom2Received102dataFromServer(packet2.getData());
                 }else if (Arrays.equals(packet2.getCmd(),new byte[]{0x01,0x04})){
                     onCom2Received104dataFromServer(packet2.getData());
-                    String stringWork= DataCalculateUtils.IntToBinary(ByteUtils.byteToInt(packet2.getData().get(45)));
+                    String stringWork= DataCalculateUtils.intToBinary(ByteUtils.byteToInt(packet2.getData().get(45)));
                     if (DataCalculateUtils.isRechargeData(stringWork,5,6)){
                         response204ToServer(packet2.getFrame());
                     }
@@ -101,7 +125,7 @@ public class CannotBuyWaterActivity extends BaseActivity implements Observer {
         }
     }
     private void onCom2Received104dataFromServer(ArrayList<Byte> data) {
-        String stringWork= DataCalculateUtils.IntToBinary(ByteUtils.byteToInt(data.get(45)));
+        String stringWork= DataCalculateUtils.intToBinary(ByteUtils.byteToInt(data.get(45)));
         int Switch=ByteUtils.byteToInt(data.get(31));
         if (Switch==2&&DataCalculateUtils.isEvent(stringWork,0)){
             Intent intent=new Intent(mContext, CloseSystemActivity.class);
@@ -127,9 +151,9 @@ public class CannotBuyWaterActivity extends BaseActivity implements Observer {
     private void onCom2Received102dataFromServer(ArrayList<Byte> data) {
         if (ConsumeInformationUtils.controlModel(mContext,data)){
             if (FormatInformationBean.ShowTDS==0){
-                layout_TDS.setVisibility(View.GONE);
+                layoutTDS.setVisibility(View.GONE);
             }else {
-                layout_TDS.setVisibility(View.VISIBLE);
+                layoutTDS.setVisibility(View.VISIBLE);
             }
         }
     }
@@ -139,9 +163,9 @@ public class CannotBuyWaterActivity extends BaseActivity implements Observer {
 
             if (data!=null&&data.size()!=0){
                 FormatInformationUtil.saveStatusInformationToFormatInformation(data);
-                tv_InTDS.setText(String.valueOf(FormatInformationBean.OriginTDS));
-                tv_OutTDS.setText(String.valueOf(FormatInformationBean.PurificationTDS));
-                String stringWork= DataCalculateUtils.IntToBinary(FormatInformationBean.WorkState);
+                tvInTDS.setText(String.valueOf(FormatInformationBean.OriginTDS));
+                tvOutTDS.setText(String.valueOf(FormatInformationBean.PurificationTDS));
+                String stringWork= DataCalculateUtils.intToBinary(FormatInformationBean.WorkState);
                 if (DataCalculateUtils.isEvent(stringWork,6)){
                     finish();
                 }

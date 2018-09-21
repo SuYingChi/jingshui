@@ -23,7 +23,9 @@ import com.mcloyal.serialport.utils.ComServiceConnection;
 import com.mcloyal.serialport.utils.FrameUtils;
 import com.mcloyal.serialport.utils.PacketUtils;
 import com.msht.watersystem.Base.BaseActivity;
+import com.msht.watersystem.Manager.DateMassageEvent;
 import com.msht.watersystem.Manager.GreenDaoManager;
+import com.msht.watersystem.Manager.MessageEvent;
 import com.msht.watersystem.R;
 import com.msht.watersystem.Utils.BitmapViewListUtil;
 import com.msht.watersystem.Utils.ByteUtils;
@@ -35,12 +37,12 @@ import com.msht.watersystem.Utils.DateTimeUtils;
 import com.msht.watersystem.Utils.FileUtil;
 import com.msht.watersystem.Utils.FormatInformationBean;
 import com.msht.watersystem.Utils.FormatInformationUtil;
+import com.msht.watersystem.Utils.ThreadPoolManager;
 import com.msht.watersystem.Utils.VariableUtil;
 import com.msht.watersystem.entity.OrderInfo;
 import com.msht.watersystem.gen.OrderInfoDao;
 import com.msht.watersystem.service.ResendDataService;
 import com.msht.watersystem.widget.BannerM;
-import com.msht.watersystem.widget.ToastUtils;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -51,6 +53,11 @@ import java.util.Observer;
 
 import io.vov.vitamio.LibsChecker;
 import io.vov.vitamio.MediaPlayer;
+
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
+
 /**
  * Demo class
  * 〈一句话功能简述〉
@@ -58,7 +65,7 @@ import io.vov.vitamio.MediaPlayer;
  * @author hong
  * @date 2018/8/14  
  */
-public class MyVideoActivity extends BaseActivity implements Observer,SurfaceHolder.Callback, MediaPlayer.OnBufferingUpdateListener, MediaPlayer.OnCompletionListener, MediaPlayer.OnPreparedListener, MediaPlayer.OnVideoSizeChangedListener {
+public class MainMyVideoActivity extends BaseActivity implements Observer,SurfaceHolder.Callback, MediaPlayer.OnBufferingUpdateListener, MediaPlayer.OnCompletionListener, MediaPlayer.OnPreparedListener, MediaPlayer.OnVideoSizeChangedListener {
 
     private static final String TAG = "MediaPlayerDemo";
     private PortService portService;
@@ -67,7 +74,7 @@ public class MyVideoActivity extends BaseActivity implements Observer,SurfaceHol
     private double  volume = 0.00;
     private boolean bindStatus = false;
     private boolean buyStatus = false;
-    private boolean pageStatus = false;
+    private boolean pageStatus = true;
     private int timeCount=0;
     private ComServiceConnection serviceConnection;
     private MediaPlayer mMediaPlayer;
@@ -76,8 +83,8 @@ public class MyVideoActivity extends BaseActivity implements Observer,SurfaceHol
     private boolean mIsVideoReadyToBePlayed = false;
     private long currentPosition = 0;
     private boolean changeVideo = false;
-    /*夜间标志*/
-    private boolean nightStatus=false;
+    /**夜间标志*/
+    private boolean nightStatus=true;
     private int videoIndex=0;
     private List<String> fileList;
     private Context context;
@@ -87,9 +94,10 @@ public class MyVideoActivity extends BaseActivity implements Observer,SurfaceHol
         if (!LibsChecker.checkVitamioLibs(this)) {
             return;
         }
-        setContentView(R.layout.activity_my_video);
+        setContentView(R.layout.activity_main_my_video);
         context=this;
         bindAndAddObserverToPortService();
+        EventBus.getDefault().register(context);
         initService();
         View imageLayout=findViewById(R.id.id_layout_frame);
         View videoLayout =  findViewById(R.id.id_video_layout);
@@ -132,10 +140,10 @@ public class MyVideoActivity extends BaseActivity implements Observer,SurfaceHol
         List<Bitmap> imageViewList= BitmapViewListUtil.getBitmapListUtil(context);
         if (imageViewList!=null&& imageViewList.size() > 0) {
             mBanner.setBannerBeanList(VariableUtil.imageViewList)
-                    .setDefaultImageResId(R.drawable.ad_water)
+                    .setDefaultImageResId(R.drawable.water_advertisement)
                     .setIndexPosition(BannerM.INDEX_POSITION_BOTTOM)
                     .setIndexColor(getResources().getColor(R.color.colorPrimary))
-                    .setIntervalTime(5)
+                    .setIntervalTime(10)
                     .show();
             mBanner.setVisibility(View.VISIBLE);
             advertImage.setVisibility(View.GONE);
@@ -215,7 +223,7 @@ public class MyVideoActivity extends BaseActivity implements Observer,SurfaceHol
                         }
                         if (FormatInformationBean.ConsumptionType == 1) {
                             pageStatus=false;
-                            Intent intent = new Intent(mContext, IcCardoutWaterActivity.class);
+                            Intent intent = new Intent(mContext, IcCardOutWaterActivity.class);
                             unbindPortServiceAndRemoveObserver();
                             startActivity(intent);
                         } else if (FormatInformationBean.ConsumptionType == 3) {
@@ -234,8 +242,8 @@ public class MyVideoActivity extends BaseActivity implements Observer,SurfaceHol
                         calculateData();    //没联网计算取缓存数据
                         double consumption = FormatInformationBean.ConsumptionAmount / 100.0;
                         double waterVolume = FormatInformationBean.WaterYield * volume;
-                        String afterAmount = String.valueOf(DataCalculateUtils.TwoDecinmal2(consumption));
-                        String afterWater = String.valueOf(DataCalculateUtils.TwoDecinmal2(waterVolume));
+                        String afterAmount = String.valueOf(DataCalculateUtils.getTwoDecimal(consumption));
+                        String afterWater = String.valueOf(DataCalculateUtils.getTwoDecimal(waterVolume));
                         String mAccount = String.valueOf(FormatInformationBean.StringCardNo);
                         Intent intent = new Intent(mContext, PaySuccessActivity.class);
                         intent.putExtra("afterAmount", afterAmount);
@@ -274,7 +282,7 @@ public class MyVideoActivity extends BaseActivity implements Observer,SurfaceHol
                 buyStatus = false;
                 if (FormatInformationBean.ConsumptionType == 1) {
                     pageStatus=false;
-                    Intent intent = new Intent(mContext, IcCardoutWaterActivity.class);
+                    Intent intent = new Intent(mContext, IcCardOutWaterActivity.class);
                     unbindPortServiceAndRemoveObserver();
                     startActivity(intent);
                 } else if (FormatInformationBean.ConsumptionType == 3) {
@@ -460,9 +468,9 @@ public class MyVideoActivity extends BaseActivity implements Observer,SurfaceHol
             }
         }
     }
-    @Override
-    public void onHaveDataChange(List<OrderInfo> orderData) {
-        super.onHaveDataChange(orderData);
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onMessageData(MessageEvent messageEvent) {
+        List<OrderInfo> orderData=messageEvent.getMessage();
         if (portService!=null){
             if (portService.isConnection()){
                 for (int i=0;i<orderData.size();i++){
@@ -476,9 +484,9 @@ public class MyVideoActivity extends BaseActivity implements Observer,SurfaceHol
             }
         }
     }
-    @Override
-    public void onControlScreen(int status) {
-        super.onControlScreen(status);
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onMessageDate(DateMassageEvent event) {
+        int status=event.getMessage();
         if (status==1){
             nightStatus=false;
             onControlScreenBackground(status);
@@ -489,6 +497,7 @@ public class MyVideoActivity extends BaseActivity implements Observer,SurfaceHol
             if (timeCount>=2){
                 onControlScreenBackground(status);
                 timeCount=0;
+
             }
         }
     }
@@ -509,11 +518,13 @@ public class MyVideoActivity extends BaseActivity implements Observer,SurfaceHol
             startBuyWater();
             return true;
         } else if (keyCode == KeyEvent.KEYCODE_DPAD_UP) {
-            onControlScreenBackground(2);
+            onControlScreenBackground(1);
+            timeCount=0;
             startBuyWater();
             return true;
         } else if (keyCode == KeyEvent.KEYCODE_DPAD_DOWN) {
             onControlScreenBackground(1);
+            timeCount=0;
             startBuyWater();
             return true;
         } else if (keyCode == KeyEvent.KEYCODE_F1) {
@@ -571,7 +582,7 @@ public class MyVideoActivity extends BaseActivity implements Observer,SurfaceHol
         try {
             String videoPath=fileList.get(videoIndex);
             if (TextUtils.isEmpty(videoPath)) {
-                Toast.makeText(MyVideoActivity.this, "Please edit MediaPlayerDemo_Video Activity, " + "and set the path variable to your media file path." + " Your media file must be stored on sdcard.", Toast.LENGTH_LONG).show();
+                Toast.makeText(MainMyVideoActivity.this, "Please edit MediaPlayerDemo_Video Activity, " + "and set the path variable to your media file path." + " Your media file must be stored on sdcard.", Toast.LENGTH_LONG).show();
                 return;
             }
             mMediaPlayer = new MediaPlayer(this);
@@ -645,6 +656,10 @@ public class MyVideoActivity extends BaseActivity implements Observer,SurfaceHol
         mIsVideoSizeKnown = true;
     }
     @Override
+    protected void onStart() {
+        super.onStart();
+    }
+    @Override
     protected void onRestart() {
         super.onRestart();
         bindAndAddObserverToPortService();
@@ -662,5 +677,7 @@ public class MyVideoActivity extends BaseActivity implements Observer,SurfaceHol
         unbindPortServiceAndRemoveObserver();
         releaseMediaPlayer();
         doCleanUp();
+        ThreadPoolManager.getInstance(context).onShutDown();
+        EventBus.getDefault().unregister(context);
     }
 }
