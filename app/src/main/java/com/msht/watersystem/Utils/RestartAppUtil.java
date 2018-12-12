@@ -77,8 +77,6 @@ public class RestartAppUtil {
 
     public static void restartWaterApp(Context mContext){
         final Intent intent = mContext.getPackageManager().getLaunchIntentForPackage(mContext.getPackageName());
-        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         mContext.startActivity(intent);
     }
-
 }

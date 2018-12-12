@@ -8,7 +8,12 @@ package com.msht.watersystem.Utils;
  * @date 2018/8/6  
  */
 public class ConstantUtil {
+    public static final  String ZERO_VALUE="0";
     public static final  String ONE_VALUE="1";
+    public static final  String TWO_VALUE="2";
+    public static final  String THREE_VALUE="3";
+    public static final  String FOUR_VALUE="4";
+    public static final  String FIVE_VALUE="5";
     public static final  int FOURTEEN=14;
     public static final  int CLOSE_MACHINE=2;
 

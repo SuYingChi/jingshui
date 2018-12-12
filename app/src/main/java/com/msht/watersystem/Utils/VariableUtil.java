@@ -1,9 +1,9 @@
 package com.msht.watersystem.Utils;
 
 import android.graphics.Bitmap;
-import android.view.View;
 
 import com.mcloyal.serialport.entity.Packet;
+import com.msht.watersystem.AppContext;
 import com.msht.watersystem.Interface.ResultListener;
 import com.msht.watersystem.Manager.GreenDaoManager;
 import com.msht.watersystem.entity.OrderInfo;
@@ -34,9 +34,12 @@ public class VariableUtil {
     public static boolean setEquipmentStatus=true;
     public static boolean sendStatus=true;
     public static boolean mFirstOpen=false;
+    public static boolean mFirstClear=false;
+    public static String mNoticeText="此卡已挂失，如需取水请重新换卡!!";
     public static ArrayList<Byte> byteArray=new ArrayList<Byte>();
     private static final String SAVE_DATA_FAIL ="订单保存失败";
     private static final String SAVE_DATA_SUCCESS ="订单保存成功";
+
     ArrayList<HashMap<String, String>> List = new ArrayList<HashMap<String, String>>();
     public static List<Bitmap> imageViewList= new ArrayList<Bitmap>();
 
@@ -47,7 +50,7 @@ public class VariableUtil {
                 HttpURLConnection conn = null;
                 DataInputStream dis = null;
                 try {
-                    byte[] orderData= CreateOrderType.OrderByteData(packet1);
+                    byte[] orderData= CreateOrderType.byteOrderByteDataToString(packet1);
                     OrderInfo insertData = new OrderInfo(null, orderData);
                     getOrderDao().insert(insertData);
                     resultListener.onResultSuccess(SAVE_DATA_SUCCESS);
@@ -62,7 +65,10 @@ public class VariableUtil {
             }
         }).start();
     }
-    private static OrderInfoDao getOrderDao() {
+    /*private static OrderInfoDao getOrderDao() {
         return GreenDaoManager.getInstance().getSession().getOrderInfoDao();
+    }*/
+    private static OrderInfoDao getOrderDao() {
+        return AppContext.getInstance().getDaoSession().getOrderInfoDao();
     }
 }

@@ -5,8 +5,8 @@
     android:layout_height="wrap_content"
     android:layout_marginTop="@dimen/margin_width10"
     android:layout_marginBottom="@dimen/margin_width10"
-    android:layout_marginRight="@dimen/margin_width10"
-    android:layout_gravity="bottom|right"
+    android:layout_marginEnd="@dimen/margin_width10"
+    android:layout_gravity="bottom|end"
     android:padding="@dimen/margin_width6"
     android:background="@drawable/shape_black_transparent">
     <LinearLayout
@@ -24,52 +24,52 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="@dimen/margin_width10"
-                android:layout_marginLeft="@dimen/margin_width10"
+                android:layout_marginStart="@dimen/margin_width10"
                 android:textColor="@color/white"
                 android:textSize="@dimen/text_width12"
-                android:text="实时水质监控"/>
+                android:text="@string/real_time_monitoring"/>
             <TextView
                 android:id="@+id/id_tv2"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_below="@+id/id_tv1"
                 android:layout_marginTop="@dimen/margin_width10"
-                android:layout_marginLeft="@dimen/margin_width10"
+                android:layout_marginStart="@dimen/margin_width10"
                 android:textColor="@color/white"
                 android:textSize="@dimen/text_width10"
-                android:text="进水TDS值："/>
+                android:text="@string/in_water_tds"/>
             <TextView
                 android:id="@+id/id_tv3"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_below="@+id/id_tv2"
                 android:layout_marginTop="@dimen/margin_width10"
-                android:layout_marginLeft="@dimen/margin_width10"
+                android:layout_marginStart="@dimen/margin_width10"
                 android:textColor="@color/white"
                 android:textSize="@dimen/text_width10"
-                android:text="出水TDS值："/>
+                android:text="@string/out_water_tds"/>
             <TextView
                 android:id="@+id/id_out_tds"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_below="@+id/id_tv2"
-                android:layout_toRightOf="@+id/id_tv3"
+                android:layout_toEndOf="@+id/id_tv3"
                 android:layout_marginTop="@dimen/margin_width10"
-                android:layout_marginLeft="@dimen/margin_width10"
+                android:layout_marginStart="@dimen/margin_width10"
                 android:textColor="@color/white"
                 android:textSize="@dimen/text_width10"
-                android:text="5" />
+                android:text="@string/zero" />
             <TextView
                 android:id="@+id/id_in_tds"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_below="@+id/id_tv1"
-                android:layout_toRightOf="@+id/id_tv2"
+                android:layout_toEndOf="@+id/id_tv2"
                 android:layout_marginTop="@dimen/margin_width10"
-                android:layout_marginLeft="@dimen/margin_width10"
+                android:layout_marginStart="@dimen/margin_width10"
                 android:textColor="@color/white"
                 android:textSize="@dimen/text_width10"
-                android:text="50"/>
+                android:text="@string/one_hundred_fifty_eight"/>
         </RelativeLayout>
         <View
             android:layout_width="match_parent"
@@ -94,7 +94,7 @@
                 android:textColor="@color/black"
                 android:textStyle="bold"
                 android:textSize="@dimen/text_width10"
-                android:text="TDS值(PPM)"/>
+                android:text="@string/TDS_MMP"/>
             <View
                 android:layout_width="1dp"
                 android:layout_height="match_parent"
@@ -108,7 +108,7 @@
                 android:textColor="@color/black"
                 android:textStyle="bold"
                 android:textSize="@dimen/text_width10"
-                android:text="水质"/>
+                android:text="@string/water_quality"/>
         </LinearLayout>
         <View
             android:layout_width="match_parent"
@@ -126,7 +126,7 @@
                 android:gravity="center"
                 android:textColor="@color/text_color"
                 android:textSize="@dimen/text_width8"
-                android:text="0~9"/>
+                android:text="@string/zero_to_nine"/>
             <View
                 android:layout_width="1dp"
                 android:layout_height="match_parent"
@@ -139,7 +139,7 @@
                 android:gravity="center"
                 android:textColor="@color/text_color"
                 android:textSize="@dimen/text_width8"
-                android:text="纯净水"/>
+                android:text="@string/purified_water"/>
         </LinearLayout>
         <View
             android:layout_width="match_parent"
@@ -157,7 +157,7 @@
                 android:gravity="center"
                 android:textColor="@color/text_color"
                 android:textSize="@dimen/text_width8"
-                android:text="10~60"/>
+                android:text="@string/ten_to_sixty"/>
             <View
                 android:layout_width="1dp"
                 android:layout_height="match_parent"
@@ -170,7 +170,7 @@
                 android:gravity="center"
                 android:textColor="@color/text_color"
                 android:textSize="@dimen/text_width8"
-                android:text="山泉水、矿泉水"/>
+                android:text="@string/mountain_spring"/>
         </LinearLayout>
         <View
             android:layout_width="match_parent"
@@ -188,7 +188,7 @@
                 android:gravity="center"
                 android:textColor="@color/text_color"
                 android:textSize="@dimen/text_width8"
-                android:text="60~100"/>
+                android:text="@string/sixty_to_hundred"/>
             <View
                 android:layout_width="1dp"
                 android:layout_height="match_parent"
@@ -201,7 +201,7 @@
                 android:gravity="center"
                 android:textColor="@color/text_color"
                 android:textSize="@dimen/text_width8"
-                android:text="净化水"/>
+                android:text="@string/clean_water"/>
         </LinearLayout>
         <View
             android:layout_width="match_parent"
@@ -219,7 +219,7 @@
                 android:gravity="center"
                 android:textColor="@color/text_color"
                 android:textSize="@dimen/text_width8"
-                android:text="100~300"/>
+                android:text="@string/hundred_to_threeHundred"/>
             <View
                 android:layout_width="1dp"
                 android:layout_height="match_parent"
@@ -232,7 +232,7 @@
                 android:gravity="center"
                 android:textColor="@color/text_color"
                 android:textSize="@dimen/text_width8"
-                android:text="未净化水"/>
+                android:text="@string/not_clean_water"/>
         </LinearLayout>
         <View
             android:layout_width="match_parent"
@@ -250,7 +250,7 @@
                 android:gravity="center"
                 android:textColor="@color/text_color"
                 android:textSize="@dimen/text_width8"
-                android:text="300以上"/>
+                android:text="@string/more_than_threeHundred"/>
             <View
                 android:layout_width="1dp"
                 android:layout_height="match_parent"
@@ -263,7 +263,7 @@
                 android:gravity="center"
                 android:textColor="@color/text_color"
                 android:textSize="@dimen/text_width8"
-                android:text="污染水"/>
+                android:text="@string/pollution_water"/>
         </LinearLayout>
     </LinearLayout>
 

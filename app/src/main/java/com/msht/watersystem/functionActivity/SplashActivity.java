@@ -17,7 +17,13 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Observable;
 import java.util.Observer;
-
+/**
+ * Demo class
+ * 〈一句话功能简述〉
+ * 〈功能详细描述〉
+ * @author hong
+ * @date 2018/7/2  
+ */
 public class SplashActivity extends BaseActivity  implements Observer{
     private final static String TAG = SplashActivity.class.getSimpleName();
     private PortService portService;
@@ -32,7 +38,6 @@ public class SplashActivity extends BaseActivity  implements Observer{
         initData();
         bindPortService();
     }
-
     private void initData() {
         boolean isFirstOpen = CachePreferencesUtil.getBoolean(this, CachePreferencesUtil.FIRST_OPEN, true);
         if (isFirstOpen){
@@ -67,8 +72,9 @@ public class SplashActivity extends BaseActivity  implements Observer{
             }
             /*startActivity(new Intent(SplashActivity.this,
                     MainWaterVideoActivity.class));*/
-            startActivity(new Intent(SplashActivity.this,
+           startActivity(new Intent(SplashActivity.this,
                     MainMyVideoActivity.class));
+
             finish();
         }
     }

@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
 
+import com.msht.watersystem.AppContext;
 import com.msht.watersystem.Base.BaseActivity;
 import com.msht.watersystem.Interface.ResendDataEvent;
 import com.msht.watersystem.Manager.GreenDaoManager;
@@ -61,7 +62,7 @@ public class ResendDataService extends Service {
         return null;
     }
     private OrderInfoDao getOrderDao() {
-        return GreenDaoManager.getInstance().getSession().getOrderInfoDao();
+        return AppContext.getInstance().getDaoSession().getOrderInfoDao();
     }
 
     @Override

@@ -94,7 +94,6 @@ public class NotSufficientActivity extends BaseActivity implements Observer {
         tvCardNo.setText(String.valueOf(FormatInformationBean.StringCardNo));
         myCountDownTimer.start();
     }
-
     private void initBannerView() {
         BannerM mBanner = (BannerM) findViewById(R.id.id_banner);
         ImageView advertImage = findViewById(R.id.textView);
@@ -122,7 +121,7 @@ public class NotSufficientActivity extends BaseActivity implements Observer {
             if (packet1 != null) {
                 if (Arrays.equals(packet1.getCmd(),new byte[]{0x01,0x04})){
                    // MyLogUtil.d("主板控制指令104：", CreateOrderType.getPacketString(packet1));
-                    onCom1Received104DataFromControllBoard(packet1.getData());
+                    onCom1Received104DataFromControlBoard(packet1.getData());
                 }else if (Arrays.equals(packet1.getCmd(),new byte[]{0x01,0x05})){
                     onCom1Received105DataFromControllBoard(packet1.getData());
                 }else if (Arrays.equals(packet1.getCmd(),new byte[]{0x02,0x04})){
@@ -263,40 +262,40 @@ public class NotSufficientActivity extends BaseActivity implements Observer {
             }
         }
     }
-    private void onCom1Received104DataFromControllBoard(ArrayList<Byte> data) {
+    private void onCom1Received104DataFromControlBoard(ArrayList<Byte> data) {
         try {
             if(   data!=null&&data.size()>0){
                 FormatInformationUtil.saveCom1ReceivedDataToFormatInformation(data);
-                    if (FormatInformationBean.Balance<20){
+                String stringWork= DataCalculateUtils.intToBinary(FormatInformationBean.Updateflag3);
+                if (DataCalculateUtils.isEvent(stringWork,3)){
+                    double balance= DataCalculateUtils.getTwoDecimal(FormatInformationBean.Balance/100.0);
+                    tvBalance.setText(String.valueOf(balance));
+                    tvCardNo.setText(String.valueOf(FormatInformationBean.StringCardNo));
+                }else {
+                    if (FormatInformationBean.Balance<2){
                         double balance= DataCalculateUtils.getTwoDecimal(FormatInformationBean.Balance/100.0);
                         tvBalance.setText(String.valueOf(balance));
                         tvCardNo.setText(String.valueOf(FormatInformationBean.StringCardNo));
                     }else {
-                        String stringWork= DataCalculateUtils.intToBinary(FormatInformationBean.Updateflag3);
-                        if (DataCalculateUtils.isEvent(stringWork,3)){
-                            double balance= DataCalculateUtils.getTwoDecimal(FormatInformationBean.Balance/100.0);
-                            tvBalance.setText(String.valueOf(balance));
-                            tvCardNo.setText(String.valueOf(FormatInformationBean.StringCardNo));
-                        }else {
-                            if (FormatInformationBean.ConsumptionType==1){
-                                Intent intent=new Intent(mContext,IcCardOutWaterActivity.class);
-                                startActivity(intent);
-                                myCountDownTimer.cancel();
-                                finish();
-                            }else if (FormatInformationBean.ConsumptionType==3){
-                                Intent intent=new Intent(mContext,AppOutWaterActivity.class);
-                                startActivity(intent);
-                                myCountDownTimer.cancel();
-                                finish();
-                            }else if (FormatInformationBean.ConsumptionType==5){
-                                Intent intent=new Intent(mContext,DeliverOutWaterActivity.class);
-                                startActivity(intent);
-                                myCountDownTimer.cancel();
-                                finish();
-                            }
+                        if (FormatInformationBean.ConsumptionType==1){
+                            Intent intent=new Intent(mContext,IcCardOutWaterActivity.class);
+                            startActivity(intent);
+                            myCountDownTimer.cancel();
+                            finish();
+                        }else if (FormatInformationBean.ConsumptionType==3){
+                            Intent intent=new Intent(mContext,AppOutWaterActivity.class);
+                            startActivity(intent);
+                            myCountDownTimer.cancel();
+                            finish();
+                        }else if (FormatInformationBean.ConsumptionType==5){
+                            Intent intent=new Intent(mContext,DeliverOutWaterActivity.class);
+                            startActivity(intent);
+                            myCountDownTimer.cancel();
+                            finish();
                         }
                     }
                 }
+            }
         }catch (Exception e){
             e.printStackTrace();
         }
@@ -335,8 +334,8 @@ public class NotSufficientActivity extends BaseActivity implements Observer {
     }
     private void onCom2Received104DataFromServer(ArrayList<Byte> data) {
         String stringWork= DataCalculateUtils.intToBinary(ByteUtils.byteToInt(data.get(45)));
-        int Switch=ByteUtils.byteToInt(data.get(31));
-        if (Switch==2&&DataCalculateUtils.isEvent(stringWork,0)){
+        int mSwitch=ByteUtils.byteToInt(data.get(31));
+        if (mSwitch==2&&DataCalculateUtils.isEvent(stringWork,0)){
             Intent intent=new Intent(mContext, CloseSystemActivity.class);
             startActivityForResult(intent,1);
             finish();
@@ -357,7 +356,8 @@ public class NotSufficientActivity extends BaseActivity implements Observer {
         }
         @Override
         public void onTick(long millisUntilFinished) {  //计时过程
-            tvTime.setText(millisUntilFinished/1000+"");
+            String mUntilFinishedText=millisUntilFinished/1000+"";
+            tvTime.setText(mUntilFinishedText);
         }
         @Override
         public void onFinish() {

@@ -6,6 +6,7 @@ import android.os.CountDownTimer;
 import android.os.Handler;
 import android.os.Message;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.ImageView;
@@ -25,6 +26,7 @@ import com.msht.watersystem.Utils.ConstantUtil;
 import com.msht.watersystem.Utils.ConsumeInformationUtils;
 import com.msht.watersystem.Utils.ByteUtils;
 import com.msht.watersystem.Utils.CachePreferencesUtil;
+import com.msht.watersystem.Utils.CreateOrderType;
 import com.msht.watersystem.Utils.FormatInformationBean;
 import com.msht.watersystem.Utils.FormatInformationUtil;
 import com.msht.watersystem.Utils.DataCalculateUtils;
@@ -39,6 +41,8 @@ import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
 
+
+
 /**
  * Demo class
  * 〈一句话功能简述〉
@@ -49,12 +53,9 @@ import java.util.Observer;
 public class AppOutWaterActivity extends BaseActivity implements Observer{
     private int      second=0;
     private boolean  bindStatus=false;
-    private boolean  isStart=false;
     private double   volume=0.00;
     private double   priceNum=0.00;
     private String   mAccount;
-    private String   afterAmount="0.0";
-    private String   afterWater="0";
     private View     layoutNotice;
     private TextView tvTime;
     private LEDView leWater, leAmount;
@@ -70,6 +71,7 @@ public class AppOutWaterActivity extends BaseActivity implements Observer{
      * @parame  mStartFrame 灌装发送104帧序
      */
     private byte[]  mStartFrame;
+    /**暂停取水计时 */
     private MyCountDownTimer myCountDownTimer;
     private CountDownTimer mTimer;
     private PortService portService;
@@ -79,8 +81,8 @@ public class AppOutWaterActivity extends BaseActivity implements Observer{
     private final UpDataHandler handlerStop = new UpDataHandler(this);
     private static class UpDataHandler extends Handler{
         private WeakReference<AppOutWaterActivity> mWeakReference;
-        public UpDataHandler(AppOutWaterActivity appoutWater) {
-            mWeakReference = new WeakReference<AppOutWaterActivity>(appoutWater);
+        public UpDataHandler(AppOutWaterActivity appOutWater) {
+            mWeakReference = new WeakReference<AppOutWaterActivity>(appOutWater);
         }
         @Override
         public void handleMessage(Message msg){
@@ -131,9 +133,8 @@ public class AppOutWaterActivity extends BaseActivity implements Observer{
         bindPortService();
         startCountDownTime(35);
     }
-
     private void initBannerView() {
-        BannerM mBanner = (BannerM) findViewById(R.id.id_banner);
+        BannerM mBanner =findViewById(R.id.id_banner);
         ImageView advertImage = findViewById(R.id.textView);
         List<Bitmap> imageList=VariableUtil.imageViewList;
         if (imageList!=null&& imageList.size() > 0) {
@@ -192,7 +193,7 @@ public class AppOutWaterActivity extends BaseActivity implements Observer{
                 if (Arrays.equals(packet1.getCmd(),new byte[]{0x02,0x04})){
                     onCom1Received204DataFromControlBoard(packet1.getFrame());
                 }else if (Arrays.equals(packet1.getCmd(),new byte[]{0x01,0x04})){
-                    onCom1Received104DataFromControlBoard(packet1.getData());
+                    onCom1Received104DataFromControlBoard(packet1.getData(),packet1.getFrame());
                 }else if (Arrays.equals(packet1.getCmd(),new byte[]{0x01,0x05})){
                     onCom1Received105DataFromControlBoard(packet1.getData());
                 }
@@ -277,7 +278,7 @@ public class AppOutWaterActivity extends BaseActivity implements Observer{
                         //扫码打水过程，水量不足，自动结账
                         ensureState =2;
                         receiveState =3;
-                        onsSettleAccountEndOutWater();
+                        onSettleAccountEndOutWater();
                     }else {
                         Intent intent=new Intent(mContext, CannotBuyWaterActivity.class);
                         startActivityForResult(intent,1);
@@ -289,7 +290,7 @@ public class AppOutWaterActivity extends BaseActivity implements Observer{
             e.printStackTrace();
         }
     }
-    private void onCom1Received104DataFromControlBoard(ArrayList<Byte> data) {
+    private void onCom1Received104DataFromControlBoard(ArrayList<Byte> data, byte[] frame) {
             if(  data!=null&&data.size()>0){
                 FormatInformationUtil.saveCom1ReceivedDataToFormatInformation(data);
                 int businessType=ByteUtils.byteToInt(data.get(15));
@@ -305,7 +306,10 @@ public class AppOutWaterActivity extends BaseActivity implements Observer{
                         if (chargeMode!=1){
                             FormatInformationBean.AppBalance= FormatInformationBean.AppBalance-consumption;
                         }
-                        settleServer(amountAfter,consumption);
+                        if (mTimer !=null){
+                            mTimer.cancel();
+                        }
+                        settleServer(amountAfter,consumption,frame);
                     }else {
                         Message msg=new Message();
                         msg.what=2;
@@ -317,37 +321,37 @@ public class AppOutWaterActivity extends BaseActivity implements Observer{
                             FormatInformationBean.AppBalance= FormatInformationBean.AppBalance-consumption;
                         }
                         if (mTimer !=null){
-                            mTimer.cancel();    //接收到207计时停止
+                            mTimer.cancel();
                         }
-                        settleServer(amountAfter,consumption);
+                        settleServer(amountAfter,consumption,frame);
                     }
                 }else if (businessType==1){
-                    if (FormatInformationBean.Balance<=1){
-                        Intent intent=new Intent(mContext,NotSufficientActivity.class);
-                        startActivity(intent);
-                        myCountDownTimer.cancel();
-                        finish();
-                    }else {
-                        String stringWork= DataCalculateUtils.intToBinary(FormatInformationBean.Updateflag3);
-                        if (!DataCalculateUtils.isEvent(stringWork,3)){
+                    String stringWork= DataCalculateUtils.intToBinary(FormatInformationBean.Updateflag3);
+                    if (!DataCalculateUtils.isEvent(stringWork,3)){
+                        if (FormatInformationBean.Balance<=1){
+                            Intent intent=new Intent(mContext,NotSufficientActivity.class);
+                            startActivity(intent);
+                            myCountDownTimer.cancel();
+                            finish();
+                        }else {
                             Intent intent=new Intent(mContext,IcCardOutWaterActivity.class);
                             startActivity(intent);
                             finish();
-                        }else {
-                            calculateData();    //没联网计算取缓存数据
-                            double consumption= FormatInformationBean.ConsumptionAmount/100.0;
-                            double waterVolume=consumption/0.3;
-                            String afterAmount=String.valueOf(DataCalculateUtils.getTwoDecimal(consumption));
-                            String afterWater=String.valueOf(DataCalculateUtils.getTwoDecimal(waterVolume));
-                            String mAccount=String.valueOf(FormatInformationBean.StringCardNo);
-                            Intent intent=new Intent(mContext,PaySuccessActivity.class);
-                            intent.putExtra("afterAmount",afterAmount) ;
-                            intent.putExtra("afetrWater",afterWater);
-                            intent.putExtra("mAccount",mAccount);
-                            intent.putExtra("sign","0");
-                            startActivity(intent);
-                            finish();
                         }
+                    }else {
+                        calculateData();    //没联网计算取缓存数据
+                        double consumption= FormatInformationBean.ConsumptionAmount/100.0;
+                        double waterVolume=consumption/0.3;
+                        String afterAmount=String.valueOf(DataCalculateUtils.getTwoDecimal(consumption));
+                        String afterWater=String.valueOf(DataCalculateUtils.getTwoDecimal(waterVolume));
+                        String mAccount=String.valueOf(FormatInformationBean.StringCardNo);
+                        Intent intent=new Intent(mContext,PaySuccessActivity.class);
+                        intent.putExtra("afterAmount",afterAmount) ;
+                        intent.putExtra("afterWater",afterWater);
+                        intent.putExtra("mAccount",mAccount);
+                        intent.putExtra("sign","0");
+                        startActivity(intent);
+                        finish();
                     }
                 }
             }
@@ -355,14 +359,14 @@ public class AppOutWaterActivity extends BaseActivity implements Observer{
     private void onCom2Received207DataFromServer() {
         double consumption= FormatInformationBean.ConsumptionAmount/100.0;
         double waterVolume= FormatInformationBean.WaterYield*volume;
-        afterAmount=String.valueOf(DataCalculateUtils.getTwoDecimal(consumption));
+        String afterAmount=String.valueOf(DataCalculateUtils.getTwoDecimal(consumption));
         if (waterVolume==0){
             afterAmount="0.0";
         }
-        afterWater=String.valueOf(DataCalculateUtils.getTwoDecimal(waterVolume));
+        String afterWater=String.valueOf(DataCalculateUtils.getTwoDecimal(waterVolume));
         Intent intent=new Intent(mContext,PaySuccessActivity.class);
         intent.putExtra("afterAmount",afterAmount);
-        intent.putExtra("afetrWater",afterWater);
+        intent.putExtra("afterWater",afterWater);
         intent.putExtra("mAccount",mAccount);
         intent.putExtra("sign","1");
         startActivity(intent);
@@ -398,10 +402,10 @@ public class AppOutWaterActivity extends BaseActivity implements Observer{
         int mTime=Integer.parseInt(time);
         volume=DataCalculateUtils.getWaterVolume(mVolume,mTime);
     }
-    private void settleServer(int afterAmount,int amount) {
+    private void settleServer(int afterAmount,int amount,byte[] frame) {
+        mTimer.start();//开始计时
         if (portService != null) {
             try {
-                byte[] frame = FrameUtils.getFrame(mContext);
                 byte[] type = new byte[]{0x01, 0x07};
                 if (VariableUtil.byteArray!=null&&VariableUtil.byteArray.size()!=0){
                     byte[] data= DataCalculateUtils.ArrayToByte(VariableUtil.byteArray);
@@ -446,11 +450,8 @@ public class AppOutWaterActivity extends BaseActivity implements Observer{
                 e.printStackTrace();
             }
         }
-        if (!isStart){
-            startCountDownTime(30);
-        }
     }
-    private void onsSettleAccountEndOutWater() {
+    private void onSettleAccountEndOutWater() {
         if (portService != null) {
             try {
                 byte[] frame = FrameUtils.getFrame(mContext);
@@ -482,7 +483,8 @@ public class AppOutWaterActivity extends BaseActivity implements Observer{
             if (receiveState ==2){
                 ensureState =2;
                 receiveState =3;
-                //onsSettleAccountEndOutWater();
+                mTimer.start();
+               // onSettleAccountEndOutWater();
             }
         }
     }
@@ -502,8 +504,6 @@ public class AppOutWaterActivity extends BaseActivity implements Observer{
                 onCom2Received207DataFromServer();
             }
         };
-        mTimer.start();
-        isStart=true;
     }
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
@@ -536,8 +536,7 @@ public class AppOutWaterActivity extends BaseActivity implements Observer{
             ensureState =2;
             receiveState =3;
             myCountDownTimer.onFinish();
-            onsSettleAccountEndOutWater();
-            startCountDownTime(30);
+            onSettleAccountEndOutWater();
         }
         return super.onKeyDown(keyCode, event);
     }
@@ -575,7 +574,6 @@ public class AppOutWaterActivity extends BaseActivity implements Observer{
             }
         }
     }
-
     private void showTips() {
         finish();
     }

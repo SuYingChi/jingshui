@@ -172,14 +172,14 @@ public class DataCalculateUtils {
         }
         return  byteArray;
     }
-    //十进制转八位二进制
+    /**十进制转八位二进制 */
     public static String intToBinary(int input) {
         //11110000
         String binaryString = Integer.toBinaryString(input);
         int binaryInt = Integer.parseInt(binaryString);
         return String.format(Locale.CHINA,"%08d",binaryInt);
     }
-    //判断Flag位
+    /**判断Flag位 */
     public static boolean isEvent(String s,int index){
         boolean isOneValue;
         if (s.length()>=8){

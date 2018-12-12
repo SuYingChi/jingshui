@@ -30,7 +30,13 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
-
+/**
+ * Demo class
+ * 〈一句话功能简述〉
+ * 〈功能详细描述〉
+ * @author hong
+ * @date 2018/7/2  
+ */
 public class CannotBuyWaterActivity extends BaseActivity implements Observer {
     private boolean  bindStatus=false;
     private Context mContext;
@@ -126,8 +132,8 @@ public class CannotBuyWaterActivity extends BaseActivity implements Observer {
     }
     private void onCom2Received104dataFromServer(ArrayList<Byte> data) {
         String stringWork= DataCalculateUtils.intToBinary(ByteUtils.byteToInt(data.get(45)));
-        int Switch=ByteUtils.byteToInt(data.get(31));
-        if (Switch==2&&DataCalculateUtils.isEvent(stringWork,0)){
+        int mSwitch=ByteUtils.byteToInt(data.get(31));
+        if (mSwitch==2&&DataCalculateUtils.isEvent(stringWork,0)){
             Intent intent=new Intent(mContext, CloseSystemActivity.class);
             startActivityForResult(intent,2);
             unbindPortServiceAndRemoveObserver();
@@ -188,13 +194,6 @@ public class CannotBuyWaterActivity extends BaseActivity implements Observer {
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         if(keyCode== KeyEvent.KEYCODE_BACK&& event.getRepeatCount()==0){
             finish();
-        }else if (keyCode==KeyEvent.KEYCODE_MENU){
-
-        }else if (keyCode==KeyEvent.KEYCODE_DPAD_UP){
-
-        }else if (keyCode==KeyEvent.KEYCODE_DPAD_DOWN){
-
-        }else if (keyCode==KeyEvent.KEYCODE_F1){
         }
         return false;
        // return super.onKeyDown(keyCode, event);

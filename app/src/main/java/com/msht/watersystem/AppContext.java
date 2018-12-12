@@ -5,6 +5,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.database.sqlite.SQLiteDatabase;
+import android.os.StrictMode;
+import android.util.Log;
 import android.widget.Toast;
 
 import com.mcloyal.serialport.AppLibsContext;
@@ -23,13 +25,15 @@ import java.util.List;
 import io.vov.vitamio.Vitamio;
 
 /**
- * Created by rain on 2017/11/6.
+ *
+ * @author rain
+ * @date 2017/11/6
  */
 public class AppContext extends AppLibsContext {
     private List<Activity> mActivityList;
     public static AppContext instances;
-    private static Context mContext;
 
+    private DaoSession mDaoSession;
     /** 日志输出控制开关
      *    E级别日志输出
      *    i级别日志输出
@@ -45,15 +49,43 @@ public class AppContext extends AppLibsContext {
         initPortBroadcast();
        // CaughtExceptionTool.getInstance().init(this);  //异常捕获
         instances = this;
-        mContext = getApplicationContext();
+       // mContext = getApplicationContext();
         /*初始化视频播放*/
-        Vitamio.initialize(mContext);
+        Vitamio.initialize(getApplicationContext());
        // LogUtils.initLogs(this,true,true,true,true,true,true);
         LogUtils.initLogs(this,false,false,false,false,false,true);
        // GreenDaoManager.getInstance();    //数据库存储订单数据
+        setDatabase();
        /* ArrayList<byte[]> types = new ArrayList<>();
         types.add(new byte[]{0x01, 0x04});//如果需要新增其他类型的特例则使用 add 方法叠加即可
         SpecialUtils.addTypes(types);*/
+       if (BuildConfig.DEBUG){
+           StrictMode.setThreadPolicy(new StrictMode.ThreadPolicy.Builder()
+                   .detectCustomSlowCalls()
+                   .detectDiskReads()
+                   .detectDiskWrites()
+                   .detectNetwork()
+                   .penaltyLog()
+                   .build());
+           StrictMode.setVmPolicy(new StrictMode.VmPolicy.Builder()
+                   .detectActivityLeaks()
+                   .detectLeakedClosableObjects()
+                   .detectLeakedSqlLiteObjects()
+                   .penaltyLog()
+                   .build());
+       }
+    }
+
+    private void setDatabase() {
+
+        DaoMaster.DevOpenHelper devOpenHelper = new
+                //此处为自己需要处理的表
+                DaoMaster.DevOpenHelper(AppContext.getContext(), "orderdata-db", null);
+        DaoMaster mDaoMaster = new DaoMaster(devOpenHelper.getWritableDatabase());
+        mDaoSession = mDaoMaster.newSession();
+    }
+    public DaoSession getDaoSession() {
+        return mDaoSession;
     }
     /**
      * 初始化广播事件以及后台服务事件监听串口接收程序
@@ -80,11 +112,14 @@ public class AppContext extends AppLibsContext {
         // 程序在内存清理的时候执行
         super.onTrimMemory(level);
     }
-    public static AppContext getInstances(){
+    public static AppContext getInstance(){
         return instances;
     }
     public static Context getContext() {
-        return mContext;
+        return instances.getApplicationContext();
+    }
+    public static Context getWaterApplicationContext() {
+        return instances.getApplicationContext();
     }
     public void addActivity(Activity activity){
         if (!mActivityList.contains(activity)){

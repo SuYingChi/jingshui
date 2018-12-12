@@ -33,7 +33,9 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
 /**
- * Created by landptf on 2017/03/06.
+ *
+ * @author landptf
+ * @date 2017/03/06
  * 轮播图控件
  */
 public class BannerM extends RelativeLayout {

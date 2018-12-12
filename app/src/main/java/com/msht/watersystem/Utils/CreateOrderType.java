@@ -5,11 +5,13 @@ import com.mcloyal.serialport.entity.Packet;
 import java.util.ArrayList;
 
 /**
- * Created by hong on 2018/1/26.
+ *
+ * @author hong
+ * @date 2018/1/26
  */
 
 public class CreateOrderType {
-    public static byte[] OrderByteData(Packet packet1){
+    public static byte[] byteOrderByteDataToString(Packet packet1){
         byte   head=packet1.getStart();
         byte[] len=packet1.getLen();
         byte   version=packet1.getVersion();
@@ -54,27 +56,27 @@ public class CreateOrderType {
         byte[] back2=packet1.getBack2();
         byte[] cmd=packet1.getCmd();
         byte[] cre=packet1.getCrc();
-        String PacketString=ByteUtils.Byte2Hex(head)+" ";
-        PacketString=PacketString+ByteUtils.ByteArrToHex(len)+" ";
-        PacketString=PacketString+ByteUtils.Byte2Hex(version)+" ";
-        PacketString=PacketString+ByteUtils.Byte2Hex(back1)+" ";
-        PacketString=PacketString+ByteUtils.ByteArrToHex(frame)+" ";
-        PacketString=PacketString+ByteUtils.ByteArrToHex(back2)+" ";
-        PacketString=PacketString+ByteUtils.ByteArrToHex(cmd)+" ";
-        PacketString=PacketString+ByteDataString(packet1.getData());
-        PacketString=PacketString+ByteUtils.ByteArrToHex(cre);
-        return  PacketString;
+        String mPacketString=ByteUtils.Byte2Hex(head)+" ";
+        mPacketString=mPacketString+ByteUtils.ByteArrToHex(len)+" ";
+        mPacketString=mPacketString+ByteUtils.Byte2Hex(version)+" ";
+        mPacketString=mPacketString+ByteUtils.Byte2Hex(back1)+" ";
+        mPacketString=mPacketString+ByteUtils.ByteArrToHex(frame)+" ";
+        mPacketString=mPacketString+ByteUtils.ByteArrToHex(back2)+" ";
+        mPacketString=mPacketString+ByteUtils.ByteArrToHex(cmd)+" ";
+        mPacketString=mPacketString+onArrayToByteDataString(packet1.getData());
+        mPacketString=mPacketString+ByteUtils.ByteArrToHex(cre);
+        return  mPacketString;
     }
-    private static String ByteDataString(ArrayList<Byte> data){
-        String DataString="";
+    private static String onArrayToByteDataString(ArrayList<Byte> data){
+        String mDataString="";
         if (data!=null&&data.size()!=0){
             byte [] byteData=new byte[data.size()];
             for (int i=0;i<data.size();i++){
                 byteData[i]=data.get(i);
             }
-            DataString=ByteUtils.ByteArrToHex(byteData);
+            mDataString=ByteUtils.ByteArrToHex(byteData);
         }
-        return DataString;
+        return mDataString;
     }
 
 }

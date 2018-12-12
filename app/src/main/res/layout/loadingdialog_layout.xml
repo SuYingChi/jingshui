@@ -11,23 +11,24 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:background="@drawable/shape_gray_transparent_layout">
-        <ImageView
-            android:id="@+id/loading_imageview"
+
+        <ProgressBar
+            android:id="@+id/id_progressBar"
             android:layout_width="@dimen/margin_width50"
             android:layout_height="@dimen/margin_width50"
             android:layout_marginStart="@dimen/margin_width15"
             android:layout_marginTop="@dimen/margin_width15"
             android:layout_marginBottom="@dimen/margin_width15"
-            android:contentDescription="@string/ad_picture"
-           android:layout_gravity="center_vertical"
-            android:src="@drawable/loading" />
+            android:layout_gravity="center_vertical"
+            android:indeterminateDrawable="@drawable/indeterminate_drawable"
+            android:indeterminateDuration="1800" />
         <TextView
             android:id="@+id/loading_text"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginLeft="@dimen/margin_width10"
             android:layout_gravity="center_vertical"
-            android:layout_toRightOf="@+id/loading_imageview"
+            android:layout_toRightOf="@+id/loading_imageView"
             android:layout_marginEnd="@dimen/margin_width15"
             android:text="正在加载中..."
             android:textColor="#ffffffff"

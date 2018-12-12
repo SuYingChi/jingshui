@@ -31,5 +31,22 @@ limitations under the License.\n
     <string name="free_pay_instruction">本台设备可使用民生宝免费扫码打水</string>
     <string name="black_card_tip">此卡已挂失，如需取水请重新换卡!!</string>
     <string name="ad_picture">广告图片</string>
+    <string name="real_time_monitoring">实时水质监控</string>
+    <string name="in_water_tds">进水TDS值</string>
+    <string name="out_water_tds">出水TDS值</string>
+    <string name="zero">0</string>
+    <string name="one_hundred_fifty_eight">158</string>
+    <string name="TDS_MMP">TDS值(PPM)</string>
+    <string name="water_quality">水质</string>
+    <string name="zero_to_nine">0~9</string>
+    <string name="ten_to_sixty">10~60</string>
+    <string name="sixty_to_hundred">60~100</string>
+    <string name="hundred_to_threeHundred">100~300</string>
+    <string name="more_than_threeHundred">300以上</string>
+    <string name="purified_water">纯净水</string>
+    <string name="mountain_spring">山泉水、矿泉水</string>
+    <string name="clean_water">净化水</string>
+    <string name="not_clean_water">未净化水</string>
+    <string name="pollution_water">污染水</string>
 
 </resources>

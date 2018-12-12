@@ -65,8 +65,10 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginLeft="@dimen/margin_width10"
+                    android:layout_marginStart="@dimen/margin_width10"
                     android:layout_marginTop="@dimen/margin_width40"
                     android:layout_toRightOf="@+id/id_text_welcome"
+                    android:layout_toEndOf="@+id/id_text_welcome"
                     android:text="189***28"
                     android:textColor="@color/white"
                     android:textSize="@dimen/text_width16" />
@@ -84,6 +86,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginLeft="@dimen/margin_width15"
+                        android:layout_marginStart="@dimen/margin_width15"
                         android:text="余额："
                         android:textColor="@color/white"
                         android:textSize="@dimen/text_width16" />
@@ -92,7 +95,6 @@
                         android:id="@+id/id_amount"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_toRightOf="@+id/id_amount_text"
                         android:text="100.00"
                         android:textColor="@color/white"
                         android:textSize="@dimen/text_width20" />
@@ -101,7 +103,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginLeft="@dimen/margin_width10"
-                        android:layout_toRightOf="@+id/id_amount"
+                        android:layout_marginStart="@dimen/margin_width10"
                         android:text="元"
                         android:textColor="@color/white"
                         android:textSize="@dimen/text_width16" />
@@ -185,6 +187,8 @@
                     android:layout_centerHorizontal="true"
                     android:layout_marginLeft="@dimen/margin_width20"
                     android:layout_marginRight="@dimen/margin_width20"
+                    android:drawableStart="@drawable/shape_oval_notice"
+                    android:drawablePadding="@dimen/margin_width10"
                     android:layout_below="@+id/id_waster_yield"
                     android:layout_marginTop="@dimen/margin_width60"
                     android:textColor="@color/color_yellow"
@@ -240,20 +244,18 @@
                         android:textSize="@dimen/text_width14" />
                 </RelativeLayout>
             </RelativeLayout>
-
             <RelativeLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:background="@color/white"
                 android:gravity="center"
                 android:minHeight="@dimen/margin_width30">
-
                 <TextView
-                    android:id="@id/id_text3"
+                    android:id="@id/id_text5"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_centerVertical="true"
-                    android:layout_marginLeft="@dimen/margin_width15"
+                    android:layout_marginStart="@dimen/margin_width15"
                     android:text="请您在"
                     android:textColor="@color/water_textcolor"
                     android:textSize="@dimen/text_width12" />
@@ -263,13 +265,15 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_centerVertical="true"
-                    android:layout_marginLeft="@dimen/margin_width6"
-                    android:layout_toRightOf="@id/id_text3"
+                    android:layout_marginStart="@dimen/margin_width6"
+                    android:layout_toRightOf="@id/id_text5"
+                    android:layout_toEndOf="@+id/id_text5"
                     android:text="180"
                     android:textColor="@color/color_red"
                     android:textSize="@dimen/text_width16" />
 
                 <TextView
+                    android:id="@id/id_text6"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_centerVertical="true"

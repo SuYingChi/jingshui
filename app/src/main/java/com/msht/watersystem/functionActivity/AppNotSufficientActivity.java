@@ -34,12 +34,16 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
-
+/**
+ * Demo class
+ * 〈一句话功能简述〉
+ * 〈功能详细描述〉
+ * @author hong
+ * @date 2018/7/2  
+ */
 public class AppNotSufficientActivity extends BaseActivity implements Observer {
 
-    private String   mAccount="0.0";
-    private String   afterAmount="0.0";
-    private String   afterWater="0.0";
+
     private boolean  buyStatus=false;
     private double   volume=0.00;
     private TextView tvTime;
@@ -105,7 +109,7 @@ public class AppNotSufficientActivity extends BaseActivity implements Observer {
             Packet packet1 = myObservable.getCom1Packet();
             if (packet1 != null) {
                 if (Arrays.equals(packet1.getCmd(),new byte[]{0x01,0x04})){
-                    onCom1Received104DataFromControllBoard(packet1.getData());
+                    onCom1Received104DataFromControlBoard(packet1.getData());
                 }else if (Arrays.equals(packet1.getCmd(),new byte[]{0x01,0x05})){
                     onCom1Received105DataFromControlBoard(packet1.getData());
                 }else if (Arrays.equals(packet1.getCmd(),new byte[]{0x02,0x04})){
@@ -177,9 +181,9 @@ public class AppNotSufficientActivity extends BaseActivity implements Observer {
             if (FormatInformationBean.BusinessType==3){
                 FormatInformationBean.Balance= FormatInformationBean.Balance+ FormatInformationBean.rechargeAmount;
                 Intent intent=new Intent(AppNotSufficientActivity.this,PaySuccessActivity.class);
-                intent.putExtra("afterAmount",afterAmount) ;
-                intent.putExtra("afetrWater",afterWater);
-                intent.putExtra("mAccount",mAccount);
+                intent.putExtra("afterAmount","0.0") ;
+                intent.putExtra("afterWater","0");
+                intent.putExtra("mAccount","0.0");
                 intent.putExtra("sign","2");
                 startActivity(intent);
                 finish();
@@ -252,7 +256,7 @@ public class AppNotSufficientActivity extends BaseActivity implements Observer {
             }
         }
     }
-    private void onCom1Received104DataFromControllBoard(ArrayList<Byte> data) {
+    private void onCom1Received104DataFromControlBoard(ArrayList<Byte> data) {
         try {
             if(data!=null&&data.size()>0){
                 FormatInformationUtil.saveCom1ReceivedDataToFormatInformation(data);
@@ -293,7 +297,7 @@ public class AppNotSufficientActivity extends BaseActivity implements Observer {
                         String mAccount=String.valueOf(FormatInformationBean.StringCardNo);
                         Intent intent=new Intent(mContext,PaySuccessActivity.class);
                         intent.putExtra("afterAmount",afterAmount) ;
-                        intent.putExtra("afetrWater",afterWater);
+                        intent.putExtra("afterWater",afterWater);
                         intent.putExtra("mAccount",mAccount);
                         intent.putExtra("sign","0");
                         startActivityForResult(intent,1);

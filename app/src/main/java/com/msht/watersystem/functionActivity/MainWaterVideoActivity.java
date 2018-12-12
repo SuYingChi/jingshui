@@ -7,6 +7,7 @@ import android.graphics.PixelFormat;
 import android.media.AudioManager;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
@@ -22,6 +23,7 @@ import com.mcloyal.serialport.service.PortService;
 import com.mcloyal.serialport.utils.ComServiceConnection;
 import com.mcloyal.serialport.utils.FrameUtils;
 import com.mcloyal.serialport.utils.PacketUtils;
+import com.msht.watersystem.AppContext;
 import com.msht.watersystem.Base.BaseActivity;
 import com.msht.watersystem.Manager.DateMassageEvent;
 import com.msht.watersystem.Manager.GreenDaoManager;
@@ -32,6 +34,7 @@ import com.msht.watersystem.Utils.ByteUtils;
 import com.msht.watersystem.Utils.CachePreferencesUtil;
 import com.msht.watersystem.Utils.ConstantUtil;
 import com.msht.watersystem.Utils.ConsumeInformationUtils;
+import com.msht.watersystem.Utils.CreateOrderType;
 import com.msht.watersystem.Utils.DataCalculateUtils;
 import com.msht.watersystem.Utils.DateTimeUtils;
 import com.msht.watersystem.Utils.FileUtil;
@@ -87,34 +90,13 @@ public class MainWaterVideoActivity extends BaseActivity implements Observer,Sur
     /**夜间标志*/
     private boolean nightStatus=true;
     private int videoIndex=0;
-    private List<String> fileList;
+    private  List<String> fileList;
     private Context context;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if (!LibsChecker.checkVitamioLibs(this)) {
-            return;
-        }
         setContentView(R.layout.activity_main_water_video);
         context=this;
-        bindAndAddObserverToPortService();
-        EventBus.getDefault().register(this);
-        initService();
-        View imageLayout=findViewById(R.id.id_layout_frame);
-        View videoLayout =  findViewById(R.id.id_video_layout);
-        SurfaceView mPreview = (SurfaceView) findViewById(R.id.surface);
-        initBannerView();
-        fileList= FileUtil.getVideoFilePath();
-        holder = mPreview.getHolder();
-        holder.addCallback(this);
-        holder.setFormat(PixelFormat.RGBX_8888);
-        if(fileList==null||fileList.size()<1){
-            imageLayout.setVisibility(View.VISIBLE);
-            videoLayout .setVisibility(View.GONE);
-        }else {
-            imageLayout.setVisibility(View.GONE);
-            videoLayout .setVisibility(View.VISIBLE);
-        }
     }
 
     private void bindAndAddObserverToPortService() {
@@ -250,7 +232,7 @@ public class MainWaterVideoActivity extends BaseActivity implements Observer,Sur
                         String mAccount = String.valueOf(FormatInformationBean.StringCardNo);
                         Intent intent = new Intent(mContext, PaySuccessActivity.class);
                         intent.putExtra("afterAmount", afterAmount);
-                        intent.putExtra("afetrWater", afterWater);
+                        intent.putExtra("afterWater", afterWater);
                         intent.putExtra("mAccount", mAccount);
                         intent.putExtra("sign", "0");
                         unbindPortServiceAndRemoveObserver();
@@ -493,7 +475,7 @@ public class MainWaterVideoActivity extends BaseActivity implements Observer,Sur
         }
     }
     private OrderInfoDao getOrderDao() {
-        return GreenDaoManager.getInstance().getSession().getOrderInfoDao();
+        return AppContext.getInstance().getDaoSession().getOrderInfoDao();
     }
     private void deleteData(OrderInfo info) {
         getOrderDao().delete(info);
@@ -570,10 +552,7 @@ public class MainWaterVideoActivity extends BaseActivity implements Observer,Sur
     }
 
     @Override
-    public void surfaceDestroyed(SurfaceHolder holder) {
-
-    }
-
+    public void surfaceDestroyed(SurfaceHolder holder) {}
     @Override
     public void onPrepared(MediaPlayer mp) {
         mIsVideoReadyToBePlayed = true;
@@ -581,7 +560,6 @@ public class MainWaterVideoActivity extends BaseActivity implements Observer,Sur
             startVideoPlayback();
         }
     }
-
     @Override
     public void onCompletion(MediaPlayer mp) {
         releaseMediaPlayer();
@@ -661,7 +639,6 @@ public class MainWaterVideoActivity extends BaseActivity implements Observer,Sur
     @Override
     protected void onRestart() {
         super.onRestart();
-        bindAndAddObserverToPortService();
         pageStatus=true;
     }
     @Override

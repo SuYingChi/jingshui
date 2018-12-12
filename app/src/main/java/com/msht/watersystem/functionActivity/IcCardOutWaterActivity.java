@@ -6,6 +6,7 @@ import android.os.CountDownTimer;
 import android.os.Handler;
 import android.os.Message;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.ImageView;
@@ -26,6 +27,7 @@ import com.msht.watersystem.Utils.ConstantUtil;
 import com.msht.watersystem.Utils.ConsumeInformationUtils;
 import com.msht.watersystem.Utils.ByteUtils;
 import com.msht.watersystem.Utils.CachePreferencesUtil;
+import com.msht.watersystem.Utils.CreateOrderType;
 import com.msht.watersystem.Utils.FormatInformationBean;
 import com.msht.watersystem.Utils.FormatInformationUtil;
 import com.msht.watersystem.Utils.DataCalculateUtils;
@@ -40,6 +42,7 @@ import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
 
+
 /**
  * Demo class
  * 〈一句话功能简述〉
@@ -53,6 +56,8 @@ public class IcCardOutWaterActivity extends BaseActivity implements Observer{
     private LEDView  ledWater,ledAmount;
     private TextView tvBlackCard;
     private TextView tvTime;
+    private TextView tvText5;
+    private TextView tvText6;
     /**
      * @parame  mStartFrame 灌装暂停发送104帧序
      */
@@ -129,7 +134,8 @@ public class IcCardOutWaterActivity extends BaseActivity implements Observer{
         bindPortService();
     }
     private void initView() {
-        mAccount=String.valueOf(FormatInformationBean.StringCardNo);
+        tvText5=(TextView)findViewById(R.id.id_text5) ;
+        tvText6=(TextView)findViewById(R.id.id_text6) ;
         tvTime =(TextView)findViewById(R.id.id_time) ;
         tvBalance =(TextView)findViewById(R.id.id_amount);
         tvCardNo =(TextView)findViewById(R.id.id_tv_cardno);
@@ -140,6 +146,8 @@ public class IcCardOutWaterActivity extends BaseActivity implements Observer{
         tvBalance.setText(String.valueOf(balance));
         tvCardNo.setText(String.valueOf(FormatInformationBean.StringCardNo));
         mAccount=String.valueOf(FormatInformationBean.StringCardNo);
+        tvText5.setText("请您在");
+        tvText6.setText("秒前启动灌装或再次刷卡结账，否则扣款将无法返还");
         myCountDownTimer.start();
     }
     private void initBannerView() {
@@ -191,7 +199,7 @@ public class IcCardOutWaterActivity extends BaseActivity implements Observer{
                 }else if (Arrays.equals(packet1.getCmd(),new byte[]{0x01,0x04})){
                     onCom1Received104DataFromControlBoard(packet1.getData(),packet1);
                 }else if (Arrays.equals(packet1.getCmd(),new byte[]{0x01,0x05})){
-                    onCom1Received105DataFromControllBoard(packet1.getData());
+                    onCom1Received105DataFromControlBoard(packet1.getData());
                 }
             }
             Packet packet2 = myObservable.getCom2Packet();
@@ -217,10 +225,25 @@ public class IcCardOutWaterActivity extends BaseActivity implements Observer{
     private void onCom2Received104DataFromServer(ArrayList<Byte> data) {
         //卡号为黑卡时，提示不可购水
         if (ByteUtils.byteToInt(data.get(37))==2) {
+            VariableUtil.mNoticeText="此卡已挂失，如需取水请重新换卡!!";
+            tvText5.setText("请您在");
+            tvText6.setText("秒前启动灌装或再次刷卡结账，否则扣款将无法返还");
+            tvBlackCard.setText(VariableUtil.mNoticeText);
             tvBlackCard.setVisibility(View.VISIBLE);
             onDelayExecute();
         }else {
-            tvBlackCard.setVisibility(View.GONE);
+            String stringWork= DataCalculateUtils.intToBinary(data.get(46));
+            if (ByteUtils.byteToInt(data.get(32))==2&&DataCalculateUtils.isEvent(stringWork,7)){
+                VariableUtil.mNoticeText="卡号"+String.valueOf(FormatInformationBean.StringCardNo)+"的用户，您的张卡有异常已禁止购水，请再次刷卡返还扣款，如有疑问请致电963666转2！";
+                tvBlackCard.setText(VariableUtil.mNoticeText);
+                tvBlackCard.setVisibility(View.VISIBLE);
+                tvText5.setText("当前无法购水,请您在");
+                tvText6.setText("秒后再进行刷卡或扫码购水操作");
+            }else {
+                tvText5.setText("请您在");
+                tvText6.setText("秒前启动灌装或再次刷卡结账，否则扣款将无法返还");
+                tvBlackCard.setVisibility(View.GONE);
+            }
         }
     }
     private void response204ToServer(byte[] frame) {
@@ -262,7 +285,7 @@ public class IcCardOutWaterActivity extends BaseActivity implements Observer{
             }
         }
     }
-    private void onCom1Received105DataFromControllBoard(ArrayList<Byte> data) {
+    private void onCom1Received105DataFromControlBoard(ArrayList<Byte> data) {
         if (data!=null&&data.size()!=0){
             FormatInformationUtil.saveStatusInformationToFormatInformation(data);
             tvInTDS.setText(String.valueOf(FormatInformationBean.OriginTDS));
@@ -300,7 +323,7 @@ public class IcCardOutWaterActivity extends BaseActivity implements Observer{
                 FormatInformationBean.Balance= FormatInformationBean.Balance+ FormatInformationBean.rechargeAmount;
                 Intent intent=new Intent(IcCardOutWaterActivity.this,PaySuccessActivity.class);
                 intent.putExtra("afterAmount",afterAmount) ;
-                intent.putExtra("afetrWater",afterWater);
+                intent.putExtra("afterWater",afterWater);
                 intent.putExtra("mAccount",mAccount);
                 intent.putExtra("sign","2");
                 startActivity(intent);
@@ -352,7 +375,7 @@ public class IcCardOutWaterActivity extends BaseActivity implements Observer{
         //消费了多少元
         intent.putExtra("afterAmount",afterAmount) ;
         //取了多少水
-        intent.putExtra("afetrWater",afterWater);
+        intent.putExtra("afterWater",afterWater);
         intent.putExtra("mAccount",mAccount);
         intent.putExtra("sign",sign);
         startActivity(intent);
@@ -472,9 +495,6 @@ public class IcCardOutWaterActivity extends BaseActivity implements Observer{
         }else if (keyCode==KeyEvent.KEYCODE_MENU){
             /*启动灌装 **/
             onStartOutWater();
-        }else if (keyCode==KeyEvent.KEYCODE_DPAD_UP){
-        }else if (keyCode==KeyEvent.KEYCODE_DPAD_DOWN){
-        }else if (keyCode==KeyEvent.KEYCODE_F1){
         }
         return super.onKeyDown(keyCode, event);
     }
@@ -500,6 +520,7 @@ public class IcCardOutWaterActivity extends BaseActivity implements Observer{
     private void endTimeCount() {
         if (myCountDownTimer != null) {
             myCountDownTimer.cancel();
+            myCountDownTimer=null;
         }
     }
     private void unbindPortServiceAndRemoveObserver(){
@@ -515,12 +536,13 @@ public class IcCardOutWaterActivity extends BaseActivity implements Observer{
     protected void onDestroy() {
         super.onDestroy();
         unbindPortServiceAndRemoveObserver();
-        removeback();
+        removeBack();
         endTimeCount();
     }
-    private void removeback() {
+    private void removeBack() {
         if (handler!=null){
             handler.removeCallbacks(runnable);
+            handler=null;
         }
     }
 }

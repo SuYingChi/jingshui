@@ -107,7 +107,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_centerVertical="true"
-                    android:layout_marginLeft="@dimen/margin_width15"
+                    android:layout_marginStart="@dimen/margin_width15"
                     android:layout_marginBottom="@dimen/margin_width15"
                     android:textSize="@dimen/text_width10"
                     android:textColor="@color/water_textcolor"

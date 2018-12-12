@@ -74,7 +74,6 @@ public class DeliverOutWaterActivity extends BaseActivity implements Observer{
     private boolean  finishStatus=false;
     private boolean  tipStatus=true;
     private Context  mContext;
-    private boolean  isStart=false;
     private PortService portService;
     private CountDownTimer mTimer;
     private MyCountDownTimer myCountDownTimer;
@@ -100,6 +99,7 @@ public class DeliverOutWaterActivity extends BaseActivity implements Observer{
         initBannerView();
         initWaterQuality();
         bindPortService();
+        startCountDownTime(35);
     }
     private void initView() {
         layoutFinish =findViewById(R.id.id_re_code);
@@ -219,6 +219,9 @@ public class DeliverOutWaterActivity extends BaseActivity implements Observer{
     }
     private void onCom1Received204DataFromControlBoard(byte[] frame) {
         if (Arrays.equals(frame,mStartFrame)){
+            if (mTimer !=null){
+                mTimer.cancel();    //接收到启动灌装204计时停止，
+            }
             volume= DataCalculateUtils.getWaterVolume(FormatInformationBean.WaterNum, FormatInformationBean.OutWaterTime);
             handler.post(runnable);
         }else if (Arrays.equals(frame,mStopFrame)){
@@ -228,7 +231,6 @@ public class DeliverOutWaterActivity extends BaseActivity implements Observer{
         }
     }
     private void onCom1Received104DataFromControlBoard(ArrayList<Byte> data) {
-
         if ( data!=null&&data.size()>0){
             FormatInformationUtil.saveCom1ReceivedDataToFormatInformation(data);
             int businessType=ByteUtils.byteToInt(data.get(15));
@@ -248,32 +250,33 @@ public class DeliverOutWaterActivity extends BaseActivity implements Observer{
                 }
                 settleServer(amountAfter,consumption,waterWeight);
             }else if (businessType==1){
-                if (FormatInformationBean.Balance<30){
-                    Intent intent=new Intent(mContext,NotSufficientActivity.class);
-                    startActivity(intent);
-                    finish();
-                }else {
-                    String stringWork= DataCalculateUtils.intToBinary(FormatInformationBean.Updateflag3);
-                    if (!DataCalculateUtils.isEvent(stringWork,3)){
-                        Intent intent=new Intent(mContext,IcCardOutWaterActivity.class);
+                String stringWork= DataCalculateUtils.intToBinary(FormatInformationBean.Updateflag3);
+                if (!DataCalculateUtils.isEvent(stringWork,3)){
+                    /*余额不足*/
+                    if (FormatInformationBean.Balance<2){
+                        Intent intent=new Intent(mContext,NotSufficientActivity.class);
                         startActivity(intent);
                         finish();
                     }else {
-                        //刷卡结账
-                        calculateData();    //没联网计算取缓存数据
-                        double consumption= FormatInformationBean.ConsumptionAmount/100.0;
-                        double waterVolume= FormatInformationBean.WaterYield*volume;
-                        String afterAmount=String.valueOf(DataCalculateUtils.getTwoDecimal(consumption));
-                        String afterWater=String.valueOf(DataCalculateUtils.getTwoDecimal(waterVolume));
-                        String mAccount=String.valueOf(FormatInformationBean.StringCardNo);
-                        Intent intent=new Intent(mContext,PaySuccessActivity.class);
-                        intent.putExtra("afterAmount",afterAmount) ;
-                        intent.putExtra("afetrWater",afterWater);
-                        intent.putExtra("mAccount",mAccount);
-                        intent.putExtra("sign","0");
+                        Intent intent=new Intent(mContext,IcCardOutWaterActivity.class);
                         startActivity(intent);
                         finish();
                     }
+                }else {
+                    //刷卡结账
+                    calculateData();    //没联网计算取缓存数据
+                    double consumption= FormatInformationBean.ConsumptionAmount/100.0;
+                    double waterVolume= FormatInformationBean.WaterYield*volume;
+                    String afterAmount=String.valueOf(DataCalculateUtils.getTwoDecimal(consumption));
+                    String afterWater=String.valueOf(DataCalculateUtils.getTwoDecimal(waterVolume));
+                    String mAccount=String.valueOf(FormatInformationBean.StringCardNo);
+                    Intent intent=new Intent(mContext,PaySuccessActivity.class);
+                    intent.putExtra("afterAmount",afterAmount) ;
+                    intent.putExtra("afterWater",afterWater);
+                    intent.putExtra("mAccount",mAccount);
+                    intent.putExtra("sign","0");
+                    startActivity(intent);
+                    finish();
                 }
             }
         }
@@ -312,6 +315,7 @@ public class DeliverOutWaterActivity extends BaseActivity implements Observer{
         }
     }
     private void settleServer(int mAfterAmount,int amount,int waterWeight) {
+        mTimer.start();//开始计时
         if (portService != null) {
             try {
                 byte[] frame = FrameUtils.getFrame(mContext);
@@ -359,9 +363,6 @@ public class DeliverOutWaterActivity extends BaseActivity implements Observer{
                 e.printStackTrace();
             }
         }
-        if (!isStart){
-            startCountDownTime(30);
-        }
     }
     private void startCountDownTime(final long time) {
         mTimer =new CountDownTimer(time*1000,1000) {
@@ -379,7 +380,6 @@ public class DeliverOutWaterActivity extends BaseActivity implements Observer{
             }
         };
         mTimer.start();
-        isStart=true;
     }
     class MyCountDownTimer extends CountDownTimer {
         public MyCountDownTimer(long millisInFuture, long countDownInterval) {
@@ -387,7 +387,8 @@ public class DeliverOutWaterActivity extends BaseActivity implements Observer{
         }
         @Override
         public void onTick(long millisUntilFinished) {  //计时过程
-            tvTime.setText(millisUntilFinished/1000+"s");
+            String mUntilFinishedText=millisUntilFinished/1000+"s";
+            tvTime.setText(mUntilFinishedText);
         }
         @Override
         public void onFinish() {

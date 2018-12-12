@@ -100,7 +100,6 @@ public class CloseSystemActivity extends BaseActivity implements Observer{
             finish();
         }
     }
-
     private void bindPortService(){
         serviceConnection = new ComServiceConnection(CloseSystemActivity.this, new ComServiceConnection.ConnectionCallBack() {
             @Override
@@ -136,5 +135,8 @@ public class CloseSystemActivity extends BaseActivity implements Observer{
     protected void onDestroy() {
         super.onDestroy();
         unbindPortServiceAndRemoveObserver();
+        if (loadingdialog != null && loadingdialog.isShowing()) {
+            loadingdialog.dismiss();
+        }
     }
 }
