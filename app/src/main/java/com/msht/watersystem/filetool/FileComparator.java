@@ -10,7 +10,7 @@ import java.util.Comparator;
  * @author hong
  * @date 2018/8/12  
  */
-public class FileCompatator implements Comparator<File> {
+public class FileComparator implements Comparator<File> {
     @Override
     public int compare(File o1, File o2) {
         // TODO Auto-generated method stub

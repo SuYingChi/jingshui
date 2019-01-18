@@ -16,20 +16,12 @@ import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.TimeUnit;
 
-import android.graphics.Bitmap;
 import android.os.Environment;
-import android.os.Handler;
-import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
-import com.msht.watersystem.filetool.FileCompatator;
-import com.msht.watersystem.widget.BannerM;
+import com.msht.watersystem.filetool.FileComparator;
 
 
 public final class FileUtil {
@@ -458,7 +450,7 @@ public final class FileUtil {
         List<File> files = Arrays.asList(fileLists);
 
         //利用集合工具类排序
-        Collections.sort(files, new FileCompatator());
+        Collections.sort(files, new FileComparator());
         //将文件重新转为数组
         File[] fileList = files.toArray(new File[files.size()]);
         return fileList;
