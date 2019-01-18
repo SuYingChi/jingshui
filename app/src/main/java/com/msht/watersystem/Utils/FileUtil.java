@@ -16,22 +16,20 @@ import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.TimeUnit;
 
-import android.graphics.Bitmap;
 import android.os.Environment;
-import android.os.Handler;
-import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
-import com.msht.watersystem.filetool.FileCompatator;
-import com.msht.watersystem.widget.BannerM;
+import com.msht.watersystem.filetool.FileComparator;
 
-
+/**
+ * Demo class
+ * 〈一句话功能简述〉
+ * 〈功能详细描述〉
+ * @author hong
+ * @date 2018/7/2  
+ */
 public final class FileUtil {
     private FileUtil() {
         throw new Error("￣﹏￣");
@@ -55,8 +53,9 @@ public final class FileUtil {
             charsetName = "utf-8";
         File file = new File(filePath);
         StringBuilder fileContent = new StringBuilder("");
-        if (file == null || !file.isFile())
+        if (file == null || !file.isFile()){
             return null;
+        }
         BufferedReader reader = null;
         try {
             InputStreamReader is = new InputStreamReader(new FileInputStream(
@@ -255,20 +254,25 @@ public final class FileUtil {
         return (filePosi >= extenPosi) ? "" : filePath.substring(extenPosi + 1);
     }
     public static boolean createFile(String path) {
-        if (TextUtils.isEmpty(path))
+        if (TextUtils.isEmpty(path)){
             return false;
+
+        }
         return createFile(new File(path));
     }
     public static boolean createFile(File file) {
-        if (file == null || !makeDirs(getFolderName(file.getAbsolutePath())))
+        if (file == null || !makeDirs(getFolderName(file.getAbsolutePath()))){
             return false;
-        if (!file.exists())
+        }
+        if (!file.exists()){
             try {
                 return file.createNewFile();
             } catch (IOException e) {
                 e.printStackTrace();
                 return false;
             }
+        }
+
         return false;
     }
     public static boolean makeDirs(String filePath) {
@@ -311,8 +315,8 @@ public final class FileUtil {
         if (TextUtils.isEmpty(filePath)) {
             return filePath;
         }
-        int filePosi = filePath.lastIndexOf(File.separator);
-        return (filePosi == -1) ? filePath : filePath.substring(filePosi + 1);
+        int filePosition = filePath.lastIndexOf(File.separator);
+        return (filePosition == -1) ? filePath : filePath.substring(filePosition + 1);
     }
     public static String getFolderName(String filePath) {
         if (TextUtils.isEmpty(filePath)) {
@@ -404,8 +408,7 @@ public final class FileUtil {
      */
     private static String getMimeType(String fileName) {
         FileNameMap fileNameMap = URLConnection.getFileNameMap();
-        String type = fileNameMap.getContentTypeFor(fileName);
-        return type;
+        return fileNameMap.getContentTypeFor(fileName);
     }
 
     /**
@@ -421,7 +424,6 @@ public final class FileUtil {
         return false;
     }
     public static List<String> getVideoFilePath() {
-        String[] files= new String[2];
         List<String> pathList= new ArrayList<String>();
         File videoDirectory = new File(Environment.getExternalStorageDirectory().getPath() + "/waterSystem/video/");
         if (videoDirectory.exists())
@@ -429,10 +431,10 @@ public final class FileUtil {
             File[] fileList = videoDirectory.listFiles(new FileFilter() {
                 @Override
                 public boolean accept(File pathname) {
-                    return FileUtil.isVideoFile(pathname.getName());
+                    return isVideoFile(pathname.getName());
                 }
             });
-            fileList = FileUtil.sort(fileList);
+            fileList = sort(fileList);
             if(fileList.length<1){
                 return null;
             }
@@ -440,8 +442,6 @@ public final class FileUtil {
                 String path = file.getAbsolutePath();
                 pathList.add(path);
             }
-            files[0] = fileList[0].getAbsolutePath();
-            files[1] = fileList[1].getAbsolutePath();
         } else if (!videoDirectory.exists()) {
             videoDirectory.mkdirs();
         }
@@ -449,18 +449,15 @@ public final class FileUtil {
     }
     /**
      * 按文件名排列
-     * @param fileLists
+     * @param fileLists 文件数组
      * @return
      */
     public static File[] sort(File[] fileLists) {
-
         //将数组转为集合
         List<File> files = Arrays.asList(fileLists);
-
         //利用集合工具类排序
-        Collections.sort(files, new FileCompatator());
+        Collections.sort(files, new FileComparator());
         //将文件重新转为数组
-        File[] fileList = files.toArray(new File[files.size()]);
-        return fileList;
+        return files.toArray(new File[0]);
     }
 }

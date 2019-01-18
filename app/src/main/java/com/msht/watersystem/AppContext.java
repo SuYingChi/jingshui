@@ -141,7 +141,7 @@ public class AppContext extends AppLibsContext {
             }
         }
     }
-    public void KillProcess(){
+    public void onKillProcess(){
         android.os.Process.killProcess(android.os.Process.myPid());
        // System.exit(0);
     }

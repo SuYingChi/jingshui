@@ -205,20 +205,6 @@ public class BannerM extends RelativeLayout {
      * 初始化圆点指示器，根据indexPosition来加载不同的布局
      */
     private void initIndexList() {
-        /*int count = imageList.size();
-        vList = new ArrayList<>(count);
-        LinearLayout llIndex;
-        if (indexPosition == INDEX_POSITION_RIGHT) {
-            ViewStub vsIndexRight = (ViewStub) findViewById(R.id.vs_index_right);
-            vsIndexRight.inflate();
-            llIndex = (LinearLayout) findViewById(R.id.ll_index_right);
-            tvText = (TextView) findViewById(R.id.tv_text);
-        } else {
-            ViewStub vsIndexBottom = (ViewStub) findViewById(R.id.vs_index_bottom);
-            vsIndexBottom.inflate();
-            llIndex = (LinearLayout) findViewById(R.id.ll_index_bottom);
-            tvText = (TextView) findViewById(R.id.tv_text);
-        }*/
         //默认第一张图片的文字描述
        // tvText.setText(bannerBeanList.get(0).getText());
         //使用GradientDrawable构造圆形控件
@@ -232,20 +218,6 @@ public class BannerM extends RelativeLayout {
         } else {
             gradientDrawableSelected.setColor(mContext.getResources().getColor(R.color.mainColor));
         }
-        /*for (int i = 0; i < count; i++) {
-            View view = new View(mContext);
-            LinearLayout.LayoutParams lpView = new LinearLayout.LayoutParams(ConvertM.dp2px(mContext, 8), ConvertM.dp2px(mContext, 8));
-            lpView.rightMargin = ConvertM.dp2px(mContext, 4);
-            view.setLayoutParams(lpView);
-            if (0 == i) {
-                view.setBackgroundDrawable(gradientDrawableSelected);
-            } else {
-                view.setBackgroundDrawable(gradientDrawable);
-            }
-            view.bringToFront();
-            vList.add(view);
-            llIndex.addView(view);
-        }*/
     }
     /**
      * 初始化ImageView，使用Picasso下载图片，只在SdCard中缓存
@@ -317,25 +289,18 @@ public class BannerM extends RelativeLayout {
         @Override
         public void onPageSelected(int position) {
             currentIndex = position;
-            /*for (int i = 0; i < imageList.size(); i++) {
-            if (position % ivList.size() == i) {
-                vList.get(i).setBackgroundDrawable(gradientDrawableSelected);
-            } else {
-                vList.get(i).setBackgroundDrawable(gradientDrawable);
-            }
-            tvText.setText("测试");
-        }*/
-    }
+        }
         @Override
         public void onPageScrollStateChanged(int state) {
         }
     }
     private class ViewPagerAdapter extends PagerAdapter {
-        @Override
-        public void destroyItem(View container, int position, Object object) {
-        }
 
         @Override
+        public void destroyItem(@NonNull ViewGroup container, int position, @NonNull Object object) {
+          //  container.removeView((View) object);
+        }
+        /*@Override
         public Object instantiateItem(View container, int position) {
             position %= ivList.size();
             if (position<0){
@@ -349,13 +314,29 @@ public class BannerM extends RelativeLayout {
             }
             ((ViewPager) container).addView(imageView);
             return imageView;
+        }*/
+        @NonNull
+        @Override
+        public Object instantiateItem(@NonNull ViewGroup container, int position) {
+            position %= ivList.size();
+            if (position<0){
+                position = ivList.size()+position;
+            }
+            ImageView imageView = ivList.get(position);
+            ViewParent vp =imageView.getParent();
+            if (vp!=null){
+                ViewGroup parent = (ViewGroup)vp;
+                parent.removeView(imageView);
+            }
+            container.addView(imageView);
+            return imageView;
         }
         @Override
         public int getCount() {
             return Integer.MAX_VALUE;
         }
         @Override
-        public boolean isViewFromObject(View arg0, Object arg1) {
+        public boolean isViewFromObject(@NonNull View arg0, @NonNull Object arg1) {
             return arg0 == arg1;
         }
         @Override
@@ -363,11 +344,6 @@ public class BannerM extends RelativeLayout {
         @Override
         public Parcelable saveState() {
             return null;
-        }
-        @Override
-        public void startUpdate(View arg0) {}
-        @Override
-        public void finishUpdate(View arg0) {
         }
     }
     public interface OnItemClickListener {

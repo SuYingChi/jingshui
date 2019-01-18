@@ -42,8 +42,6 @@ import java.util.Observer;
  * @date 2018/7/2  
  */
 public class AppNotSufficientActivity extends BaseActivity implements Observer {
-
-
     private boolean  buyStatus=false;
     private double   volume=0.00;
     private TextView tvTime;
@@ -231,7 +229,6 @@ public class AppNotSufficientActivity extends BaseActivity implements Observer {
             }
         }
     }
-
     private void response102ToServer(byte[] frame) {
         if (portService != null) {
             try {
@@ -349,7 +346,6 @@ public class AppNotSufficientActivity extends BaseActivity implements Observer {
             e.printStackTrace();
         }
     }
-
     private void onCom2Received205DataFromServer() {
 
     }
@@ -422,6 +418,5 @@ public class AppNotSufficientActivity extends BaseActivity implements Observer {
         super.onDestroy();
         unbindPortServiceAndRemoveObserver();
         endTimeCount();
-
     }
 }

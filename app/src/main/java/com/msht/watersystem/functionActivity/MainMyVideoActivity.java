@@ -8,6 +8,7 @@ import android.media.AudioManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
@@ -58,6 +59,7 @@ import java.util.Observer;
 import io.vov.vitamio.LibsChecker;
 import io.vov.vitamio.MediaPlayer;
 
+
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
@@ -70,8 +72,6 @@ import org.greenrobot.eventbus.ThreadMode;
  * @date 2018/8/14  
  */
 public class MainMyVideoActivity extends BaseActivity implements Observer,SurfaceHolder.Callback, MediaPlayer.OnBufferingUpdateListener, MediaPlayer.OnCompletionListener, MediaPlayer.OnPreparedListener, MediaPlayer.OnVideoSizeChangedListener {
-
-    private static final String TAG = "MediaPlayerDemo";
     private PortService portService;
     /**扫码发送104帧序*/
     private byte[]  mAppFrame;
@@ -86,7 +86,6 @@ public class MainMyVideoActivity extends BaseActivity implements Observer,Surfac
     private MediaPlayer mMediaPlayer;
     private SurfaceHolder holder;
     private boolean mIsVideoSizeKnown = false;
-    private boolean mIsVideoReadyToBePlayed = false;
     private long currentPosition = 0;
     private boolean changeVideo = false;
     /**夜间标志*/
@@ -105,20 +104,20 @@ public class MainMyVideoActivity extends BaseActivity implements Observer,Surfac
         bindAndAddObserverToPortService();
         EventBus.getDefault().register(context);
         initService();
-        imageLayout=findViewById(R.id.id_layout_frame);
-        videoLayout =  findViewById(R.id.id_video_layout);
+        imageLayout =findViewById(R.id.id_layout_frame);
+        videoLayout =findViewById(R.id.id_video_layout);
         SurfaceView mPreview = (SurfaceView) findViewById(R.id.surface);
         initBannerView();
         fileList= FileUtil.getVideoFilePath();
         holder = mPreview.getHolder();
         holder.addCallback(this);
         holder.setFormat(PixelFormat.RGBX_8888);
-        if(fileList==null||fileList.size()<1){
-            imageLayout.setVisibility(View.VISIBLE);
-            videoLayout .setVisibility(View.GONE);
-        }else {
+        if(fileList!=null&&fileList.size()>=1){
             imageLayout.setVisibility(View.GONE);
             videoLayout .setVisibility(View.VISIBLE);
+        }else {
+            imageLayout.setVisibility(View.VISIBLE);
+            videoLayout .setVisibility(View.GONE);
         }
     }
     private void bindAndAddObserverToPortService() {
@@ -134,11 +133,10 @@ public class MainMyVideoActivity extends BaseActivity implements Observer,Surfac
                 BIND_AUTO_CREATE);
         bindStatus = true;
     }
-
     private void initService() {
         /**开启一个新的服务，*/
         Intent resendDataService=new Intent(context,ResendDataService.class);
-        context.startService(resendDataService);
+       startService(resendDataService);
     }
     private void initBannerView() {
         ImageView advertImage = findViewById(R.id.textView);
@@ -531,7 +529,7 @@ public class MainMyVideoActivity extends BaseActivity implements Observer,Surfac
             restartWaterApp();
         }
     }
-    @Subscribe(threadMode = ThreadMode.MAIN)
+   /* @Subscribe(threadMode = ThreadMode.MAIN)
     public void onControlVideoPlay(ControlVideoEvent event){
         if (event.getMessage()){
             if(fileList!=null&&fileList.size()>1){
@@ -549,7 +547,7 @@ public class MainMyVideoActivity extends BaseActivity implements Observer,Surfac
             imageLayout.setVisibility(View.VISIBLE);
             videoLayout .setVisibility(View.GONE);
         }
-    }
+    }*/
     private OrderInfoDao getOrderDao() {
         return AppContext.getInstance().getDaoSession().getOrderInfoDao();
     }
@@ -607,11 +605,27 @@ public class MainMyVideoActivity extends BaseActivity implements Observer,Surfac
     @Override
     public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
         if(mMediaPlayer==null){
-            initMediaPlayer();
-            mIsVideoSizeKnown = true;
-            mIsVideoReadyToBePlayed = true;
-            startVideoPlayback();
+            if (!TextUtils.isEmpty(fileList.get(videoIndex))){
+                onSetStartPlay();
+            }else {
+                videoIndex++;
+                if (videoIndex>=fileList.size()){
+                    videoIndex=0;
+                }
+                if (!TextUtils.isEmpty(fileList.get(videoIndex))){
+                    onSetStartPlay();
+                }else {
+                    imageLayout.setVisibility(View.VISIBLE);
+                    videoLayout .setVisibility(View.GONE);
+                }
+            }
+
         }
+    }
+    private void onSetStartPlay(){
+        initMediaPlayer();
+        mIsVideoSizeKnown = true;
+        startVideoPlayback();
     }
     @Override
     public void surfaceDestroyed(SurfaceHolder holder) {}
@@ -619,22 +633,24 @@ public class MainMyVideoActivity extends BaseActivity implements Observer,Surfac
         doCleanUp();
         try {
             String videoPath=fileList.get(videoIndex);
-            if (TextUtils.isEmpty(videoPath)) {
-                Toast.makeText(MainMyVideoActivity.this, "Please edit MediaPlayerDemo_Video Activity, " + "and set the path variable to your media file path." + " Your media file must be stored on sdcard.", Toast.LENGTH_LONG).show();
-                return;
+            if (!TextUtils.isEmpty(videoPath)) {
+                mMediaPlayer = new MediaPlayer(this);
+                setDataPath(videoPath);
+                mMediaPlayer.setDisplay(holder);
+                mMediaPlayer.prepareAsync();
+                mMediaPlayer.setOnBufferingUpdateListener(this);
+                mMediaPlayer.setOnCompletionListener(this);
+                mMediaPlayer.setOnPreparedListener(this);
+                mMediaPlayer.setOnVideoSizeChangedListener(this);
+                /*高质*/
+                mMediaPlayer.setVideoQuality(MediaPlayer.VIDEOQUALITY_HIGH);
+                mMediaPlayer.setVolume(0.6f,0.6f);
+                setVolumeControlStream(AudioManager.STREAM_MUSIC);
+            }else {
+                imageLayout.setVisibility(View.VISIBLE);
+                videoLayout .setVisibility(View.GONE);
             }
-            mMediaPlayer = new MediaPlayer(this);
-            setDataPath(videoPath);
-            mMediaPlayer.setDisplay(holder);
-            mMediaPlayer.prepareAsync();
-            mMediaPlayer.setOnBufferingUpdateListener(this);
-            mMediaPlayer.setOnCompletionListener(this);
-            mMediaPlayer.setOnPreparedListener(this);
-            mMediaPlayer.setOnVideoSizeChangedListener(this);
-            /*高质*/
-            mMediaPlayer.setVideoQuality(MediaPlayer.VIDEOQUALITY_HIGH);
-            mMediaPlayer.setVolume(0.6f,0.6f);
-            setVolumeControlStream(AudioManager.STREAM_MUSIC);
+
         } catch (Exception e) {
            e.printStackTrace();
         }
@@ -647,7 +663,7 @@ public class MainMyVideoActivity extends BaseActivity implements Observer,Surfac
         }
     }
     private void doCleanUp() {
-        mIsVideoReadyToBePlayed = false;
+     //   mIsVideoReadyToBePlayed = false;
         mIsVideoSizeKnown = false;
     }
     private void startVideoPlayback() {
@@ -662,9 +678,7 @@ public class MainMyVideoActivity extends BaseActivity implements Observer,Surfac
         mMediaPlayer.stop();
         releaseMediaPlayer();
         videoIndex=0;
-     //   initMediaPlayer();
         mIsVideoSizeKnown = true;
-        mIsVideoReadyToBePlayed = true;
         changeVideo = true;
     }
     @Override
@@ -673,12 +687,12 @@ public class MainMyVideoActivity extends BaseActivity implements Observer,Surfac
     public void onCompletion(MediaPlayer mp) {
         releaseMediaPlayer();
         videoIndex++;
-        if (videoIndex==fileList.size()){
+        if (videoIndex>=fileList.size()){
             videoIndex=0;
         }
         initMediaPlayer();
         mIsVideoSizeKnown = true;
-        mIsVideoReadyToBePlayed = true;
+   //     mIsVideoReadyToBePlayed = true;
         changeVideo = true;
     }
     private void releaseMediaPlayer() {
@@ -690,7 +704,7 @@ public class MainMyVideoActivity extends BaseActivity implements Observer,Surfac
     }
     @Override
     public void onPrepared(MediaPlayer mp) {
-        mIsVideoReadyToBePlayed = true;
+    //    mIsVideoReadyToBePlayed = true;
         if (mIsVideoSizeKnown) {
             startVideoPlayback();
         }

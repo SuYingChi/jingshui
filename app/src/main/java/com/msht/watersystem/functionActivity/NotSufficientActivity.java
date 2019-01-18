@@ -46,7 +46,7 @@ public class NotSufficientActivity extends BaseActivity implements Observer {
     /**
      * @parame  mAppFrame 扫码发送104帧序
      */
-    private byte[]  mAppFrame;
+    private byte[]   mAppFrame;
     private TextView tvBalance;
     private TextView tvCardNo;
     private TextView tvTime;

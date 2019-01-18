@@ -33,7 +33,7 @@ public class RestartAppUtil {
        AlarmManager mgr = (AlarmManager)mContext.getSystemService(Context.ALARM_SERVICE);
        mgr.set(AlarmManager.RTC, System.currentTimeMillis() + 600,
                pendingIntent);
-      ((AppContext) mContext.getApplicationContext()).KillProcess();
+      ((AppContext) mContext.getApplicationContext()).onKillProcess();
     }
     public static void  restartSystem(){
         try {

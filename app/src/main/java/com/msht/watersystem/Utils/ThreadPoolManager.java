@@ -53,7 +53,6 @@ public class ThreadPoolManager {
      * @return
      */
     public static ThreadPoolManager getInstance(Context context){
-
         ThreadPoolManager inst = mInstance;
         if (inst == null) {
             synchronized (ThreadPoolManager.class) {
@@ -78,9 +77,9 @@ public class ThreadPoolManager {
     public void onThreadPoolDateStart(){
         scheduledThreadPoolExecutor.scheduleAtFixedRate(new RegularlyCheckTimeTask(), 0, 3,
                 TimeUnit.MINUTES);
-        scheduledThreadPoolExecutor.scheduleAtFixedRate(new RegularlyCheckForegroundTask(), 0, 3,
+       /* scheduledThreadPoolExecutor.scheduleAtFixedRate(new RegularlyCheckForegroundTask(), 0, 3,
                 TimeUnit.MINUTES);
-
+*/
     }
     private class RegularlyCheckTimeTask implements Runnable {
         @Override
@@ -102,13 +101,15 @@ public class ThreadPoolManager {
                     EventBus.getDefault().post(new RestartAppEvent(true));
                 }
             }
-
+            if (DateTimeUtils.isCheckTime(0,0,1,4)){
+                if (VariableUtil.mFirstClear){
+                    MyAppManage.clearMyAppActivityMemory(AppContext.getContext());
+                }
+            }
+            VariableUtil.mFirstClear=true;
             VariableUtil.mFirstOpen=true;
-           // startHomeTaskApp(AppContext.getWaterApplicationContext());
         }
-
     }
-
     private class RegularlyCheckForegroundTask implements Runnable {
         @Override
         public void run() {
@@ -117,20 +118,20 @@ public class ThreadPoolManager {
                     MyAppManage.clearMyAppActivityMemory(AppContext.getContext());
                 }
             }
-            /*设置关闭视频播放*/
+           /* *//*设置关闭视频播放*//*
             if (DateTimeUtils.isCheckTime(23,23,47,50)){
                 EventBus.getDefault().post(new ControlVideoEvent(false));
             }
-            /*设置关闭视频播放*/
+            *//*设置关闭视频播放*//*
             if (DateTimeUtils.isCheckTime(1,1,50,53)){
                 EventBus.getDefault().post(new ControlVideoEvent(false));
             }
-            /*设置打开闭视频播放*/
+            *//*设置打开闭视频播放*//*
             if (DateTimeUtils.isCheckTime(5,5,50,53)){
                 EventBus.getDefault().post(new ControlVideoEvent(true));
-            }
+            }*/
             VariableUtil.mFirstClear=true;
-            startHomeTaskApp(AppContext.getWaterApplicationContext());
+            //startHomeTaskApp(AppContext.getWaterApplicationContext());
         }
     }
     private void onGetOrderData(){
@@ -152,32 +153,6 @@ public class ThreadPoolManager {
             scheduledThreadPoolExecutor.shutdownNow();
         }
     }
-    public boolean isForeground(Context context){
-        ActivityManager activityManager = (ActivityManager) context
-                .getSystemService(ACTIVITY_SERVICE);
-        if (activityManager!=null){
-            List<ActivityManager.RunningAppProcessInfo> appProcesses = activityManager
-                    .getRunningAppProcesses();
-            for (ActivityManager.RunningAppProcessInfo appProcess : appProcesses) {
-                if (appProcess.processName.equals(context.getPackageName())) {
-                /*
-                BACKGROUND=400 EMPTY=500 FOREGROUND=100
-                GONE=1000 PERCEPTIBLE=130 SERVICE=300 ISIBLE=200
-                 */
-                    if (appProcess.importance != ActivityManager.RunningAppProcessInfo.IMPORTANCE_FOREGROUND) {
-                        Log.i(context.getPackageName(), "处于后台"
-                                + appProcess.processName);
-                        //"处于后台"
-                        return true;
-                    } else {
-                        //"处于前台"
-                        return false;
-                    }
-                }
-            }
-        }
-        return false;
-    }
 
     /**
      * 判断本方法是否已经位于最前端
@@ -187,12 +162,14 @@ public class ThreadPoolManager {
      */
     public static boolean isRunningForeground(Context context) {
         ActivityManager activityManager = (ActivityManager) context.getSystemService(ACTIVITY_SERVICE);
-        List<ActivityManager.RunningAppProcessInfo> appProcessInfoList = activityManager.getRunningAppProcesses();
-        /**枚举进程*/
-        for (ActivityManager.RunningAppProcessInfo appProcessInfo : appProcessInfoList) {
-            if (appProcessInfo.importance == ActivityManager.RunningAppProcessInfo.IMPORTANCE_FOREGROUND) {
-                if (appProcessInfo.processName.equals(context.getApplicationInfo().processName)) {
-                    return true;
+        if (activityManager!=null){
+            List<ActivityManager.RunningAppProcessInfo> appProcessInfoList = activityManager.getRunningAppProcesses();
+            /**枚举进程*/
+            for (ActivityManager.RunningAppProcessInfo appProcessInfo : appProcessInfoList) {
+                if (appProcessInfo.importance == ActivityManager.RunningAppProcessInfo.IMPORTANCE_FOREGROUND) {
+                    if (appProcessInfo.processName.equals(context.getApplicationInfo().processName)) {
+                        return true;
+                    }
                 }
             }
         }
@@ -202,14 +179,16 @@ public class ThreadPoolManager {
         if (!isRunningForeground(context)) {
             /**获取ActivityManager*/
             ActivityManager activityManager = (ActivityManager) context.getSystemService(ACTIVITY_SERVICE);
-
             /**获得当前运行的task(任务)*/
-            List<ActivityManager.RunningTaskInfo> taskInfoList = activityManager.getRunningTasks(100);
-            for (ActivityManager.RunningTaskInfo taskInfo : taskInfoList) {
-                /**找到本应用的 task，并将它切换到前台*/
-                if (taskInfo.topActivity.getPackageName().equals(context.getPackageName())) {
-                    activityManager.moveTaskToFront(taskInfo.id, ActivityManager.MOVE_TASK_WITH_HOME);
-                    break;
+            if (activityManager!=null){
+                List<ActivityManager.RunningTaskInfo> taskInfoList = activityManager.getRunningTasks(100);
+                // List<ActivityManager.RunningTaskInfo> taskInfoList = activityManager.;
+                for (ActivityManager.RunningTaskInfo taskInfo : taskInfoList) {
+                    /**找到本应用的 task，并将它切换到前台*/
+                    if (taskInfo.topActivity.getPackageName().equals(context.getPackageName())) {
+                        activityManager.moveTaskToFront(taskInfo.id, ActivityManager.MOVE_TASK_WITH_HOME);
+                        break;
+                    }
                 }
             }
         }

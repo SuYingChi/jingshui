@@ -25,7 +25,9 @@ import java.io.IOException;
 import java.io.OutputStream;
 
 /**
- * Created by dell on 2016/6/9.
+ *
+ * @author dell
+ * @date 2016/6/9
  * 方便使用bitmap的工具类，提供了bitmap转换，缩略等实用的方法
  */
 public class BitmapUtil {

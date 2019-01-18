@@ -58,7 +58,6 @@ public class BuyWaterActivity extends BaseActivity implements Observer{
      */
     private byte[]  mAppFrame;
     private View     layoutOnline;
-
     private ImageView imageCode;
     private TextView tvFreeCharge;
     private PortService portService;
@@ -92,7 +91,6 @@ public class BuyWaterActivity extends BaseActivity implements Observer{
         bindAndAddObserverToPortService();
         initData();
     }
-
     private void initViewImages() {
         BannerM mBanner = (BannerM) findViewById(R.id.id_banner);
         ImageView advertImage = findViewById(R.id.textView);
@@ -111,7 +109,6 @@ public class BuyWaterActivity extends BaseActivity implements Observer{
             advertImage.setVisibility(View.VISIBLE);
         }
     }
-
   private void initSetData() {
         if (portService != null) {
             if (portService.isConnection()){
