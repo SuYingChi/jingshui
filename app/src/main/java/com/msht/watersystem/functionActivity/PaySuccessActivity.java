@@ -18,15 +18,15 @@ import com.mcloyal.serialport.service.PortService;
 import com.mcloyal.serialport.utils.ComServiceConnection;
 import com.mcloyal.serialport.utils.FrameUtils;
 import com.mcloyal.serialport.utils.PacketUtils;
-import com.msht.watersystem.Base.BaseActivity;
+import com.msht.watersystem.base.BaseActivity;
 import com.msht.watersystem.R;
-import com.msht.watersystem.Utils.ConstantUtil;
-import com.msht.watersystem.Utils.ConsumeInformationUtils;
-import com.msht.watersystem.Utils.ByteUtils;
-import com.msht.watersystem.Utils.FormatInformationBean;
-import com.msht.watersystem.Utils.FormatInformationUtil;
-import com.msht.watersystem.Utils.DataCalculateUtils;
-import com.msht.watersystem.Utils.VariableUtil;
+import com.msht.watersystem.utilpackage.ConstantUtil;
+import com.msht.watersystem.utilpackage.ConsumeInformationUtils;
+import com.msht.watersystem.utilpackage.ByteUtils;
+import com.msht.watersystem.utilpackage.FormatInformationBean;
+import com.msht.watersystem.utilpackage.FormatInformationUtil;
+import com.msht.watersystem.utilpackage.DataCalculateUtils;
+import com.msht.watersystem.utilpackage.VariableUtil;
 import com.msht.watersystem.widget.BannerM;
 
 import java.util.ArrayList;
@@ -173,7 +173,7 @@ public class PaySuccessActivity extends BaseActivity implements Observer {
                    // MyLogUtil.d("主板回复指令104",CreateOrderType.getPacketString(packet1));
                     onCom1Received104DataFromControlBoard(packet1.getData());
                 }else if (Arrays.equals(packet1.getCmd(),new byte[]{0x01,0x05})){
-                    onCom1Received105DataFromControllBoard(packet1.getData());
+                    onCom1Received105DataFromControlBoard(packet1.getData());
                 }else if (Arrays.equals(packet1.getCmd(),new byte[]{0x02,0x04})){
                     onCom1Received204DataFromControlBoard(packet1.getFrame());
                 }
@@ -334,7 +334,7 @@ public class PaySuccessActivity extends BaseActivity implements Observer {
         }
     }
     private void onCom2Received205DataFromServer() {}
-    private void onCom1Received105DataFromControllBoard(ArrayList<Byte> data) {
+    private void onCom1Received105DataFromControlBoard(ArrayList<Byte> data) {
         if (data!=null&&data.size()!=0){
             FormatInformationUtil.saveStatusInformationToFormatInformation(data);
             tvInTDS.setText(String.valueOf(FormatInformationBean.OriginTDS));

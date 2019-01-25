@@ -1,9 +1,13 @@
-package com.msht.watersystem.Utils;
+package com.msht.watersystem.utilpackage;
+
+import android.util.Log;
 
 import java.util.ArrayList;
 
 /**
- * Created by hong on 2017/10/28.
+ *
+ * @author hong
+ * @date 2017/10/28
  */
 public class FormatInformationUtil {
     private static final int CONTROL_INSTRUCT_LENGTH=48;
@@ -63,7 +67,6 @@ public class FormatInformationUtil {
             installIdByte[0]=byteArrayList.get(27);
             installIdByte[1]=byteArrayList.get(28);
             FormatInformationBean.MotifyInstall=ByteUtils.byte2ToInt(installIdByte);
-
             //修改单价
             FormatInformationBean.MotifyPrice=ByteUtils.byteToInt(byteArrayList.get(29));
             FormatInformationBean.MotifyOzoneTime=ByteUtils.byteToInt(byteArrayList.get(30));

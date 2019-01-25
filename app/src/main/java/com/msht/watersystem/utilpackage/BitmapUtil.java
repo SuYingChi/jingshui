@@ -1,4 +1,4 @@
-package com.msht.watersystem.Utils;
+package com.msht.watersystem.utilpackage;
 
 import android.content.res.Resources;
 import android.graphics.Bitmap;
@@ -19,7 +19,6 @@ import android.os.Environment;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;

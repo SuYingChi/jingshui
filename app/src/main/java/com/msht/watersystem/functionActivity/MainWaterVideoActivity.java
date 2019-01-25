@@ -3,14 +3,11 @@ package com.msht.watersystem.functionActivity;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.graphics.PixelFormat;
 import android.media.AudioManager;
 import android.os.Bundle;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.SurfaceHolder;
-import android.view.SurfaceView;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.Toast;
@@ -24,29 +21,25 @@ import com.mcloyal.serialport.utils.ComServiceConnection;
 import com.mcloyal.serialport.utils.FrameUtils;
 import com.mcloyal.serialport.utils.PacketUtils;
 import com.msht.watersystem.AppContext;
-import com.msht.watersystem.Base.BaseActivity;
-import com.msht.watersystem.Manager.DateMassageEvent;
-import com.msht.watersystem.Manager.GreenDaoManager;
-import com.msht.watersystem.Manager.MessageEvent;
+import com.msht.watersystem.base.BaseActivity;
+import com.msht.watersystem.manager.DateMassageEvent;
+import com.msht.watersystem.manager.MessageEvent;
 import com.msht.watersystem.R;
-import com.msht.watersystem.Utils.BitmapViewListUtil;
-import com.msht.watersystem.Utils.ByteUtils;
-import com.msht.watersystem.Utils.CachePreferencesUtil;
-import com.msht.watersystem.Utils.ConstantUtil;
-import com.msht.watersystem.Utils.ConsumeInformationUtils;
-import com.msht.watersystem.Utils.CreateOrderType;
-import com.msht.watersystem.Utils.DataCalculateUtils;
-import com.msht.watersystem.Utils.DateTimeUtils;
-import com.msht.watersystem.Utils.FileUtil;
-import com.msht.watersystem.Utils.FormatInformationBean;
-import com.msht.watersystem.Utils.FormatInformationUtil;
-import com.msht.watersystem.Utils.ThreadPoolManager;
-import com.msht.watersystem.Utils.VariableUtil;
+import com.msht.watersystem.utilpackage.BitmapViewListUtil;
+import com.msht.watersystem.utilpackage.ByteUtils;
+import com.msht.watersystem.utilpackage.CachePreferencesUtil;
+import com.msht.watersystem.utilpackage.ConstantUtil;
+import com.msht.watersystem.utilpackage.ConsumeInformationUtils;
+import com.msht.watersystem.utilpackage.DataCalculateUtils;
+import com.msht.watersystem.utilpackage.DateTimeUtils;
+import com.msht.watersystem.utilpackage.FormatInformationBean;
+import com.msht.watersystem.utilpackage.FormatInformationUtil;
+import com.msht.watersystem.utilpackage.ThreadPoolManager;
+import com.msht.watersystem.utilpackage.VariableUtil;
 import com.msht.watersystem.entity.OrderInfo;
 import com.msht.watersystem.gen.OrderInfoDao;
 import com.msht.watersystem.service.ResendDataService;
 import com.msht.watersystem.widget.BannerM;
-import com.msht.watersystem.widget.ToastUtils;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -59,7 +52,6 @@ import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
 
-import io.vov.vitamio.LibsChecker;
 import io.vov.vitamio.MediaPlayer;
 
 /**
@@ -288,12 +280,10 @@ public class MainWaterVideoActivity extends BaseActivity implements Observer,Sur
         try {
             if (data != null && data.size() != 0) {
                 FormatInformationUtil.saveDeviceInformationToFormatInformation(data);
-                String waterVolume = String.valueOf(FormatInformationBean.WaterNum);
-                String time = String.valueOf(FormatInformationBean.OutWaterTime);
-                CachePreferencesUtil.putStringData(this, CachePreferencesUtil.VOLUME, waterVolume);
-                CachePreferencesUtil.putStringData(this, CachePreferencesUtil.OUT_WATER_TIME, time);
-                CachePreferencesUtil.putChargeMode(this, CachePreferencesUtil.CHARGEMODE, FormatInformationBean.ChargeMode);
-                CachePreferencesUtil.putChargeMode(this, CachePreferencesUtil.SHOWTDS, FormatInformationBean.ShowTDS);
+                CachePreferencesUtil.putIntData(this,CachePreferencesUtil.WATER_OUT_TIME,FormatInformationBean.OutWaterTime);
+                CachePreferencesUtil.putIntData(this,CachePreferencesUtil.WATER_NUM,FormatInformationBean.WaterNum);
+                CachePreferencesUtil.putChargeMode(this, CachePreferencesUtil.CHARGE_MODE, FormatInformationBean.ChargeMode);
+                CachePreferencesUtil.putChargeMode(this, CachePreferencesUtil.SHOW_TDS, FormatInformationBean.ShowTDS);
                 VariableUtil.setEquipmentStatus = false;
             }
         } catch (Exception e) {
@@ -438,10 +428,8 @@ public class MainWaterVideoActivity extends BaseActivity implements Observer,Sur
         }
     }
     private void calculateData() {
-        String waterVolume = CachePreferencesUtil.getStringData(this, CachePreferencesUtil.VOLUME, "5");
-        String time = CachePreferencesUtil.getStringData(this, CachePreferencesUtil.OUT_WATER_TIME, "30");
-        int mVolume = Integer.valueOf(waterVolume);
-        int mTime = Integer.valueOf(time);
+        int mVolume = CachePreferencesUtil.getIntData(this,CachePreferencesUtil.WATER_NUM,5);
+        int mTime = CachePreferencesUtil.getIntData(this,CachePreferencesUtil.WATER_OUT_TIME,30);
         volume = DataCalculateUtils.getWaterVolume(mVolume, mTime);
     }
     private void unbindPortServiceAndRemoveObserver() {

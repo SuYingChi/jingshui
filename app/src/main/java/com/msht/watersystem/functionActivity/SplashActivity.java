@@ -7,10 +7,10 @@ import android.view.KeyEvent;
 import com.mcloyal.serialport.entity.Packet;
 import com.mcloyal.serialport.service.PortService;
 import com.mcloyal.serialport.utils.ComServiceConnection;
-import com.msht.watersystem.Base.BaseActivity;
+import com.msht.watersystem.base.BaseActivity;
 import com.msht.watersystem.R;
-import com.msht.watersystem.Utils.CachePreferencesUtil;
-import com.msht.watersystem.Utils.FormatInformationUtil;
+import com.msht.watersystem.utilpackage.CachePreferencesUtil;
+import com.msht.watersystem.utilpackage.FormatInformationUtil;
 import com.msht.watersystem.widget.LoadingDialog;
 
 import java.util.ArrayList;
@@ -41,8 +41,8 @@ public class SplashActivity extends BaseActivity  implements Observer{
     private void initData() {
         boolean isFirstOpen = CachePreferencesUtil.getBoolean(this, CachePreferencesUtil.FIRST_OPEN, true);
         if (isFirstOpen){
-            CachePreferencesUtil.putStringData(this,CachePreferencesUtil.VOLUME,"5");
-            CachePreferencesUtil.putStringData(this,CachePreferencesUtil.OUT_WATER_TIME,"30");
+            CachePreferencesUtil.putIntData(this,CachePreferencesUtil.WATER_NUM,5);
+            CachePreferencesUtil.putIntData(this,CachePreferencesUtil.WATER_OUT_TIME,30);
         }
     }
     @Override

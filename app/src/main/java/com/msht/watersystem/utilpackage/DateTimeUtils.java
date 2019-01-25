@@ -1,11 +1,8 @@
-package com.msht.watersystem.Utils;
+package com.msht.watersystem.utilpackage;
 
 import android.content.Context;
 import android.os.SystemClock;
-import android.provider.ContactsContract;
 import android.provider.Settings;
-
-import com.msht.watersystem.entity.OrderInfo;
 
 import java.io.DataOutputStream;
 import java.io.File;

@@ -1,4 +1,4 @@
-package com.msht.watersystem.Utils;
+package com.msht.watersystem.utilpackage;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -6,94 +6,12 @@ import java.util.ArrayList;
 import java.util.Locale;
 
 /**
- * Created by hong on 2017/11/20.
+ *
+ * @author hong
+ * @date 2017/11/20
  */
 
 public class DataCalculateUtils {
-    public static int MealsType(ArrayList<Byte> byteList){
-        int mealType=ByteUtils.byteToInt(byteList.get(0));
-        return mealType;
-    }
-    public static double Meal_ONE(ArrayList<Byte> byteList){
-        byte[] mael=new byte[2];
-        mael[0]=byteList.get(1);
-        mael[1]=byteList.get(2);
-        int amount=ByteUtils.byte2ToInt(mael);
-        double doubleamount=amount/100.0;
-        return doubleamount;
-    }
-    public static double Meal_GIVE1(ArrayList<Byte> byteList){
-        byte[] mael=new byte[2];
-        mael[0]=byteList.get(3);
-        mael[1]=byteList.get(4);
-        int amount=ByteUtils.byte2ToInt(mael);
-        double doubleamount=amount/100.0;
-        return doubleamount;
-    }
-    public static double Meal_TWO(ArrayList<Byte> byteList){
-        byte[] mael=new byte[2];
-        mael[0]=byteList.get(5);
-        mael[1]=byteList.get(6);
-        int amount=ByteUtils.byte2ToInt(mael);
-        double doubleamount=amount/100.0;
-        return doubleamount;
-    }
-    public static double Meal_GIVE2(ArrayList<Byte> byteList){
-        byte[] mael=new byte[2];
-        mael[0]=byteList.get(7);
-        mael[1]=byteList.get(8);
-        int amount=ByteUtils.byte2ToInt(mael);
-        double doubleamount=amount/100.0;
-        return doubleamount;
-    }
-    public static double Meal_THREE(ArrayList<Byte> byteList){
-        byte[] mael=new byte[2];
-        mael[0]=byteList.get(9);
-        mael[1]=byteList.get(10);
-        int amount=ByteUtils.byte2ToInt(mael);
-        double doubleamount=amount/100.0;
-        return doubleamount;
-    }
-    public static double Meal_GIVE3(ArrayList<Byte> byteList){
-        byte[] mael=new byte[2];
-        mael[0]=byteList.get(11);
-        mael[1]=byteList.get(12);
-        int amount=ByteUtils.byte2ToInt(mael);
-        double doubleamount=amount/100.0;
-        return doubleamount;
-    }
-    public static double Meal_FOUR(ArrayList<Byte> byteList){
-        byte[] mael=new byte[2];
-        mael[0]=byteList.get(13);
-        mael[1]=byteList.get(14);
-        int amount=ByteUtils.byte2ToInt(mael);
-        double doubleamount=amount/100.0;
-        return doubleamount;
-    }
-    public static double Meal_GIVE4(ArrayList<Byte> byteList){
-        byte[] mael=new byte[2];
-        mael[0]=byteList.get(15);
-        mael[1]=byteList.get(16);
-        int amount=ByteUtils.byte2ToInt(mael);
-        double doubleamount=amount/100.0;
-        return doubleamount;
-    }
-    public static double Meal_FIVE(ArrayList<Byte> byteList){
-        byte[] mael=new byte[2];
-        mael[0]=byteList.get(17);
-        mael[1]=byteList.get(18);
-        int amount=ByteUtils.byte2ToInt(mael);
-        double doubleamount=amount/100.0;
-        return doubleamount;
-    }
-    public static double Meal_GIVE5(ArrayList<Byte> byteList){
-        byte[] mael=new byte[2];
-        mael[0]=byteList.get(19);
-        mael[1]=byteList.get(20);
-        int amount=ByteUtils.byte2ToInt(mael);
-        return amount/100.0;
-    }
-
     public static double getTwoDecimal(double amount) {   //保留两位小数
         BigDecimal bg=new BigDecimal(amount);
         return bg.setScale(2,BigDecimal.ROUND_HALF_UP).doubleValue();
@@ -128,20 +46,20 @@ public class DataCalculateUtils {
                 e.printStackTrace();
             }
 
-            byte[] BalanceByte=new byte[2];
-            BalanceByte[0]=byteArrayList.get(9);
-            BalanceByte[1]=byteArrayList.get(10);
-            FormatInformationBean.Balance=ByteUtils.byte2ToInt(BalanceByte);
+            byte[] mBalanceByte=new byte[2];
+            mBalanceByte[0]=byteArrayList.get(9);
+            mBalanceByte[1]=byteArrayList.get(10);
+            FormatInformationBean.Balance=ByteUtils.byte2ToInt(mBalanceByte);
 
-            byte[] AmountByte=new byte[2];
-            AmountByte[0]=byteArrayList.get(11);
-            AmountByte[1]=byteArrayList.get(12);
-            FormatInformationBean.ConsumptionAmount=ByteUtils.byte2ToInt(AmountByte);
+            byte[] mAmountByte=new byte[2];
+            mAmountByte[0]=byteArrayList.get(11);
+            mAmountByte[1]=byteArrayList.get(12);
+            FormatInformationBean.ConsumptionAmount=ByteUtils.byte2ToInt(mAmountByte);
 
-            byte[] AfterByte=new byte[2];
-            AfterByte[0]=byteArrayList.get(13);
-            AfterByte[1]=byteArrayList.get(14);
-            FormatInformationBean.AfterAmount=ByteUtils.byte2ToInt(AfterByte);
+            byte[] mAfterByte=new byte[2];
+            mAfterByte[0]=byteArrayList.get(13);
+            mAfterByte[1]=byteArrayList.get(14);
+            FormatInformationBean.AfterAmount=ByteUtils.byte2ToInt(mAfterByte);
 
             byte[] mDeviceId=new byte[4];
             mDeviceId[0]=byteArrayList.get(15);
@@ -156,15 +74,13 @@ public class DataCalculateUtils {
         }else {
             return false;
         }
-
     }
-
     public static String getBigNumberData(byte[] account)throws Exception{
         BigInteger bigInteger=new BigInteger(account);
         long intNum=bigInteger.longValue();
         return String.valueOf(intNum);
     }
-    public static byte[] ArrayToByte(ArrayList<Byte> byteList){
+    public static byte[] onArrayToByte(ArrayList<Byte> byteList){
         int size=byteList.size();
         byte[] byteArray=new byte[size];
         for(int i=0;i<size;i++){

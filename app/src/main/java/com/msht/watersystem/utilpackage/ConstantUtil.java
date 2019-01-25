@@ -1,4 +1,4 @@
-package com.msht.watersystem.Utils;
+package com.msht.watersystem.utilpackage;
 
 /**
  * Demo class

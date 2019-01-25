@@ -1,18 +1,15 @@
-package com.msht.watersystem.Utils;
+package com.msht.watersystem.utilpackage;
 
 import android.app.ActivityManager;
 import android.content.Context;
 import android.os.Handler;
 import android.support.annotation.NonNull;
-import android.util.Log;
 
 import com.msht.watersystem.AppContext;
-import com.msht.watersystem.Manager.ControlVideoEvent;
-import com.msht.watersystem.Manager.DateMassageEvent;
-import com.msht.watersystem.Manager.GreenDaoManager;
-import com.msht.watersystem.Manager.MessageEvent;
-import com.msht.watersystem.Manager.MyAppManage;
-import com.msht.watersystem.Manager.RestartAppEvent;
+import com.msht.watersystem.manager.DateMassageEvent;
+import com.msht.watersystem.manager.MessageEvent;
+import com.msht.watersystem.manager.MyAppManage;
+import com.msht.watersystem.manager.RestartAppEvent;
 import com.msht.watersystem.entity.OrderInfo;
 import com.msht.watersystem.gen.OrderInfoDao;
 

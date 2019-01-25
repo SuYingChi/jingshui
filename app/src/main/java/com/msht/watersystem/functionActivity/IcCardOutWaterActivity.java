@@ -6,7 +6,6 @@ import android.os.CountDownTimer;
 import android.os.Handler;
 import android.os.Message;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.ImageView;
@@ -20,18 +19,17 @@ import com.mcloyal.serialport.service.PortService;
 import com.mcloyal.serialport.utils.ComServiceConnection;
 import com.mcloyal.serialport.utils.FrameUtils;
 import com.mcloyal.serialport.utils.PacketUtils;
-import com.msht.watersystem.Base.BaseActivity;
+import com.msht.watersystem.base.BaseActivity;
 import com.msht.watersystem.Interface.ResultListener;
 import com.msht.watersystem.R;
-import com.msht.watersystem.Utils.ConstantUtil;
-import com.msht.watersystem.Utils.ConsumeInformationUtils;
-import com.msht.watersystem.Utils.ByteUtils;
-import com.msht.watersystem.Utils.CachePreferencesUtil;
-import com.msht.watersystem.Utils.CreateOrderType;
-import com.msht.watersystem.Utils.FormatInformationBean;
-import com.msht.watersystem.Utils.FormatInformationUtil;
-import com.msht.watersystem.Utils.DataCalculateUtils;
-import com.msht.watersystem.Utils.VariableUtil;
+import com.msht.watersystem.utilpackage.ConstantUtil;
+import com.msht.watersystem.utilpackage.ConsumeInformationUtils;
+import com.msht.watersystem.utilpackage.ByteUtils;
+import com.msht.watersystem.utilpackage.CachePreferencesUtil;
+import com.msht.watersystem.utilpackage.FormatInformationBean;
+import com.msht.watersystem.utilpackage.FormatInformationUtil;
+import com.msht.watersystem.utilpackage.DataCalculateUtils;
+import com.msht.watersystem.utilpackage.VariableUtil;
 import com.msht.watersystem.widget.BannerM;
 import com.msht.watersystem.widget.LEDView;
 
@@ -318,7 +316,7 @@ public class IcCardOutWaterActivity extends BaseActivity implements Observer{
         }
     }
     private void onCom2Received107DataFromServer(ArrayList<Byte> data) {
-        if (ConsumeInformationUtils.calaculateRecharge(data)){
+        if (ConsumeInformationUtils.calculateRecharge(data)){
             if (FormatInformationBean.BusinessType==3){
                 FormatInformationBean.Balance= FormatInformationBean.Balance+ FormatInformationBean.rechargeAmount;
                 Intent intent=new Intent(IcCardOutWaterActivity.this,PaySuccessActivity.class);
@@ -403,13 +401,12 @@ public class IcCardOutWaterActivity extends BaseActivity implements Observer{
         try {
             if(data!=null&&data.size()!=0){
                 FormatInformationUtil.saveDeviceInformationToFormatInformation(data);
+                CachePreferencesUtil.getIntData(this,CachePreferencesUtil.PRICE,FormatInformationBean.PriceNum);
+                CachePreferencesUtil.putIntData(this,CachePreferencesUtil.WATER_OUT_TIME,FormatInformationBean.OutWaterTime);
+                CachePreferencesUtil.putIntData(this,CachePreferencesUtil.WATER_NUM,FormatInformationBean.WaterNum);;
+                VariableUtil.setEquipmentStatus=false;
                 mTime= FormatInformationBean.OutWaterTime;
                 overTime=mTime+10;
-                String waterVolume=String.valueOf(FormatInformationBean.WaterNum);
-                String time=String.valueOf(FormatInformationBean.OutWaterTime);
-                CachePreferencesUtil.putStringData(this,CachePreferencesUtil.VOLUME,waterVolume);
-                CachePreferencesUtil.putStringData(this,CachePreferencesUtil.OUT_WATER_TIME,time);
-                VariableUtil.setEquipmentStatus=false;
                 volume=DataCalculateUtils.getWaterVolume(FormatInformationBean.WaterNum, FormatInformationBean.OutWaterTime);
                 priceNum=DataCalculateUtils.getWaterPrice(FormatInformationBean.PriceNum);
             }
@@ -459,10 +456,8 @@ public class IcCardOutWaterActivity extends BaseActivity implements Observer{
         }
     }
     private void calculateData() {
-        String waterVolume=CachePreferencesUtil.getStringData(this,CachePreferencesUtil.VOLUME,"5");
-        String time=CachePreferencesUtil.getStringData(this,CachePreferencesUtil.OUT_WATER_TIME,"30");
-        int mVolume=Integer.valueOf(waterVolume);
-        mTime=Integer.valueOf(time);
+        int mVolume=CachePreferencesUtil.getIntData(this,CachePreferencesUtil.WATER_NUM,5);
+        mTime=CachePreferencesUtil.getIntData(this,CachePreferencesUtil.WATER_OUT_TIME,30);
         volume=DataCalculateUtils.getWaterVolume(mVolume,mTime);
         overTime=mTime+10;
     }

@@ -4,17 +4,10 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.database.sqlite.SQLiteDatabase;
 import android.os.StrictMode;
-import android.util.Log;
-import android.widget.Toast;
 
 import com.mcloyal.serialport.AppLibsContext;
 import com.mcloyal.serialport.utils.logs.LogUtils;
-import com.msht.watersystem.Manager.GreenDaoManager;
-import com.msht.watersystem.Utils.CaughtExceptionTool;
-import com.msht.watersystem.Utils.CreateOrderType;
-import com.msht.watersystem.Utils.MyLogUtil;
 import com.msht.watersystem.gen.DaoMaster;
 import com.msht.watersystem.gen.DaoSession;
 import com.msht.watersystem.receiver.PortReceiver;

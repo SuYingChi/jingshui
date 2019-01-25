@@ -1,10 +1,8 @@
-package com.msht.watersystem.Utils;
+package com.msht.watersystem.utilpackage;
 
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.os.Environment;
-import android.view.View;
-import android.widget.ImageView;
 
 import com.msht.watersystem.filetool.MyFileFilter;
 

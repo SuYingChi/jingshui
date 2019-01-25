@@ -23,7 +23,7 @@ import android.widget.ImageView;
 import android.widget.RelativeLayout;
 
 import com.msht.watersystem.R;
-import com.msht.watersystem.Utils.ThreadPoolManager;
+import com.msht.watersystem.utilpackage.ThreadPoolManager;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -353,10 +353,4 @@ public class BannerM extends RelativeLayout {
          */
         void onItemClick(int position);
     }
-
-   /* public void onShutDown(){
-        if (scheduledThreadPool!=null){
-            scheduledThreadPool.shutdown();
-        }
-    }*/
 }

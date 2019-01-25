@@ -1,4 +1,4 @@
-package com.msht.watersystem.Utils;
+package com.msht.watersystem.utilpackage;
 
 import android.content.Context;
 
@@ -81,7 +81,7 @@ public class ConsumeInformationUtils {
             }
         }
     }
-    public static boolean calaculateRecharge(ArrayList<Byte> byteArrayList){
+    public static boolean calculateRecharge(ArrayList<Byte> byteArrayList){
         if (byteArrayList!=null&&byteArrayList.size()!=0){
             FormatInformationBean.BusinessType=ByteUtils.byteToInt(byteArrayList.get(0));
             byte[] recharge=new byte[4];
@@ -154,8 +154,15 @@ public class ConsumeInformationUtils {
             FormatInformationBean.FreeDeviceNo=ByteUtils.byte4ToInt(deviceId);
             FormatInformationBean.ChargeMode=ByteUtils.byteToInt(byteArrayList.get(4));
             FormatInformationBean.ShowTDS=ByteUtils.byteToInt(byteArrayList.get(5));
-            CachePreferencesUtil.putChargeMode(context,CachePreferencesUtil.CHARGEMODE, FormatInformationBean.ChargeMode);
-            CachePreferencesUtil.putChargeMode(context,CachePreferencesUtil.SHOWTDS, FormatInformationBean.ShowTDS);
+            FormatInformationBean.PriceNum=ByteUtils.byteToInt(byteArrayList.get(6));
+           // FormatInformationBean.OutWaterTime=ByteUtils.byteToInt(byteArrayList.get(7));
+           // FormatInformationBean.WaterNum=ByteUtils.byteToInt(byteArrayList.get(8));
+           // CachePreferencesUtil.putIntData(context,CachePreferencesUtil.WATER_OUT_TIME,FormatInformationBean.OutWaterTime);
+           // CachePreferencesUtil.putIntData(context,CachePreferencesUtil.WATER_NUM,FormatInformationBean.WaterNum);
+            CachePreferencesUtil.getIntData(context,CachePreferencesUtil.PRICE,FormatInformationBean.PriceNum);
+            CachePreferencesUtil.putChargeMode(context,CachePreferencesUtil.CHARGE_MODE, FormatInformationBean.ChargeMode);
+            CachePreferencesUtil.putChargeMode(context,CachePreferencesUtil.SHOW_TDS, FormatInformationBean.ShowTDS);
+
             return true;
         }else {
             return false;

@@ -1,4 +1,4 @@
-package com.msht.watersystem.Utils;
+package com.msht.watersystem.utilpackage;
 
 /**
  *
@@ -67,11 +67,12 @@ public class FormatInformationBean {
     public static int TimeWeek;
     public static int TimeZone;
 
+    /**预扣金额 **/
+    public static int DeductAmount;
     public static int rechargeAmount;
     public static byte[] phoneType;
     public static byte[] orderType;
     public static int FreeDeviceNo;
     public static int ChargeMode;
     public static int ShowTDS;
-
 }

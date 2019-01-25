@@ -6,11 +6,8 @@ import android.content.Intent;
 
 import com.mcloyal.serialport.AppLibsContext;
 import com.mcloyal.serialport.utils.ServicesUtils;
-import com.mcloyal.serialport.utils.logs.LogUtils;
-import com.msht.watersystem.Base.BaseActivity;
-import com.msht.watersystem.Interface.ResendDataEvent;
-import com.msht.watersystem.Utils.DateTimeUtils;
-import com.msht.watersystem.Utils.RestartAppUtil;
+import com.msht.watersystem.utilpackage.DateTimeUtils;
+import com.msht.watersystem.utilpackage.RestartAppUtil;
 
 
 /**

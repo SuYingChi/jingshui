@@ -4,10 +4,10 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 
-import com.msht.watersystem.Base.BaseActivity;
+import com.msht.watersystem.base.BaseActivity;
 import com.msht.watersystem.Interface.ResendDataEvent;
-import com.msht.watersystem.Utils.DateTimeUtils;
-import com.msht.watersystem.Utils.RestartAppUtil;
+import com.msht.watersystem.utilpackage.DateTimeUtils;
+import com.msht.watersystem.utilpackage.RestartAppUtil;
 
 /**
  * Created by hong on 2018/4/13.

@@ -18,15 +18,15 @@ import com.mcloyal.serialport.service.PortService;
 import com.mcloyal.serialport.utils.ComServiceConnection;
 import com.mcloyal.serialport.utils.FrameUtils;
 import com.mcloyal.serialport.utils.PacketUtils;
-import com.msht.watersystem.Base.BaseActivity;
+import com.msht.watersystem.base.BaseActivity;
 import com.msht.watersystem.R;
-import com.msht.watersystem.Utils.ConsumeInformationUtils;
-import com.msht.watersystem.Utils.ByteUtils;
-import com.msht.watersystem.Utils.CachePreferencesUtil;
-import com.msht.watersystem.Utils.FormatInformationBean;
-import com.msht.watersystem.Utils.FormatInformationUtil;
-import com.msht.watersystem.Utils.DataCalculateUtils;
-import com.msht.watersystem.Utils.VariableUtil;
+import com.msht.watersystem.utilpackage.ConsumeInformationUtils;
+import com.msht.watersystem.utilpackage.ByteUtils;
+import com.msht.watersystem.utilpackage.CachePreferencesUtil;
+import com.msht.watersystem.utilpackage.FormatInformationBean;
+import com.msht.watersystem.utilpackage.FormatInformationUtil;
+import com.msht.watersystem.utilpackage.DataCalculateUtils;
+import com.msht.watersystem.utilpackage.VariableUtil;
 import com.msht.watersystem.widget.BannerM;
 
 import java.util.ArrayList;
@@ -308,10 +308,8 @@ public class AppNotSufficientActivity extends BaseActivity implements Observer {
         }
     }
     private void calculateData() {
-        String waterVolume= CachePreferencesUtil.getStringData(this,CachePreferencesUtil.VOLUME,"5");
-        String time=CachePreferencesUtil.getStringData(this,CachePreferencesUtil.OUT_WATER_TIME,"30");
-        int mVolume=Integer.parseInt(waterVolume);
-        int mTime=Integer.parseInt(time);
+        int mVolume=CachePreferencesUtil.getIntData(this,CachePreferencesUtil.WATER_NUM,5);
+        int mTime=CachePreferencesUtil.getIntData(this,CachePreferencesUtil.WATER_OUT_TIME,30);
         volume=DataCalculateUtils.getWaterVolume(mVolume,mTime);
     }
     private void response204ToServer(byte[] frame) {

@@ -11,10 +11,10 @@ import com.mcloyal.serialport.exception.FrameException;
 import com.mcloyal.serialport.service.PortService;
 import com.mcloyal.serialport.utils.ComServiceConnection;
 import com.mcloyal.serialport.utils.PacketUtils;
-import com.msht.watersystem.Base.BaseActivity;
+import com.msht.watersystem.base.BaseActivity;
 import com.msht.watersystem.R;
-import com.msht.watersystem.Utils.ByteUtils;
-import com.msht.watersystem.Utils.DataCalculateUtils;
+import com.msht.watersystem.utilpackage.ByteUtils;
+import com.msht.watersystem.utilpackage.DataCalculateUtils;
 import com.msht.watersystem.widget.LoadingDialog;
 
 import java.util.ArrayList;
@@ -120,7 +120,6 @@ public class CloseSystemActivity extends BaseActivity implements Observer{
                 bindStatus=false;
                 portService.removeObserver(this);
                 unbindService(serviceConnection);
-
             }
         }
     }

@@ -7,7 +7,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.msht.watersystem.R;
-import com.msht.watersystem.Utils.SizeTools;
+import com.msht.watersystem.utilpackage.SizeTools;
 
 
 /**

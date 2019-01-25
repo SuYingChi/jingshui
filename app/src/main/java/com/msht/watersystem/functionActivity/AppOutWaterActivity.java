@@ -6,7 +6,6 @@ import android.os.CountDownTimer;
 import android.os.Handler;
 import android.os.Message;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.ImageView;
@@ -20,17 +19,16 @@ import com.mcloyal.serialport.service.PortService;
 import com.mcloyal.serialport.utils.ComServiceConnection;
 import com.mcloyal.serialport.utils.FrameUtils;
 import com.mcloyal.serialport.utils.PacketUtils;
-import com.msht.watersystem.Base.BaseActivity;
+import com.msht.watersystem.base.BaseActivity;
 import com.msht.watersystem.R;
-import com.msht.watersystem.Utils.ConstantUtil;
-import com.msht.watersystem.Utils.ConsumeInformationUtils;
-import com.msht.watersystem.Utils.ByteUtils;
-import com.msht.watersystem.Utils.CachePreferencesUtil;
-import com.msht.watersystem.Utils.CreateOrderType;
-import com.msht.watersystem.Utils.FormatInformationBean;
-import com.msht.watersystem.Utils.FormatInformationUtil;
-import com.msht.watersystem.Utils.DataCalculateUtils;
-import com.msht.watersystem.Utils.VariableUtil;
+import com.msht.watersystem.utilpackage.ConstantUtil;
+import com.msht.watersystem.utilpackage.ConsumeInformationUtils;
+import com.msht.watersystem.utilpackage.ByteUtils;
+import com.msht.watersystem.utilpackage.CachePreferencesUtil;
+import com.msht.watersystem.utilpackage.FormatInformationBean;
+import com.msht.watersystem.utilpackage.FormatInformationUtil;
+import com.msht.watersystem.utilpackage.DataCalculateUtils;
+import com.msht.watersystem.utilpackage.VariableUtil;
 import com.msht.watersystem.widget.BannerM;
 import com.msht.watersystem.widget.LEDView;
 
@@ -302,7 +300,7 @@ public class AppOutWaterActivity extends BaseActivity implements Observer{
                         handlerStop.sendMessage(msg);
                         int amountAfter= FormatInformationBean.AfterAmount;
                         int consumption= FormatInformationBean.ConsumptionAmount;
-                        int chargeMode= CachePreferencesUtil.getChargeMode(this,CachePreferencesUtil.CHARGEMODE,0);
+                        int chargeMode= CachePreferencesUtil.getChargeMode(this,CachePreferencesUtil.CHARGE_MODE,0);
                         if (chargeMode!=1){
                             FormatInformationBean.AppBalance= FormatInformationBean.AppBalance-consumption;
                         }
@@ -316,7 +314,7 @@ public class AppOutWaterActivity extends BaseActivity implements Observer{
                         handlerStop.sendMessage(msg);
                         int amountAfter= FormatInformationBean.AfterAmount;
                         int consumption= FormatInformationBean.ConsumptionAmount;
-                        int chargeMode= CachePreferencesUtil.getChargeMode(this,CachePreferencesUtil.CHARGEMODE,0);
+                        int chargeMode= CachePreferencesUtil.getChargeMode(this,CachePreferencesUtil.CHARGE_MODE,0);
                         if (chargeMode!=1){
                             FormatInformationBean.AppBalance= FormatInformationBean.AppBalance-consumption;
                         }
@@ -396,10 +394,8 @@ public class AppOutWaterActivity extends BaseActivity implements Observer{
         }
     }
     private void calculateData() {
-        String waterVolume=CachePreferencesUtil.getStringData(this,CachePreferencesUtil.VOLUME,"5");
-        String time=CachePreferencesUtil.getStringData(this,CachePreferencesUtil.OUT_WATER_TIME,"30");
-        int mVolume=Integer.parseInt(waterVolume);
-        int mTime=Integer.parseInt(time);
+        int mVolume=CachePreferencesUtil.getIntData(this,CachePreferencesUtil.WATER_NUM,5);
+        int mTime=CachePreferencesUtil.getIntData(this,CachePreferencesUtil.WATER_OUT_TIME,30);;
         volume=DataCalculateUtils.getWaterVolume(mVolume,mTime);
     }
     private void settleServer(int afterAmount,int amount,byte[] frame) {
@@ -408,7 +404,7 @@ public class AppOutWaterActivity extends BaseActivity implements Observer{
             try {
                 byte[] type = new byte[]{0x01, 0x07};
                 if (VariableUtil.byteArray!=null&&VariableUtil.byteArray.size()!=0){
-                    byte[] data= DataCalculateUtils.ArrayToByte(VariableUtil.byteArray);
+                    byte[] data= DataCalculateUtils.onArrayToByte(VariableUtil.byteArray);
                     byte[] consumption= ByteUtils.intToByte4(amount);
                     byte[] afterConsumption=ByteUtils.intToByte4(afterAmount);
                     byte[] water=ByteUtils.intToByte2(FormatInformationBean.WaterYield);

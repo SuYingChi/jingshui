@@ -15,14 +15,14 @@ import com.mcloyal.serialport.exception.FrameException;
 import com.mcloyal.serialport.service.PortService;
 import com.mcloyal.serialport.utils.ComServiceConnection;
 import com.mcloyal.serialport.utils.PacketUtils;
-import com.msht.watersystem.Base.BaseActivity;
+import com.msht.watersystem.base.BaseActivity;
 import com.msht.watersystem.R;
-import com.msht.watersystem.Utils.ConsumeInformationUtils;
-import com.msht.watersystem.Utils.ByteUtils;
-import com.msht.watersystem.Utils.DataCalculateUtils;
-import com.msht.watersystem.Utils.FormatInformationBean;
-import com.msht.watersystem.Utils.FormatInformationUtil;
-import com.msht.watersystem.Utils.VariableUtil;
+import com.msht.watersystem.utilpackage.ConsumeInformationUtils;
+import com.msht.watersystem.utilpackage.ByteUtils;
+import com.msht.watersystem.utilpackage.DataCalculateUtils;
+import com.msht.watersystem.utilpackage.FormatInformationBean;
+import com.msht.watersystem.utilpackage.FormatInformationUtil;
+import com.msht.watersystem.utilpackage.VariableUtil;
 import com.msht.watersystem.widget.BannerM;
 
 import java.util.ArrayList;
@@ -93,9 +93,9 @@ public class CannotBuyWaterActivity extends BaseActivity implements Observer {
             if (packet1 != null) {
                 if (Arrays.equals(packet1.getCmd(),new byte[]{0x01,0x04})){
                    // MyLogUtil.d("主板回复指令104：", CreateOrderType.getPacketString(packet1));
-                    onCom1Received104dataFromControllBoard();
+                    onCom1Received104dataFromControlBoard();
                 }else if (Arrays.equals(packet1.getCmd(),new byte[]{0x01,0x05})){
-                    onCom1Received105dataFromControllBoard(packet1.getData());
+                    onCom1Received105dataFromControlBoard(packet1.getData());
                 }
             }
             Packet packet2 = myObservable.getCom2Packet();
@@ -163,8 +163,8 @@ public class CannotBuyWaterActivity extends BaseActivity implements Observer {
             }
         }
     }
-    private void onCom1Received104dataFromControllBoard() {}
-    private void onCom1Received105dataFromControllBoard(ArrayList<Byte> data) {
+    private void onCom1Received104dataFromControlBoard() {}
+    private void onCom1Received105dataFromControlBoard(ArrayList<Byte> data) {
         try {
 
             if (data!=null&&data.size()!=0){

@@ -1,4 +1,4 @@
-package com.msht.watersystem.Base;
+package com.msht.watersystem.base;
 
 import android.content.Context;
 import android.os.Bundle;
@@ -13,22 +13,15 @@ import com.mcloyal.serialport.AppPreferences;
 import com.msht.watersystem.AppContext;
 import com.msht.watersystem.Interface.ResendDataEvent;
 import com.msht.watersystem.R;
-import com.msht.watersystem.Utils.CachePreferencesUtil;
-import com.msht.watersystem.Utils.FormatInformationBean;
-import com.msht.watersystem.entity.OrderInfo;
+import com.msht.watersystem.utilpackage.CachePreferencesUtil;
+import com.msht.watersystem.utilpackage.FormatInformationBean;
 import com.msht.watersystem.widget.LoadingDialog;
-
-import java.util.List;
-
-/**
- * Created by huangzhong on 2015/9/17.
- */
 /**
  * Demo class
  * 〈一句话功能简述〉
  * 〈功能详细描述〉
  * @author hong
- * @date 2018/7/2  
+ * @date 2015/9/17  
  */
 public abstract class BaseActivity extends AppCompatActivity  {
     public TextView tvInTDS;
@@ -65,7 +58,7 @@ public abstract class BaseActivity extends AppCompatActivity  {
         layoutTDS =findViewById(R.id.id_tds_layout);
         tvInTDS.setText(String.valueOf(FormatInformationBean.OriginTDS));
         tvOutTDS.setText(String.valueOf(FormatInformationBean.PurificationTDS));
-        int tds= CachePreferencesUtil.getChargeMode(this,CachePreferencesUtil.SHOWTDS,0);
+        int tds= CachePreferencesUtil.getChargeMode(this,CachePreferencesUtil.SHOW_TDS,0);
         if (tds==0){
             layoutTDS.setVisibility(View.GONE);
         }else {

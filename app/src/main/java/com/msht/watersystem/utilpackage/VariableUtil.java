@@ -1,11 +1,10 @@
-package com.msht.watersystem.Utils;
+package com.msht.watersystem.utilpackage;
 
 import android.graphics.Bitmap;
 
 import com.mcloyal.serialport.entity.Packet;
 import com.msht.watersystem.AppContext;
 import com.msht.watersystem.Interface.ResultListener;
-import com.msht.watersystem.Manager.GreenDaoManager;
 import com.msht.watersystem.entity.OrderInfo;
 import com.msht.watersystem.gen.OrderInfoDao;
 

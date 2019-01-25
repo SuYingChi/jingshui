@@ -6,7 +6,7 @@ import android.graphics.Bitmap;
 import android.graphics.PixelFormat;
 import android.media.AudioManager;
 import android.os.Bundle;
-import android.os.Handler;
+import android.support.v4.content.ContextCompat;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -14,7 +14,6 @@ import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
 import android.widget.ImageView;
-import android.widget.Toast;
 
 import com.mcloyal.serialport.entity.Packet;
 import com.mcloyal.serialport.exception.CRCException;
@@ -25,25 +24,23 @@ import com.mcloyal.serialport.utils.ComServiceConnection;
 import com.mcloyal.serialport.utils.FrameUtils;
 import com.mcloyal.serialport.utils.PacketUtils;
 import com.msht.watersystem.AppContext;
-import com.msht.watersystem.Base.BaseActivity;
-import com.msht.watersystem.Manager.ControlVideoEvent;
-import com.msht.watersystem.Manager.DateMassageEvent;
-import com.msht.watersystem.Manager.GreenDaoManager;
-import com.msht.watersystem.Manager.MessageEvent;
-import com.msht.watersystem.Manager.RestartAppEvent;
+import com.msht.watersystem.base.BaseActivity;
+import com.msht.watersystem.manager.DateMassageEvent;
+import com.msht.watersystem.manager.MessageEvent;
+import com.msht.watersystem.manager.RestartAppEvent;
 import com.msht.watersystem.R;
-import com.msht.watersystem.Utils.BitmapViewListUtil;
-import com.msht.watersystem.Utils.ByteUtils;
-import com.msht.watersystem.Utils.CachePreferencesUtil;
-import com.msht.watersystem.Utils.ConstantUtil;
-import com.msht.watersystem.Utils.ConsumeInformationUtils;
-import com.msht.watersystem.Utils.DataCalculateUtils;
-import com.msht.watersystem.Utils.DateTimeUtils;
-import com.msht.watersystem.Utils.FileUtil;
-import com.msht.watersystem.Utils.FormatInformationBean;
-import com.msht.watersystem.Utils.FormatInformationUtil;
-import com.msht.watersystem.Utils.ThreadPoolManager;
-import com.msht.watersystem.Utils.VariableUtil;
+import com.msht.watersystem.utilpackage.BitmapViewListUtil;
+import com.msht.watersystem.utilpackage.ByteUtils;
+import com.msht.watersystem.utilpackage.CachePreferencesUtil;
+import com.msht.watersystem.utilpackage.ConstantUtil;
+import com.msht.watersystem.utilpackage.ConsumeInformationUtils;
+import com.msht.watersystem.utilpackage.DataCalculateUtils;
+import com.msht.watersystem.utilpackage.DateTimeUtils;
+import com.msht.watersystem.utilpackage.FileUtil;
+import com.msht.watersystem.utilpackage.FormatInformationBean;
+import com.msht.watersystem.utilpackage.FormatInformationUtil;
+import com.msht.watersystem.utilpackage.ThreadPoolManager;
+import com.msht.watersystem.utilpackage.VariableUtil;
 import com.msht.watersystem.entity.OrderInfo;
 import com.msht.watersystem.gen.OrderInfoDao;
 import com.msht.watersystem.service.ResendDataService;
@@ -86,8 +83,11 @@ public class MainMyVideoActivity extends BaseActivity implements Observer,Surfac
     private MediaPlayer mMediaPlayer;
     private SurfaceHolder holder;
     private boolean mIsVideoSizeKnown = false;
+    private boolean mIsVideoReadyToBePlayed = false;
     private long currentPosition = 0;
     private boolean changeVideo = false;
+
+
     /**夜间标志*/
     private boolean nightStatus=true;
     private int videoIndex=0;
@@ -136,7 +136,7 @@ public class MainMyVideoActivity extends BaseActivity implements Observer,Surfac
     private void initService() {
         /**开启一个新的服务，*/
         Intent resendDataService=new Intent(context,ResendDataService.class);
-       startService(resendDataService);
+        startService(resendDataService);
     }
     private void initBannerView() {
         ImageView advertImage = findViewById(R.id.textView);
@@ -146,7 +146,7 @@ public class MainMyVideoActivity extends BaseActivity implements Observer,Surfac
             mBanner.setBannerBeanList(VariableUtil.imageViewList)
                     .setDefaultImageResId(R.drawable.water_advertisement)
                     .setIndexPosition(BannerM.INDEX_POSITION_BOTTOM)
-                    .setIndexColor(getResources().getColor(R.color.colorPrimary))
+                    .setIndexColor(ContextCompat.getColor(context,R.color.colorPrimary))
                     .setIntervalTime(10)
                     .show();
             mBanner.setVisibility(View.VISIBLE);
@@ -173,7 +173,7 @@ public class MainMyVideoActivity extends BaseActivity implements Observer,Surfac
                     //重置倒计时 跳转到无法买水界面
                     onCom1Received105DataFromControlBoard(packet1.getData());
                 } else if (Arrays.equals(packet1.getCmd(), new byte[]{0x02, 0x04})) {
-                    //andorid端主动发送104之后，主控板回复204，跳转到IC卡买水或APP买水或现金出水界面
+                    //android端主动发送104之后，主控板回复204，跳转到IC卡买水或APP买水或现金出水界面
                     onCom1Received204DataFromControlBoard(packet1.getFrame());
                 }
             }
@@ -307,12 +307,11 @@ public class MainMyVideoActivity extends BaseActivity implements Observer,Surfac
         try {
             if (data != null && data.size() != 0) {
                 FormatInformationUtil.saveDeviceInformationToFormatInformation(data);
-                String waterVolume = String.valueOf(FormatInformationBean.WaterNum);
-                String time = String.valueOf(FormatInformationBean.OutWaterTime);
-                CachePreferencesUtil.putStringData(this, CachePreferencesUtil.VOLUME, waterVolume);
-                CachePreferencesUtil.putStringData(this, CachePreferencesUtil.OUT_WATER_TIME, time);
-                CachePreferencesUtil.putChargeMode(this, CachePreferencesUtil.CHARGEMODE, FormatInformationBean.ChargeMode);
-                CachePreferencesUtil.putChargeMode(this, CachePreferencesUtil.SHOWTDS, FormatInformationBean.ShowTDS);
+                CachePreferencesUtil.getIntData(context,CachePreferencesUtil.PRICE,FormatInformationBean.PriceNum);
+                CachePreferencesUtil.putIntData(this,CachePreferencesUtil.WATER_OUT_TIME,FormatInformationBean.OutWaterTime);
+                CachePreferencesUtil.putIntData(this,CachePreferencesUtil.WATER_NUM,FormatInformationBean.WaterNum);
+                CachePreferencesUtil.putChargeMode(this, CachePreferencesUtil.CHARGE_MODE, FormatInformationBean.ChargeMode);
+                CachePreferencesUtil.putChargeMode(this, CachePreferencesUtil.SHOW_TDS, FormatInformationBean.ShowTDS);
                 VariableUtil.setEquipmentStatus = false;
             }
         } catch (Exception e) {
@@ -362,7 +361,9 @@ public class MainMyVideoActivity extends BaseActivity implements Observer,Surfac
     }
     private void onCom2Received102DataFromServer(ArrayList<Byte> data) {
         if (ConsumeInformationUtils.controlModel(mContext, data)) {
-            /*  .....*/
+            /*  .....
+            Log.d("FormatInformationBean=","waterVolume="+String.valueOf(FormatInformationBean.WaterNum)+",time="+String.valueOf(FormatInformationBean.OutWaterTime));
+            */
         }
     }
     private void response207ToServer(byte[] frame) {
@@ -382,7 +383,7 @@ public class MainMyVideoActivity extends BaseActivity implements Observer,Surfac
     }
     /**
      * 扫码业务指令
-     * @param data
+     * @param data 107指令
      */
     private void onCom2Received107DataFromServer(ArrayList<Byte> data) {
         if (data != null && data.size() != 0) {
@@ -457,10 +458,8 @@ public class MainMyVideoActivity extends BaseActivity implements Observer,Surfac
         }
     }
     private void calculateData() {
-        String waterVolume = CachePreferencesUtil.getStringData(this, CachePreferencesUtil.VOLUME, "5");
-        String time = CachePreferencesUtil.getStringData(this, CachePreferencesUtil.OUT_WATER_TIME, "30");
-        int mVolume = Integer.valueOf(waterVolume);
-        int mTime = Integer.valueOf(time);
+        int mVolume = CachePreferencesUtil.getIntData(this,CachePreferencesUtil.WATER_NUM,5);
+        int mTime =CachePreferencesUtil.getIntData(this,CachePreferencesUtil.WATER_OUT_TIME,30);
         volume = DataCalculateUtils.getWaterVolume(mVolume, mTime);
     }
     private void unbindPortServiceAndRemoveObserver() {
@@ -529,25 +528,6 @@ public class MainMyVideoActivity extends BaseActivity implements Observer,Surfac
             restartWaterApp();
         }
     }
-   /* @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onControlVideoPlay(ControlVideoEvent event){
-        if (event.getMessage()){
-            if(fileList!=null&&fileList.size()>1){
-                startVideoPlayback();
-                imageLayout.setVisibility(View.GONE);
-                videoLayout .setVisibility(View.VISIBLE);
-            }else {
-                imageLayout.setVisibility(View.VISIBLE);
-                videoLayout .setVisibility(View.GONE);
-            }
-        }else {
-            if(fileList!=null&&fileList.size()>1){
-                onStopVideo();
-            }
-            imageLayout.setVisibility(View.VISIBLE);
-            videoLayout .setVisibility(View.GONE);
-        }
-    }*/
     private OrderInfoDao getOrderDao() {
         return AppContext.getInstance().getDaoSession().getOrderInfoDao();
     }
@@ -600,24 +580,37 @@ public class MainMyVideoActivity extends BaseActivity implements Observer,Surfac
     }
     @Override
     public void surfaceCreated(SurfaceHolder holder) {
-        initMediaPlayer();
+        if(fileList!=null&&fileList.size()>=1){
+            imageLayout.setVisibility(View.GONE);
+            videoLayout .setVisibility(View.VISIBLE);
+            initMediaPlayer();
+        }else {
+            imageLayout.setVisibility(View.VISIBLE);
+            videoLayout .setVisibility(View.GONE);
+        }
+
     }
     @Override
     public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
         if(mMediaPlayer==null){
-            if (!TextUtils.isEmpty(fileList.get(videoIndex))){
-                onSetStartPlay();
-            }else {
-                videoIndex++;
-                if (videoIndex>=fileList.size()){
-                    videoIndex=0;
-                }
+            if (fileList!=null&&fileList.size()>0){
                 if (!TextUtils.isEmpty(fileList.get(videoIndex))){
                     onSetStartPlay();
                 }else {
-                    imageLayout.setVisibility(View.VISIBLE);
-                    videoLayout .setVisibility(View.GONE);
+                    videoIndex++;
+                    if (videoIndex>=fileList.size()){
+                        videoIndex=0;
+                    }
+                    if (!TextUtils.isEmpty(fileList.get(videoIndex))){
+                        onSetStartPlay();
+                    }else {
+                        imageLayout.setVisibility(View.VISIBLE);
+                        videoLayout .setVisibility(View.GONE);
+                    }
                 }
+            }else {
+                imageLayout.setVisibility(View.VISIBLE);
+                videoLayout .setVisibility(View.GONE);
             }
 
         }
@@ -650,7 +643,6 @@ public class MainMyVideoActivity extends BaseActivity implements Observer,Surfac
                 imageLayout.setVisibility(View.VISIBLE);
                 videoLayout .setVisibility(View.GONE);
             }
-
         } catch (Exception e) {
            e.printStackTrace();
         }
@@ -663,7 +655,7 @@ public class MainMyVideoActivity extends BaseActivity implements Observer,Surfac
         }
     }
     private void doCleanUp() {
-     //   mIsVideoReadyToBePlayed = false;
+        mIsVideoReadyToBePlayed = false;
         mIsVideoSizeKnown = false;
     }
     private void startVideoPlayback() {
@@ -692,7 +684,7 @@ public class MainMyVideoActivity extends BaseActivity implements Observer,Surfac
         }
         initMediaPlayer();
         mIsVideoSizeKnown = true;
-   //     mIsVideoReadyToBePlayed = true;
+        mIsVideoReadyToBePlayed = true;
         changeVideo = true;
     }
     private void releaseMediaPlayer() {
@@ -704,17 +696,23 @@ public class MainMyVideoActivity extends BaseActivity implements Observer,Surfac
     }
     @Override
     public void onPrepared(MediaPlayer mp) {
-    //    mIsVideoReadyToBePlayed = true;
+        mIsVideoReadyToBePlayed = true;
         if (mIsVideoSizeKnown) {
             startVideoPlayback();
         }
     }
     @Override
     public void onVideoSizeChanged(MediaPlayer mp, int width, int height) {
+        //关键
         if (width == 0 || height == 0) {
-            return;
+            imageLayout.setVisibility(View.VISIBLE);
+            videoLayout .setVisibility(View.INVISIBLE);
+           // return;
+        }else {
+            imageLayout.setVisibility(View.GONE);
+            videoLayout .setVisibility(View.VISIBLE);
+            mIsVideoSizeKnown = true;
         }
-        mIsVideoSizeKnown = true;
     }
     @Override
     protected void onStart() {

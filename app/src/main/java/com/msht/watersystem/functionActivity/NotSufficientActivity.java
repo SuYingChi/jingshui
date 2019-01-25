@@ -18,14 +18,14 @@ import com.mcloyal.serialport.service.PortService;
 import com.mcloyal.serialport.utils.ComServiceConnection;
 import com.mcloyal.serialport.utils.FrameUtils;
 import com.mcloyal.serialport.utils.PacketUtils;
-import com.msht.watersystem.Base.BaseActivity;
+import com.msht.watersystem.base.BaseActivity;
 import com.msht.watersystem.R;
-import com.msht.watersystem.Utils.ConsumeInformationUtils;
-import com.msht.watersystem.Utils.ByteUtils;
-import com.msht.watersystem.Utils.FormatInformationBean;
-import com.msht.watersystem.Utils.FormatInformationUtil;
-import com.msht.watersystem.Utils.DataCalculateUtils;
-import com.msht.watersystem.Utils.VariableUtil;
+import com.msht.watersystem.utilpackage.ConsumeInformationUtils;
+import com.msht.watersystem.utilpackage.ByteUtils;
+import com.msht.watersystem.utilpackage.FormatInformationBean;
+import com.msht.watersystem.utilpackage.FormatInformationUtil;
+import com.msht.watersystem.utilpackage.DataCalculateUtils;
+import com.msht.watersystem.utilpackage.VariableUtil;
 import com.msht.watersystem.widget.BannerM;
 
 import java.util.ArrayList;
@@ -140,7 +140,7 @@ public class NotSufficientActivity extends BaseActivity implements Observer {
                     response207ToServer(packet2.getFrame());
                    onCom2Received107DataFromServer(packet2.getData());
                 }else if (Arrays.equals(packet2.getCmd(),new byte[]{0x01,0x02})){
-                    response102ToServer(packet2.getFrame());
+                   response102ToServer(packet2.getFrame());
                    onCom2Received102DataFromServer(packet2.getData());
                 }
             }

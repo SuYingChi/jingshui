@@ -1,8 +1,4 @@
-package com.msht.watersystem.Manager;
-
-import com.msht.watersystem.entity.OrderInfo;
-
-import java.util.List;
+package com.msht.watersystem.manager;
 
 /**
  * Demo class

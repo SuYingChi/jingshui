@@ -12,7 +12,7 @@
         android:background="@color/white"
         android:visibility="gone">
         <io.vov.vitamio.widget.CenterLayout
-            android:id="@+id/cideo_center_layout"
+            android:id="@+id/video_center_layout"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:orientation="vertical">

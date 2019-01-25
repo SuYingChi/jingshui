@@ -6,12 +6,11 @@ import android.os.IBinder;
 import android.support.annotation.Nullable;
 
 import com.msht.watersystem.AppContext;
-import com.msht.watersystem.Base.BaseActivity;
+import com.msht.watersystem.base.BaseActivity;
 import com.msht.watersystem.Interface.ResendDataEvent;
-import com.msht.watersystem.Manager.GreenDaoManager;
-import com.msht.watersystem.Utils.DateTimeUtils;
-import com.msht.watersystem.Utils.ThreadPoolManager;
-import com.msht.watersystem.Utils.VariableUtil;
+import com.msht.watersystem.utilpackage.DateTimeUtils;
+import com.msht.watersystem.utilpackage.ThreadPoolManager;
+import com.msht.watersystem.utilpackage.VariableUtil;
 import com.msht.watersystem.entity.OrderInfo;
 import com.msht.watersystem.gen.OrderInfoDao;
 
