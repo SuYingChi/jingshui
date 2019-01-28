@@ -1,6 +1,7 @@
 package com.msht.watersystem.utilpackage;
 
 import android.content.Context;
+import android.util.Log;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
@@ -155,13 +156,19 @@ public class ConsumeInformationUtils {
             FormatInformationBean.ChargeMode=ByteUtils.byteToInt(byteArrayList.get(4));
             FormatInformationBean.ShowTDS=ByteUtils.byteToInt(byteArrayList.get(5));
             FormatInformationBean.PriceNum=ByteUtils.byteToInt(byteArrayList.get(6));
-           // FormatInformationBean.OutWaterTime=ByteUtils.byteToInt(byteArrayList.get(7));
-           // FormatInformationBean.WaterNum=ByteUtils.byteToInt(byteArrayList.get(8));
-           // CachePreferencesUtil.putIntData(context,CachePreferencesUtil.WATER_OUT_TIME,FormatInformationBean.OutWaterTime);
-           // CachePreferencesUtil.putIntData(context,CachePreferencesUtil.WATER_NUM,FormatInformationBean.WaterNum);
+            FormatInformationBean.OutWaterTime=ByteUtils.byteToInt(byteArrayList.get(7));
+            FormatInformationBean.WaterNum=ByteUtils.byteToInt(byteArrayList.get(8));
+            byte[] deductAmount=new byte[2];
+            deviceId[0]=byteArrayList.get(9);
+            deviceId[1]=byteArrayList.get(10);
+            FormatInformationBean.DeductAmount=ByteUtils.byte2ToInt(deductAmount);
+            CachePreferencesUtil.putIntData(context,CachePreferencesUtil.WATER_OUT_TIME,FormatInformationBean.OutWaterTime);
+            CachePreferencesUtil.putIntData(context,CachePreferencesUtil.WATER_NUM,FormatInformationBean.WaterNum);
+            CachePreferencesUtil.getIntData(context,CachePreferencesUtil.DEDUCT_AMOUNT,FormatInformationBean.DeductAmount);
             CachePreferencesUtil.getIntData(context,CachePreferencesUtil.PRICE,FormatInformationBean.PriceNum);
             CachePreferencesUtil.putChargeMode(context,CachePreferencesUtil.CHARGE_MODE, FormatInformationBean.ChargeMode);
             CachePreferencesUtil.putChargeMode(context,CachePreferencesUtil.SHOW_TDS, FormatInformationBean.ShowTDS);
+            Log.d("overTime3=",String.valueOf(FormatInformationBean.DeductAmount));
 
             return true;
         }else {

@@ -17,6 +17,7 @@ import com.mcloyal.serialport.utils.ComServiceConnection;
 import com.mcloyal.serialport.utils.PacketUtils;
 import com.msht.watersystem.base.BaseActivity;
 import com.msht.watersystem.R;
+import com.msht.watersystem.utilpackage.ConstantUtil;
 import com.msht.watersystem.utilpackage.ConsumeInformationUtils;
 import com.msht.watersystem.utilpackage.ByteUtils;
 import com.msht.watersystem.utilpackage.DataCalculateUtils;
@@ -166,8 +167,7 @@ public class CannotBuyWaterActivity extends BaseActivity implements Observer {
     private void onCom1Received104dataFromControlBoard() {}
     private void onCom1Received105dataFromControlBoard(ArrayList<Byte> data) {
         try {
-
-            if (data!=null&&data.size()!=0){
+            if (data!=null&&data.size()>= ConstantUtil.HEARTBEAT_INSTRUCT_MAX_SIZE){
                 FormatInformationUtil.saveStatusInformationToFormatInformation(data);
                 tvInTDS.setText(String.valueOf(FormatInformationBean.OriginTDS));
                 tvOutTDS.setText(String.valueOf(FormatInformationBean.PurificationTDS));

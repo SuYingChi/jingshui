@@ -27,6 +27,10 @@ public class DataCalculateUtils {
         double priceNum=price*1.0;
         return 1.0/priceNum;
     }
+    public static int getOutWaterTime(int deductAmount,int price){
+        double time=deductAmount*price/100.0;
+        return ByteUtils.doubleToInt(time);
+    }
     public static boolean getBusinessData(ArrayList<Byte> byteArrayList){
 
         if (byteArrayList!=null&&byteArrayList.size()!=0){

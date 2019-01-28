@@ -173,6 +173,10 @@ public class ByteUtils {
 
     }
 
+    public static int doubleToInt(double i){
+        Double mDouble= i;
+        return mDouble.intValue();
+    }
     public static byte[] LongToByte(Long i) {
 
         byte[] abyte0 = new byte[8];

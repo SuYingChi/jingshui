@@ -204,7 +204,7 @@ public class DeliverOutWaterActivity extends BaseActivity implements Observer{
     }
     private void onCom1Received105DataFromControlBoard(ArrayList<Byte> data) {
         try {
-            if (data!=null&&data.size()!=0){
+            if (data!=null&&data.size()>= ConstantUtil.HEARTBEAT_INSTRUCT_MAX_SIZE){
                 FormatInformationUtil.saveStatusInformationToFormatInformation(data);
                 tvInTDS.setText(String.valueOf(FormatInformationBean.OriginTDS));
                 tvOutTDS.setText(String.valueOf(FormatInformationBean.PurificationTDS));
@@ -231,7 +231,7 @@ public class DeliverOutWaterActivity extends BaseActivity implements Observer{
         }
     }
     private void onCom1Received104DataFromControlBoard(ArrayList<Byte> data) {
-        if ( data!=null&&data.size()>0){
+        if (data!=null&&data.size()>=ConstantUtil.CONTROL_MAX_SIZE){
             FormatInformationUtil.saveCom1ReceivedDataToFormatInformation(data);
             int businessType=ByteUtils.byteToInt(data.get(15));
             if (businessType==3){

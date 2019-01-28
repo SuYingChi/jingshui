@@ -22,8 +22,8 @@ import com.mcloyal.serialport.utils.FrameUtils;
 import com.mcloyal.serialport.utils.PacketUtils;
 import com.msht.watersystem.AppContext;
 import com.msht.watersystem.base.BaseActivity;
-import com.msht.watersystem.manager.DateMassageEvent;
-import com.msht.watersystem.manager.MessageEvent;
+import com.msht.watersystem.eventmanager.DateMassageEvent;
+import com.msht.watersystem.eventmanager.MessageEvent;
 import com.msht.watersystem.R;
 import com.msht.watersystem.utilpackage.BitmapViewListUtil;
 import com.msht.watersystem.utilpackage.ByteUtils;
@@ -183,7 +183,7 @@ public class MainWaterVideoActivity extends BaseActivity implements Observer,Sur
 
     private void onCom1Received104DataFromControlBoard(ArrayList<Byte> data) {
         try {
-            if (data != null && data.size() > 0) {
+            if (data!=null&&data.size()>=ConstantUtil.CONTROL_MAX_SIZE) {
                 FormatInformationUtil.saveCom1ReceivedDataToFormatInformation(data);
                 if (FormatInformationBean.Balance <= 1) {
                     pageStatus=false;
@@ -239,7 +239,7 @@ public class MainWaterVideoActivity extends BaseActivity implements Observer,Sur
     }
     private void onCom1Received105DataFromControlBoard(ArrayList<Byte> data) {
         try {
-            if (data != null && data.size() != 0) {
+            if (data!=null&&data.size()>= ConstantUtil.HEARTBEAT_INSTRUCT_MAX_SIZE) {
                 FormatInformationUtil.saveStatusInformationToFormatInformation(data);
                 String stringWork = DataCalculateUtils.intToBinary(FormatInformationBean.WorkState);
                 if (!DataCalculateUtils.isEvent(stringWork, 6)) {
@@ -284,6 +284,7 @@ public class MainWaterVideoActivity extends BaseActivity implements Observer,Sur
                 CachePreferencesUtil.putIntData(this,CachePreferencesUtil.WATER_NUM,FormatInformationBean.WaterNum);
                 CachePreferencesUtil.putChargeMode(this, CachePreferencesUtil.CHARGE_MODE, FormatInformationBean.ChargeMode);
                 CachePreferencesUtil.putChargeMode(this, CachePreferencesUtil.SHOW_TDS, FormatInformationBean.ShowTDS);
+                CachePreferencesUtil.getIntData(this,CachePreferencesUtil.DEDUCT_AMOUNT,FormatInformationBean.DeductAmount);
                 VariableUtil.setEquipmentStatus = false;
             }
         } catch (Exception e) {
@@ -306,14 +307,20 @@ public class MainWaterVideoActivity extends BaseActivity implements Observer,Sur
         }
     }
     private void onCom2Received104DataFromServer(ArrayList<Byte> data) {
-        String stringWork = DataCalculateUtils.intToBinary(ByteUtils.byteToInt(data.get(45)));
-        int switch2 = ByteUtils.byteToInt(data.get(31));
-        //判断是否为关机指令
-        if (switch2 == ConstantUtil.CLOSE_MACHINE && DataCalculateUtils.isEvent(stringWork, 0)) {
-            pageStatus=false;
-            Intent intent = new Intent(mContext, CloseSystemActivity.class);
-            unbindPortServiceAndRemoveObserver();
-            startActivity(intent);
+        try{
+            if (data!=null&&data.size()>=ConstantUtil.CONTROL_MAX_SIZE){
+                String stringWork = DataCalculateUtils.intToBinary(ByteUtils.byteToInt(data.get(45)));
+                int switch2 = ByteUtils.byteToInt(data.get(31));
+                //判断是否为关机指令
+                if (switch2 == ConstantUtil.CLOSE_MACHINE && DataCalculateUtils.isEvent(stringWork, 0)) {
+                    pageStatus=false;
+                    Intent intent = new Intent(mContext, CloseSystemActivity.class);
+                    unbindPortServiceAndRemoveObserver();
+                    startActivity(intent);
+                }
+            }
+        }catch (Exception e){
+            e.printStackTrace();
         }
     }
     private void response202ToServer(byte[] frame) {

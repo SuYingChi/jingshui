@@ -217,12 +217,18 @@ public class AppOutWaterActivity extends BaseActivity implements Observer{
         }
     }
     private void onCom2Received104Data(ArrayList<Byte> data) {
-        String stringWork= DataCalculateUtils.intToBinary(ByteUtils.byteToInt(data.get(45)));
-        int switchStatus=ByteUtils.byteToInt(data.get(31));
-        if (switchStatus==2&&DataCalculateUtils.isEvent(stringWork,0)){
-            Intent intent=new Intent(mContext, CloseSystemActivity.class);
-            startActivityForResult(intent,1);
-            finish();
+        try{
+            if (data!=null&&data.size()>=ConstantUtil.CONTROL_MAX_SIZE){
+                String stringWork= DataCalculateUtils.intToBinary(ByteUtils.byteToInt(data.get(45)));
+                int switchStatus=ByteUtils.byteToInt(data.get(31));
+                if (switchStatus==2&&DataCalculateUtils.isEvent(stringWork,0)){
+                    Intent intent=new Intent(mContext, CloseSystemActivity.class);
+                    startActivityForResult(intent,1);
+                    finish();
+                }
+            }
+        }catch (Exception e){
+            e.printStackTrace();
         }
     }
     private void response204ToServer(byte[] frame) {
@@ -266,7 +272,7 @@ public class AppOutWaterActivity extends BaseActivity implements Observer{
     }
     private void onCom1Received105DataFromControlBoard(ArrayList<Byte> data) {
         try {
-            if (data!=null&&data.size()!=0){
+            if (data!=null&&data.size()>= ConstantUtil.HEARTBEAT_INSTRUCT_MAX_SIZE){
                 FormatInformationUtil.saveStatusInformationToFormatInformation(data);
                 tvInTDS.setText(String.valueOf(FormatInformationBean.OriginTDS));
                 tvOutTDS.setText(String.valueOf(FormatInformationBean.PurificationTDS));
@@ -289,7 +295,7 @@ public class AppOutWaterActivity extends BaseActivity implements Observer{
         }
     }
     private void onCom1Received104DataFromControlBoard(ArrayList<Byte> data, byte[] frame) {
-            if(  data!=null&&data.size()>0){
+            if(data!=null&&data.size()>=ConstantUtil.CONTROL_MAX_SIZE){
                 FormatInformationUtil.saveCom1ReceivedDataToFormatInformation(data);
                 int businessType=ByteUtils.byteToInt(data.get(15));
                 //扫码结账
