@@ -304,7 +304,7 @@ public class MainMyVideoActivity extends BaseActivity implements Observer,Surfac
     }
     private void onCom2Received203DataFromServer(ArrayList<Byte> data) {
         try {
-            if (data != null && data.size() != 0) {
+            if (data != null && data.size() >= ConstantUtil.REQUEST_MAX_SIZE) {
                 FormatInformationUtil.saveDeviceInformationToFormatInformation(data);
                 CachePreferencesUtil.getIntData(context,CachePreferencesUtil.PRICE,FormatInformationBean.PriceNum);
                 CachePreferencesUtil.putIntData(this,CachePreferencesUtil.WATER_OUT_TIME,FormatInformationBean.OutWaterTime);
@@ -392,7 +392,7 @@ public class MainMyVideoActivity extends BaseActivity implements Observer,Surfac
      * @param data 107指令
      */
     private void onCom2Received107DataFromServer(ArrayList<Byte> data) {
-        if (data != null && data.size() != 0) {
+        if (data != null && data.size()>= ConstantUtil.BUSINESS_MAX_SIZE) {
             ConsumeInformationUtils.saveConsumptionInformationToFormatInformation(data);
             CachePreferencesUtil.putBoolean(this, CachePreferencesUtil.FIRST_OPEN, false);
             buyStatus = true;

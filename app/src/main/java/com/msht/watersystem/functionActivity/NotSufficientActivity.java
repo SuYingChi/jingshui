@@ -192,7 +192,7 @@ public class NotSufficientActivity extends BaseActivity implements Observer {
         }
     }
     private void onCom2Received107DataFromServer(ArrayList<Byte> data) {
-        if (data!=null&&data.size()!=0){
+        if (data!=null&&data.size()>=ConstantUtil.BUSINESS_MAX_SIZE){
             ConsumeInformationUtils.saveConsumptionInformationToFormatInformation(data);
             if (FormatInformationBean.BusinessType==3){
                 FormatInformationBean.Balance= FormatInformationBean.Balance+ FormatInformationBean.rechargeAmount;

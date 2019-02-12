@@ -4,6 +4,34 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/white"
     tools:context=".functionActivity.MainWaterVideoActivity">
-    <include layout="@layout/layout_water_quality_detection"/>
+    <FrameLayout
+        android:id="@+id/id_layout_frame"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/white"
+        android:visibility="visible">
+        <com.msht.watersystem.widget.BannerM
+            android:id="@+id/id_banner"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+        </com.msht.watersystem.widget.BannerM>
+        <ImageView
+            android:id="@+id/textView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:contentDescription="@string/ad_picture"
+            android:src="@drawable/water_advertisement" />
+        <TextClock
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:format24Hour="kk:mm"
+            android:layout_marginTop="@dimen/margin_width10"
+            android:layout_marginEnd="@dimen/margin_width10"
+            android:layout_gravity="top|end"
+            android:textColor="@color/color_red"
+            android:textSize="@dimen/text_width12"/>
+    </FrameLayout>
 </FrameLayout>

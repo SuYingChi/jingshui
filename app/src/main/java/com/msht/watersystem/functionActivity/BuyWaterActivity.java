@@ -239,7 +239,7 @@ public class BuyWaterActivity extends BaseActivity implements Observer{
     }
     private void onCom2Received203Data(ArrayList<Byte> data) {
         try {
-            if(data!=null&&data.size()>0){
+            if(data!=null&&data.size()>=ConstantUtil.REQUEST_MAX_SIZE){
                 setEquipmentData(data.get(4));
                 FormatInformationUtil.saveDeviceInformationToFormatInformation(data);
                 CachePreferencesUtil.getIntData(this,CachePreferencesUtil.PRICE,FormatInformationBean.PriceNum);
@@ -394,7 +394,7 @@ public class BuyWaterActivity extends BaseActivity implements Observer{
         }
     }
     private void onCom2Received107DataFromServer(ArrayList<Byte> data) {
-        if (data!=null&&data.size()!=0){
+        if (data!=null&&data.size()>=ConstantUtil.BUSINESS_MAX_SIZE){
             ConsumeInformationUtils.saveConsumptionInformationToFormatInformation(data);
             CachePreferencesUtil.putBoolean(this,CachePreferencesUtil.FIRST_OPEN,false);
             buyStatus=true;

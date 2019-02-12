@@ -83,18 +83,23 @@ public class ConsumeInformationUtils {
         }
     }
     public static boolean calculateRecharge(ArrayList<Byte> byteArrayList){
-        if (byteArrayList!=null&&byteArrayList.size()!=0){
-            FormatInformationBean.BusinessType=ByteUtils.byteToInt(byteArrayList.get(0));
-            byte[] recharge=new byte[4];
-            recharge[0]=byteArrayList.get(13);
-            recharge[1]=byteArrayList.get(14);
-            recharge[2]=byteArrayList.get(15);
-            recharge[3]=byteArrayList.get(16);
-            FormatInformationBean.rechargeAmount=ByteUtils.byte4ToInt(recharge);
-            return true;
-        }else {
-            return false;
+        try{
+            if (byteArrayList!=null&&byteArrayList.size()>=ConstantUtil.BUSINESS_MAX_SIZE){
+                FormatInformationBean.BusinessType=ByteUtils.byteToInt(byteArrayList.get(0));
+                byte[] recharge=new byte[4];
+                recharge[0]=byteArrayList.get(13);
+                recharge[1]=byteArrayList.get(14);
+                recharge[2]=byteArrayList.get(15);
+                recharge[3]=byteArrayList.get(16);
+                FormatInformationBean.rechargeAmount=ByteUtils.byte4ToInt(recharge);
+                return true;
+            }else {
+                return false;
+            }
+        }catch (Exception e){
+            e.printStackTrace();
         }
+        return false;
     }
     public static String getBigNumber(byte[] numByte)throws Exception{
         BigInteger bigInteger=new BigInteger(numByte);
@@ -145,8 +150,7 @@ public class ConsumeInformationUtils {
         return data;
     }
     public static boolean controlModel(Context context, ArrayList<Byte> byteArrayList){
-
-        if (byteArrayList!=null&&byteArrayList.size()!=0){
+        if (byteArrayList!=null&&byteArrayList.size()>=ConstantUtil.SET_MODE_MAX_SIZE){
             byte[] deviceId=new byte[4];
             deviceId[0]=byteArrayList.get(0);
             deviceId[1]=byteArrayList.get(1);
@@ -159,8 +163,8 @@ public class ConsumeInformationUtils {
             FormatInformationBean.OutWaterTime=ByteUtils.byteToInt(byteArrayList.get(7));
             FormatInformationBean.WaterNum=ByteUtils.byteToInt(byteArrayList.get(8));
             byte[] deductAmount=new byte[2];
-            deviceId[0]=byteArrayList.get(9);
-            deviceId[1]=byteArrayList.get(10);
+            deductAmount[0]=byteArrayList.get(9);
+            deductAmount[1]=byteArrayList.get(10);
             FormatInformationBean.DeductAmount=ByteUtils.byte2ToInt(deductAmount);
             CachePreferencesUtil.putIntData(context,CachePreferencesUtil.WATER_OUT_TIME,FormatInformationBean.OutWaterTime);
             CachePreferencesUtil.putIntData(context,CachePreferencesUtil.WATER_NUM,FormatInformationBean.WaterNum);
@@ -168,8 +172,6 @@ public class ConsumeInformationUtils {
             CachePreferencesUtil.getIntData(context,CachePreferencesUtil.PRICE,FormatInformationBean.PriceNum);
             CachePreferencesUtil.putChargeMode(context,CachePreferencesUtil.CHARGE_MODE, FormatInformationBean.ChargeMode);
             CachePreferencesUtil.putChargeMode(context,CachePreferencesUtil.SHOW_TDS, FormatInformationBean.ShowTDS);
-            Log.d("overTime3=",String.valueOf(FormatInformationBean.DeductAmount));
-
             return true;
         }else {
             return false;
