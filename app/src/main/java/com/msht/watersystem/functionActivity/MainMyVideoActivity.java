@@ -23,6 +23,7 @@ import com.mcloyal.serialport.service.PortService;
 import com.mcloyal.serialport.utils.ComServiceConnection;
 import com.mcloyal.serialport.utils.FrameUtils;
 import com.mcloyal.serialport.utils.PacketUtils;
+import com.mcloyal.serialport.utils.logs.LogUtils;
 import com.msht.watersystem.AppContext;
 import com.msht.watersystem.base.BaseActivity;
 import com.msht.watersystem.eventmanager.DateMassageEvent;
@@ -108,12 +109,12 @@ public class MainMyVideoActivity extends BaseActivity implements Observer,Surfac
         SurfaceView mPreview = (SurfaceView) findViewById(R.id.surface);
         initBannerView();
         fileList= FileUtil.getVideoFilePath();
-        holder = mPreview.getHolder();
-        holder.addCallback(this);
-        holder.setFormat(PixelFormat.RGBX_8888);
         if(fileList!=null&&fileList.size()>=1){
             imageLayout.setVisibility(View.GONE);
             videoLayout .setVisibility(View.VISIBLE);
+            holder = mPreview.getHolder();
+            holder.addCallback(this);
+            holder.setFormat(PixelFormat.RGBX_8888);
         }else {
             imageLayout.setVisibility(View.VISIBLE);
             videoLayout .setVisibility(View.GONE);
@@ -633,7 +634,7 @@ public class MainMyVideoActivity extends BaseActivity implements Observer,Surfac
         doCleanUp();
         try {
             String videoPath=fileList.get(videoIndex);
-            if (!TextUtils.isEmpty(videoPath)) {
+            if (!TextUtils.isEmpty(videoPath)&&mMediaPlayer==null) {
                 mMediaPlayer = new MediaPlayer(this);
                 setDataPath(videoPath);
                 mMediaPlayer.setDisplay(holder);
@@ -647,7 +648,11 @@ public class MainMyVideoActivity extends BaseActivity implements Observer,Surfac
                 mMediaPlayer.setVolume(0.6f,0.6f);
                 setVolumeControlStream(AudioManager.STREAM_MUSIC);
                 return  true;
-            }else {
+            }else if(!TextUtils.isEmpty(videoPath)&&mMediaPlayer!=null){
+                setDataPath(videoPath);
+                return true;
+            } else {
+                Log.d("initMediaPlayer",Log.getStackTraceString(new Throwable()));
                 imageLayout.setVisibility(View.VISIBLE);
                 videoLayout .setVisibility(View.GONE);
                 return  false;
@@ -689,6 +694,7 @@ public class MainMyVideoActivity extends BaseActivity implements Observer,Surfac
     public void onCompletion(MediaPlayer mp) {
         releaseMediaPlayer();
         videoIndex++;
+        LogUtils.e("videoIndex","onCompletion videoIndex====== "+videoIndex+"fileList=="+fileList.size());
         if (videoIndex>=fileList.size()){
             videoIndex=0;
         }
@@ -702,7 +708,7 @@ public class MainMyVideoActivity extends BaseActivity implements Observer,Surfac
         if (mMediaPlayer != null) {
             currentPosition = mMediaPlayer.getCurrentPosition();
             mMediaPlayer.release();
-            mMediaPlayer = null;
+           // mMediaPlayer = null;
         }
     }
     @Override
