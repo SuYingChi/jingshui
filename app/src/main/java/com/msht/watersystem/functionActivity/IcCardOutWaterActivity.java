@@ -6,6 +6,7 @@ import android.os.CountDownTimer;
 import android.os.Handler;
 import android.os.Message;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.ImageView;
@@ -39,6 +40,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
+
+
 
 
 /**
@@ -221,27 +224,33 @@ public class IcCardOutWaterActivity extends BaseActivity implements Observer{
         }
     }
     private void onCom2Received104DataFromServer(ArrayList<Byte> data) {
-        //卡号为黑卡时，提示不可购水
-        if (ByteUtils.byteToInt(data.get(37))==2) {
-            VariableUtil.mNoticeText="此卡已挂失，如需取水请重新换卡!!";
-            tvText5.setText("请您在");
-            tvText6.setText("秒前启动灌装或再次刷卡结账，否则扣款将无法返还");
-            tvBlackCard.setText(VariableUtil.mNoticeText);
-            tvBlackCard.setVisibility(View.VISIBLE);
-            onDelayExecute();
-        }else {
-            String stringWork= DataCalculateUtils.intToBinary(data.get(46));
-            if (ByteUtils.byteToInt(data.get(32))==2&&DataCalculateUtils.isEvent(stringWork,7)){
-                VariableUtil.mNoticeText="卡号"+String.valueOf(FormatInformationBean.StringCardNo)+"的用户，您的张卡有异常已禁止购水，请再次刷卡返还扣款，如有疑问请致电963666转2！";
-                tvBlackCard.setText(VariableUtil.mNoticeText);
-                tvBlackCard.setVisibility(View.VISIBLE);
-                tvText5.setText("当前无法购水,请您在");
-                tvText6.setText("秒后再进行刷卡或扫码购水操作");
-            }else {
-                tvText5.setText("请您在");
-                tvText6.setText("秒前启动灌装或再次刷卡结账，否则扣款将无法返还");
-                tvBlackCard.setVisibility(View.GONE);
+        try{
+            if (data!=null&&data.size()>=ConstantUtil.CONTROL_MAX_SIZE){
+                //卡号为黑卡时，提示不可购水
+                if (ByteUtils.byteToInt(data.get(37))==2) {
+                    VariableUtil.mNoticeText="此卡已挂失，如需取水请重新换卡!!";
+                    tvText5.setText("请您在");
+                    tvText6.setText("秒前启动灌装或再次刷卡结账，否则扣款将无法返还");
+                    tvBlackCard.setText(VariableUtil.mNoticeText);
+                    tvBlackCard.setVisibility(View.VISIBLE);
+                    onDelayExecute();
+                }else {
+                    String stringWork= DataCalculateUtils.intToBinary(data.get(46));
+                    if (ByteUtils.byteToInt(data.get(32))==2&&DataCalculateUtils.isEvent(stringWork,7)){
+                        VariableUtil.mNoticeText="卡号"+String.valueOf(FormatInformationBean.StringCardNo)+"的用户，您的张卡有异常已禁止购水，请再次刷卡返还扣款，如有疑问请致电963666转2！";
+                        tvBlackCard.setText(VariableUtil.mNoticeText);
+                        tvBlackCard.setVisibility(View.VISIBLE);
+                        tvText5.setText("当前无法购水,请您在");
+                        tvText6.setText("秒后再进行刷卡或扫码购水操作");
+                    }else {
+                        tvText5.setText("请您在");
+                        tvText6.setText("秒前启动灌装或再次刷卡结账，否则扣款将无法返还");
+                        tvBlackCard.setVisibility(View.GONE);
+                    }
+                }
             }
+        }catch (Exception e){
+            e.printStackTrace();
         }
     }
     private void response204ToServer(byte[] frame) {
@@ -284,7 +293,7 @@ public class IcCardOutWaterActivity extends BaseActivity implements Observer{
         }
     }
     private void onCom1Received105DataFromControlBoard(ArrayList<Byte> data) {
-        if (data!=null&&data.size()!=0){
+        if (data!=null&&data.size()>= ConstantUtil.HEARTBEAT_INSTRUCT_MAX_SIZE){
             FormatInformationUtil.saveStatusInformationToFormatInformation(data);
             tvInTDS.setText(String.valueOf(FormatInformationBean.OriginTDS));
             tvOutTDS.setText(String.valueOf(FormatInformationBean.PurificationTDS));
@@ -335,7 +344,7 @@ public class IcCardOutWaterActivity extends BaseActivity implements Observer{
      * @param packet1
      */
     private void onCom1Received104DataFromControlBoard(ArrayList<Byte> data, Packet packet1) {
-        if (  data!=null&&data.size()>0){
+        if (data!=null&&data.size()>=ConstantUtil.CONTROL_MAX_SIZE){
             FormatInformationUtil.saveCom1ReceivedDataToFormatInformation(data);
             if (ByteUtils.byteToInt(data.get(15))==1){
                 String stringWork= DataCalculateUtils.intToBinary(FormatInformationBean.Updateflag3);
@@ -404,11 +413,14 @@ public class IcCardOutWaterActivity extends BaseActivity implements Observer{
                 CachePreferencesUtil.getIntData(this,CachePreferencesUtil.PRICE,FormatInformationBean.PriceNum);
                 CachePreferencesUtil.putIntData(this,CachePreferencesUtil.WATER_OUT_TIME,FormatInformationBean.OutWaterTime);
                 CachePreferencesUtil.putIntData(this,CachePreferencesUtil.WATER_NUM,FormatInformationBean.WaterNum);;
+                CachePreferencesUtil.getIntData(this,CachePreferencesUtil.DEDUCT_AMOUNT,FormatInformationBean.DeductAmount);
                 VariableUtil.setEquipmentStatus=false;
-                mTime= FormatInformationBean.OutWaterTime;
+               // mTime= FormatInformationBean.OutWaterTime;
+                mTime=DataCalculateUtils.getOutWaterTime(FormatInformationBean.DeductAmount,FormatInformationBean.PriceNum);
                 overTime=mTime+10;
                 volume=DataCalculateUtils.getWaterVolume(FormatInformationBean.WaterNum, FormatInformationBean.OutWaterTime);
                 priceNum=DataCalculateUtils.getWaterPrice(FormatInformationBean.PriceNum);
+                Log.d("overTime2=",String.valueOf(FormatInformationBean.DeductAmount));
             }
         }catch (Exception e){
             e.printStackTrace();
@@ -458,8 +470,10 @@ public class IcCardOutWaterActivity extends BaseActivity implements Observer{
     private void calculateData() {
         int mVolume=CachePreferencesUtil.getIntData(this,CachePreferencesUtil.WATER_NUM,5);
         mTime=CachePreferencesUtil.getIntData(this,CachePreferencesUtil.WATER_OUT_TIME,30);
+        int deductAmount=CachePreferencesUtil.getIntData(this,CachePreferencesUtil.DEDUCT_AMOUNT,150);
+        int price=CachePreferencesUtil.getIntData(this,CachePreferencesUtil.PRICE,20);
         volume=DataCalculateUtils.getWaterVolume(mVolume,mTime);
-        overTime=mTime+10;
+        overTime=DataCalculateUtils.getOutWaterTime(deductAmount,price)+10;
     }
     private void onDelayExecute() {
         new Handler().postDelayed(new Runnable(){

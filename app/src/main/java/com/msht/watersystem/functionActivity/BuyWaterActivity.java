@@ -24,6 +24,7 @@ import com.mcloyal.serialport.utils.PacketUtils;
 import com.msht.watersystem.base.BaseActivity;
 import com.msht.watersystem.Interface.BitmapListener;
 import com.msht.watersystem.R;
+import com.msht.watersystem.utilpackage.ConstantUtil;
 import com.msht.watersystem.utilpackage.ConsumeInformationUtils;
 import com.msht.watersystem.utilpackage.ByteUtils;
 import com.msht.watersystem.utilpackage.CachePreferencesUtil;
@@ -246,6 +247,7 @@ public class BuyWaterActivity extends BaseActivity implements Observer{
                 CachePreferencesUtil.putIntData(this,CachePreferencesUtil.WATER_NUM,FormatInformationBean.WaterNum);
                 CachePreferencesUtil.putChargeMode(this,CachePreferencesUtil.CHARGE_MODE, FormatInformationBean.ChargeMode);
                 CachePreferencesUtil.putChargeMode(this,CachePreferencesUtil.SHOW_TDS, FormatInformationBean.ShowTDS);
+                CachePreferencesUtil.getIntData(this,CachePreferencesUtil.DEDUCT_AMOUNT,FormatInformationBean.DeductAmount);
                 VariableUtil.setEquipmentStatus=false;
             }
         }catch (Exception e){
@@ -320,12 +322,19 @@ public class BuyWaterActivity extends BaseActivity implements Observer{
         }
     }
     private void onCom2Received104Data(ArrayList<Byte> data) {
-        String stringWork= DataCalculateUtils.intToBinary(ByteUtils.byteToInt(data.get(45)));
-        int switchStatus=ByteUtils.byteToInt(data.get(31));
-        if (switchStatus==2&&DataCalculateUtils.isEvent(stringWork,0)){
-            Intent intent=new Intent(mContext, CloseSystemActivity.class);
-            startActivityForResult(intent,2);
-            unbindPortServiceAndRemoveObserver();
+        try{
+            if (data!=null&&data.size()>=ConstantUtil.CONTROL_MAX_SIZE){
+                String stringWork= DataCalculateUtils.intToBinary(ByteUtils.byteToInt(data.get(45)));
+                int switchStatus=ByteUtils.byteToInt(data.get(31));
+                if (switchStatus==2&&DataCalculateUtils.isEvent(stringWork,0)){
+                    Intent intent=new Intent(mContext, CloseSystemActivity.class);
+                    startActivityForResult(intent,2);
+                    unbindPortServiceAndRemoveObserver();
+                }
+            }
+
+        }catch (Exception e){
+            e.printStackTrace();
         }
     }
     private void response207ToServer(byte[] frame) {
@@ -345,7 +354,7 @@ public class BuyWaterActivity extends BaseActivity implements Observer{
     }
     private void onCom1Received105DataControlBoard(ArrayList<Byte> data) {
         try {
-            if (data!=null&&data.size()!=0){
+            if (data!=null&&data.size()>= ConstantUtil.HEARTBEAT_INSTRUCT_MAX_SIZE){
                 FormatInformationUtil.saveStatusInformationToFormatInformation(data);
                 tvInTDS.setText(String.valueOf(FormatInformationBean.OriginTDS));
                 tvOutTDS.setText(String.valueOf(FormatInformationBean.PurificationTDS));

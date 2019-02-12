@@ -6,10 +6,10 @@ import android.os.Handler;
 import android.support.annotation.NonNull;
 
 import com.msht.watersystem.AppContext;
-import com.msht.watersystem.manager.DateMassageEvent;
-import com.msht.watersystem.manager.MessageEvent;
-import com.msht.watersystem.manager.MyAppManage;
-import com.msht.watersystem.manager.RestartAppEvent;
+import com.msht.watersystem.eventmanager.DateMassageEvent;
+import com.msht.watersystem.eventmanager.MessageEvent;
+import com.msht.watersystem.eventmanager.MyAppManage;
+import com.msht.watersystem.eventmanager.RestartAppEvent;
 import com.msht.watersystem.entity.OrderInfo;
 import com.msht.watersystem.gen.OrderInfoDao;
 

@@ -20,6 +20,7 @@ import com.mcloyal.serialport.utils.FrameUtils;
 import com.mcloyal.serialport.utils.PacketUtils;
 import com.msht.watersystem.base.BaseActivity;
 import com.msht.watersystem.R;
+import com.msht.watersystem.utilpackage.ConstantUtil;
 import com.msht.watersystem.utilpackage.ConsumeInformationUtils;
 import com.msht.watersystem.utilpackage.ByteUtils;
 import com.msht.watersystem.utilpackage.FormatInformationBean;
@@ -123,7 +124,7 @@ public class NotSufficientActivity extends BaseActivity implements Observer {
                    // MyLogUtil.d("主板控制指令104：", CreateOrderType.getPacketString(packet1));
                     onCom1Received104DataFromControlBoard(packet1.getData());
                 }else if (Arrays.equals(packet1.getCmd(),new byte[]{0x01,0x05})){
-                    onCom1Received105DataFromControllBoard(packet1.getData());
+                    onCom1Received105DataFromControlBoard(packet1.getData());
                 }else if (Arrays.equals(packet1.getCmd(),new byte[]{0x02,0x04})){
                     onCom1Received204DataFromControlBoard(packet1.getFrame());
                 }
@@ -264,7 +265,7 @@ public class NotSufficientActivity extends BaseActivity implements Observer {
     }
     private void onCom1Received104DataFromControlBoard(ArrayList<Byte> data) {
         try {
-            if(   data!=null&&data.size()>0){
+            if(data!=null&&data.size()>=ConstantUtil.CONTROL_MAX_SIZE){
                 FormatInformationUtil.saveCom1ReceivedDataToFormatInformation(data);
                 String stringWork= DataCalculateUtils.intToBinary(FormatInformationBean.Updateflag3);
                 if (DataCalculateUtils.isEvent(stringWork,3)){
@@ -315,9 +316,9 @@ public class NotSufficientActivity extends BaseActivity implements Observer {
             }
         }
     }
-    private void onCom1Received105DataFromControllBoard(ArrayList<Byte> data) {
+    private void onCom1Received105DataFromControlBoard(ArrayList<Byte> data) {
         try {
-            if (data!=null&&data.size()!=0){
+            if (data!=null&&data.size()>= ConstantUtil.HEARTBEAT_INSTRUCT_MAX_SIZE){
                 FormatInformationUtil.saveStatusInformationToFormatInformation(data);
                 tvInTDS.setText(String.valueOf(FormatInformationBean.OriginTDS));
                 tvOutTDS.setText(String.valueOf(FormatInformationBean.PurificationTDS));
@@ -333,12 +334,18 @@ public class NotSufficientActivity extends BaseActivity implements Observer {
         }
     }
     private void onCom2Received104DataFromServer(ArrayList<Byte> data) {
-        String stringWork= DataCalculateUtils.intToBinary(ByteUtils.byteToInt(data.get(45)));
-        int mSwitch=ByteUtils.byteToInt(data.get(31));
-        if (mSwitch==2&&DataCalculateUtils.isEvent(stringWork,0)){
-            Intent intent=new Intent(mContext, CloseSystemActivity.class);
-            startActivityForResult(intent,1);
-            finish();
+        try{
+            if (data!=null&&data.size()>=ConstantUtil.CONTROL_MAX_SIZE){
+                String stringWork= DataCalculateUtils.intToBinary(ByteUtils.byteToInt(data.get(45)));
+                int mSwitch=ByteUtils.byteToInt(data.get(31));
+                if (mSwitch==2&&DataCalculateUtils.isEvent(stringWork,0)){
+                    Intent intent=new Intent(mContext, CloseSystemActivity.class);
+                    startActivityForResult(intent,1);
+                    finish();
+                }
+            }
+        }catch (Exception e){
+            e.printStackTrace();
         }
     }
     private void unbindPortServiceAndRemoveObserver(){

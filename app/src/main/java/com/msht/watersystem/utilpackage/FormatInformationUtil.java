@@ -127,10 +127,10 @@ public class FormatInformationUtil {
             FormatInformationBean.PurificationTDS0=ByteUtils.byteToInt(byteList.get(12));
             FormatInformationBean.PurificationTDS1=ByteUtils.byteToInt(byteList.get(13));
             FormatInformationBean.WorkState=ByteUtils.byteToInt(byteList.get(14));
-            byte[] makewater=new byte[2];
-            makewater[0]=byteList.get(15);
-            makewater[1]=byteList.get(16);
-            FormatInformationBean.MakeWater=ByteUtils.byte2ToInt(makewater);
+            byte[] makeWater=new byte[2];
+            makeWater[0]=byteList.get(15);
+            makeWater[1]=byteList.get(16);
+            FormatInformationBean.MakeWater=ByteUtils.byte2ToInt(makeWater);
         }
     }
 
@@ -178,6 +178,10 @@ public class FormatInformationUtil {
             FormatInformationBean.WaterNum=ByteUtils.byteToInt(byteArrayList.get(6));
             FormatInformationBean.ChargeMode=ByteUtils.byteToInt(byteArrayList.get(7));
             FormatInformationBean.ShowTDS=ByteUtils.byteToInt(byteArrayList.get(8));
+            byte[] deductAmount=new byte[2];
+            deviceId[0]=byteArrayList.get(9);
+            deviceId[1]=byteArrayList.get(10);
+            FormatInformationBean.DeductAmount=ByteUtils.byte2ToInt(deductAmount);
 
         }
     }

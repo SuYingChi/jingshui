@@ -16,6 +16,17 @@ public class ConstantUtil {
     public static final  String FIVE_VALUE="5";
     public static final  int FOURTEEN=14;
     public static final  int CLOSE_MACHINE=2;
+    /**控制指令最大长度**/
+    public static final  int CONTROL_MAX_SIZE=48;
+    public static final  int RESPONSE_MAX_SIZE=0;
+    /**业务指令最大长度**/
+    public static final  int BUSINESS_MAX_SIZE=40;
+    /**203最大长度**/
+    public static final  int REQUEST_MAX_SIZE=11;
+    /**102最大长度**/
+    public static final  int SET_MODE_MAX_SIZE=11;
+    /**105最大长度**/
+    public static final  int HEARTBEAT_INSTRUCT_MAX_SIZE=32;
 
 
     /**

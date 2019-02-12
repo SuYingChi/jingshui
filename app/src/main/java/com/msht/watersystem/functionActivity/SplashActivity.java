@@ -10,6 +10,7 @@ import com.mcloyal.serialport.utils.ComServiceConnection;
 import com.msht.watersystem.base.BaseActivity;
 import com.msht.watersystem.R;
 import com.msht.watersystem.utilpackage.CachePreferencesUtil;
+import com.msht.watersystem.utilpackage.ConstantUtil;
 import com.msht.watersystem.utilpackage.FormatInformationUtil;
 import com.msht.watersystem.widget.LoadingDialog;
 
@@ -53,7 +54,7 @@ public class SplashActivity extends BaseActivity  implements Observer{
             Packet packet1 = myObservable.getCom1Packet();
             if (packet1 != null) {
                 if (Arrays.equals(packet1.getCmd(),new byte[]{0x01,0x05})){
-                    onCom1Received105FromControllBoard(packet1.getData());
+                    onCom1Received105FromControlBoard(packet1.getData());
                 }
             }
             Packet packet2 = myObservable.getCom2Packet();
@@ -64,8 +65,8 @@ public class SplashActivity extends BaseActivity  implements Observer{
             }
         }
     }
-    private void onCom1Received105FromControllBoard(ArrayList<Byte> data) {      //接收到主板心跳指令
-        if (data!=null&&data.size()!=0){
+    private void onCom1Received105FromControlBoard(ArrayList<Byte> data) {      //接收到主板心跳指令
+        if (data!=null&&data.size()>= ConstantUtil.HEARTBEAT_INSTRUCT_MAX_SIZE){
             FormatInformationUtil.saveStatusInformationToFormatInformation(data);
             if (loadingdialog.isShowing()&&loadingdialog!=null){
                 loadingdialog.dismiss();

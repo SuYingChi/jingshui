@@ -26,9 +26,9 @@ import com.mcloyal.serialport.utils.PacketUtils;
 import com.mcloyal.serialport.utils.logs.LogUtils;
 import com.msht.watersystem.AppContext;
 import com.msht.watersystem.base.BaseActivity;
-import com.msht.watersystem.manager.DateMassageEvent;
-import com.msht.watersystem.manager.MessageEvent;
-import com.msht.watersystem.manager.RestartAppEvent;
+import com.msht.watersystem.eventmanager.DateMassageEvent;
+import com.msht.watersystem.eventmanager.MessageEvent;
+import com.msht.watersystem.eventmanager.RestartAppEvent;
 import com.msht.watersystem.R;
 import com.msht.watersystem.utilpackage.BitmapViewListUtil;
 import com.msht.watersystem.utilpackage.ByteUtils;
@@ -71,6 +71,16 @@ import org.greenrobot.eventbus.ThreadMode;
  */
 public class MainMyVideoActivity extends BaseActivity implements Observer,SurfaceHolder.Callback, MediaPlayer.OnBufferingUpdateListener, MediaPlayer.OnCompletionListener, MediaPlayer.OnPreparedListener, MediaPlayer.OnVideoSizeChangedListener {
     private PortService portService;
+    private ComServiceConnection serviceConnection;
+    private View imageLayout;
+    private View videoLayout;
+    private MediaPlayer mMediaPlayer;
+    private SurfaceHolder holder;
+    private boolean mIsVideoSizeKnown = false;
+   // private boolean mIsVideoReadyToBePlayed = false;
+    private long currentPosition = 0;
+    private boolean changeVideo = false;
+
     /**扫码发送104帧序*/
     private byte[]  mAppFrame;
     private double  volume = 0.00;
@@ -78,17 +88,6 @@ public class MainMyVideoActivity extends BaseActivity implements Observer,Surfac
     private boolean buyStatus = false;
     private boolean pageStatus = true;
     private int timeCount=0;
-    private ComServiceConnection serviceConnection;
-    private View imageLayout;
-    private View videoLayout;
-    private MediaPlayer mMediaPlayer;
-    private SurfaceHolder holder;
-    private boolean mIsVideoSizeKnown = false;
-    private boolean mIsVideoReadyToBePlayed = false;
-    private long currentPosition = 0;
-    private boolean changeVideo = false;
-
-
     /**夜间标志*/
     private boolean nightStatus=true;
     private int videoIndex=0;
@@ -211,7 +210,7 @@ public class MainMyVideoActivity extends BaseActivity implements Observer,Surfac
     }
     private void onCom1Received104DataFromControlBoard(ArrayList<Byte> data) {
         try {
-            if (data != null && data.size() > 0) {
+            if (data!=null&&data.size()>=ConstantUtil.CONTROL_MAX_SIZE) {
                 FormatInformationUtil.saveCom1ReceivedDataToFormatInformation(data);
                 String stringWork = DataCalculateUtils.intToBinary(FormatInformationBean.Updateflag3);
                 if (!DataCalculateUtils.isEvent(stringWork, 3)) {
@@ -267,7 +266,7 @@ public class MainMyVideoActivity extends BaseActivity implements Observer,Surfac
     }
     private void onCom1Received105DataFromControlBoard(ArrayList<Byte> data) {
         try {
-            if (data != null && data.size() != 0) {
+            if (data!=null&&data.size()>= ConstantUtil.HEARTBEAT_INSTRUCT_MAX_SIZE) {
                 FormatInformationUtil.saveStatusInformationToFormatInformation(data);
                 String stringWork = DataCalculateUtils.intToBinary(FormatInformationBean.WorkState);
                 if (!DataCalculateUtils.isEvent(stringWork, 6)) {
@@ -313,6 +312,7 @@ public class MainMyVideoActivity extends BaseActivity implements Observer,Surfac
                 CachePreferencesUtil.putIntData(this,CachePreferencesUtil.WATER_NUM,FormatInformationBean.WaterNum);
                 CachePreferencesUtil.putChargeMode(this, CachePreferencesUtil.CHARGE_MODE, FormatInformationBean.ChargeMode);
                 CachePreferencesUtil.putChargeMode(this, CachePreferencesUtil.SHOW_TDS, FormatInformationBean.ShowTDS);
+                CachePreferencesUtil.getIntData(this,CachePreferencesUtil.DEDUCT_AMOUNT,FormatInformationBean.DeductAmount);
                 VariableUtil.setEquipmentStatus = false;
             }
         } catch (Exception e) {
@@ -335,14 +335,20 @@ public class MainMyVideoActivity extends BaseActivity implements Observer,Surfac
         }
     }
     private void onCom2Received104DataFromServer(ArrayList<Byte> data) {
-        String stringWork = DataCalculateUtils.intToBinary(ByteUtils.byteToInt(data.get(45)));
-        int switch2 = ByteUtils.byteToInt(data.get(31));
-        //判断是否为关机指令
-        if (switch2 == ConstantUtil.CLOSE_MACHINE && DataCalculateUtils.isEvent(stringWork, 0)) {
-            pageStatus=false;
-            Intent intent = new Intent(mContext, CloseSystemActivity.class);
-            unbindPortServiceAndRemoveObserver();
-            startActivity(intent);
+        try{
+            if (data!=null&&data.size()>=ConstantUtil.CONTROL_MAX_SIZE){
+                String stringWork = DataCalculateUtils.intToBinary(ByteUtils.byteToInt(data.get(45)));
+                int switch2 = ByteUtils.byteToInt(data.get(31));
+                //判断是否为关机指令
+                if (switch2 == ConstantUtil.CLOSE_MACHINE && DataCalculateUtils.isEvent(stringWork, 0)) {
+                    pageStatus=false;
+                    Intent intent = new Intent(mContext, CloseSystemActivity.class);
+                    unbindPortServiceAndRemoveObserver();
+                    startActivity(intent);
+                }
+            }
+        }catch (Exception e){
+            e.printStackTrace();
         }
     }
     private void response202ToServer(byte[] frame) {
@@ -617,13 +623,14 @@ public class MainMyVideoActivity extends BaseActivity implements Observer,Surfac
         }
     }
     private void onSetStartPlay(){
-        initMediaPlayer();
-        mIsVideoSizeKnown = true;
-        startVideoPlayback();
+       if(initMediaPlayer()) {
+           mIsVideoSizeKnown = true;
+           startVideoPlayback();
+       }
     }
     @Override
     public void surfaceDestroyed(SurfaceHolder holder) {}
-    private void initMediaPlayer() {
+    private boolean initMediaPlayer() {
         doCleanUp();
         try {
             String videoPath=fileList.get(videoIndex);
@@ -640,16 +647,20 @@ public class MainMyVideoActivity extends BaseActivity implements Observer,Surfac
                 mMediaPlayer.setVideoQuality(MediaPlayer.VIDEOQUALITY_HIGH);
                 mMediaPlayer.setVolume(0.6f,0.6f);
                 setVolumeControlStream(AudioManager.STREAM_MUSIC);
+                return  true;
             }else if(!TextUtils.isEmpty(videoPath)&&mMediaPlayer!=null){
                 setDataPath(videoPath);
+                return true;
             } else {
                 Log.d("initMediaPlayer",Log.getStackTraceString(new Throwable()));
                 imageLayout.setVisibility(View.VISIBLE);
                 videoLayout .setVisibility(View.GONE);
+                return  false;
             }
         } catch (Exception e) {
            e.printStackTrace();
         }
+        return false;
     }
     private void setDataPath(String videoPath) {
         try {
@@ -659,7 +670,7 @@ public class MainMyVideoActivity extends BaseActivity implements Observer,Surfac
         }
     }
     private void doCleanUp() {
-        mIsVideoReadyToBePlayed = false;
+        //mIsVideoReadyToBePlayed = false;
         mIsVideoSizeKnown = false;
     }
     private void startVideoPlayback() {
@@ -687,10 +698,11 @@ public class MainMyVideoActivity extends BaseActivity implements Observer,Surfac
         if (videoIndex>=fileList.size()){
             videoIndex=0;
         }
-        initMediaPlayer();
-        mIsVideoSizeKnown = true;
-        mIsVideoReadyToBePlayed = true;
-        changeVideo = true;
+        if (initMediaPlayer()) {
+            mIsVideoSizeKnown = true;
+           // mIsVideoReadyToBePlayed = true;
+            changeVideo = true;
+        }
     }
     private void releaseMediaPlayer() {
         if (mMediaPlayer != null) {
@@ -701,7 +713,7 @@ public class MainMyVideoActivity extends BaseActivity implements Observer,Surfac
     }
     @Override
     public void onPrepared(MediaPlayer mp) {
-        mIsVideoReadyToBePlayed = true;
+       // mIsVideoReadyToBePlayed = true;
         if (mIsVideoSizeKnown) {
             startVideoPlayback();
         }

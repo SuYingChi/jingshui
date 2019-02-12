@@ -51,9 +51,9 @@ public class CloseSystemActivity extends BaseActivity implements Observer{
             if (packet1 != null) {
                 if (Arrays.equals(packet1.getCmd(),new byte[]{0x01,0x04})){
                    // MyLogUtil.d("主板控制指令104：", CreateOrderType.getPacketString(packet1));
-                    onCom1Received104DataFromControllBoard();
+                    onCom1Received104DataFromControlBoard();
                 }else if (Arrays.equals(packet1.getCmd(),new byte[]{0x01,0x05})){
-                    onCom1Received105DataFromControllBoard(packet1.getData());
+                    onCom1Received105DataFromControlBoard(packet1.getData());
                 }
             }
             Packet packet2 = myObservable.getCom2Packet();
@@ -71,8 +71,8 @@ public class CloseSystemActivity extends BaseActivity implements Observer{
             }
         }
     }
-    private void onCom1Received104DataFromControllBoard() {}
-    private void onCom1Received105DataFromControllBoard(ArrayList<Byte> data) {}
+    private void onCom1Received104DataFromControlBoard() {}
+    private void onCom1Received105DataFromControlBoard(ArrayList<Byte> data) {}
     private void onCom2Received204DataFromServer() {}
     private void response204ToServer(byte[] frame) {
         if (portService != null) {

@@ -1,4 +1,4 @@
-package com.msht.watersystem.manager;
+package com.msht.watersystem.eventmanager;
 
 import com.msht.watersystem.entity.OrderInfo;
 
