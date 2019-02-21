@@ -75,7 +75,7 @@ import org.greenrobot.eventbus.ThreadMode;
  * @author hong
  * @date 2018/8/14  
  */
-public class MainMyVideoActivity extends BaseActivity implements Observer,/*SurfaceHolder.Callback,*/ /*MediaPlayer.OnBufferingUpdateListener,*/ /*MediaPlayer.OnCompletionListener,*/ /*MediaPlayer.OnPreparedListener,*/ /*MediaPlayer.OnVideoSizeChangedListener*/ {
+public class MainMyVideoActivity extends BaseActivity implements Observer/*SurfaceHolder.Callback,*/ /*MediaPlayer.OnBufferingUpdateListener,*/ /*MediaPlayer.OnCompletionListener,*/ /*MediaPlayer.OnPreparedListener,*/ /*MediaPlayer.OnVideoSizeChangedListener*/ {
     private PortService portService;
     private ComServiceConnection serviceConnection;
     private View imageLayout;
