@@ -179,8 +179,8 @@ public class FormatInformationUtil {
             FormatInformationBean.ChargeMode=ByteUtils.byteToInt(byteArrayList.get(7));
             FormatInformationBean.ShowTDS=ByteUtils.byteToInt(byteArrayList.get(8));
             byte[] deductAmount=new byte[2];
-            deviceId[0]=byteArrayList.get(9);
-            deviceId[1]=byteArrayList.get(10);
+            deductAmount[0]=byteArrayList.get(9);
+            deductAmount[1]=byteArrayList.get(10);
             FormatInformationBean.DeductAmount=ByteUtils.byte2ToInt(deductAmount);
 
         }

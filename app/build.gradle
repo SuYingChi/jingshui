@@ -8,8 +8,8 @@ android {
         applicationId "com.msht.watersystem"
         minSdkVersion 17
         targetSdkVersion 27
-        versionCode 33
-        versionName "v3.8.9"
+        versionCode 34
+        versionName "v3.9.1"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         ndk {
             // 设置支持的SO库架构

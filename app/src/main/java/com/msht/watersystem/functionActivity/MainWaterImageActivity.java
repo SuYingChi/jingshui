@@ -5,9 +5,11 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.media.AudioManager;
 import android.os.Bundle;
+import android.support.v4.content.ContextCompat;
 import android.text.TextUtils;
 import android.view.KeyEvent;
 import android.view.SurfaceHolder;
+import android.view.SurfaceView;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.Toast;
@@ -25,6 +27,7 @@ import com.msht.watersystem.base.BaseActivity;
 import com.msht.watersystem.eventmanager.DateMassageEvent;
 import com.msht.watersystem.eventmanager.MessageEvent;
 import com.msht.watersystem.R;
+import com.msht.watersystem.eventmanager.RestartAppEvent;
 import com.msht.watersystem.utilpackage.BitmapViewListUtil;
 import com.msht.watersystem.utilpackage.ByteUtils;
 import com.msht.watersystem.utilpackage.CachePreferencesUtil;
@@ -61,7 +64,7 @@ import io.vov.vitamio.MediaPlayer;
  * @author hong
  * @date 2018/8/20  
  */
-public class MainWaterVideoActivity extends BaseActivity implements Observer,SurfaceHolder.Callback, MediaPlayer.OnBufferingUpdateListener, MediaPlayer.OnCompletionListener, MediaPlayer.OnPreparedListener, MediaPlayer.OnVideoSizeChangedListener{
+public class MainWaterImageActivity extends BaseActivity implements Observer{
 
     private static final String TAG = "MediaPlayerDemo";
     private PortService portService;
@@ -73,24 +76,19 @@ public class MainWaterVideoActivity extends BaseActivity implements Observer,Sur
     private boolean pageStatus = true;
     private int timeCount=0;
     private ComServiceConnection serviceConnection;
-    private MediaPlayer mMediaPlayer;
-    private SurfaceHolder holder;
-    private boolean mIsVideoSizeKnown = false;
-    private boolean mIsVideoReadyToBePlayed = false;
-    private long currentPosition = 0;
-    private boolean changeVideo = false;
     /**夜间标志*/
     private boolean nightStatus=true;
-    private int videoIndex=0;
-    private  List<String> fileList;
     private Context context;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main_water_video);
         context=this;
+        bindAndAddObserverToPortService();
+        EventBus.getDefault().register(context);
+        initService();
+        initBannerView();
     }
-
     private void bindAndAddObserverToPortService() {
         serviceConnection = new ComServiceConnection(this, new ComServiceConnection.ConnectionCallBack() {
             @Override
@@ -104,11 +102,10 @@ public class MainWaterVideoActivity extends BaseActivity implements Observer,Sur
                 BIND_AUTO_CREATE);
         bindStatus = true;
     }
-
     private void initService() {
         /**开启一个新的服务，*/
         Intent resendDataService=new Intent(context,ResendDataService.class);
-        context.startService(resendDataService);
+        startService(resendDataService);
     }
     private void initBannerView() {
         ImageView advertImage = findViewById(R.id.textView);
@@ -118,7 +115,7 @@ public class MainWaterVideoActivity extends BaseActivity implements Observer,Sur
             mBanner.setBannerBeanList(VariableUtil.imageViewList)
                     .setDefaultImageResId(R.drawable.water_advertisement)
                     .setIndexPosition(BannerM.INDEX_POSITION_BOTTOM)
-                    .setIndexColor(getResources().getColor(R.color.colorPrimary))
+                    .setIndexColor(ContextCompat.getColor(context,R.color.colorPrimary))
                     .setIntervalTime(10)
                     .show();
             mBanner.setVisibility(View.VISIBLE);
@@ -145,7 +142,7 @@ public class MainWaterVideoActivity extends BaseActivity implements Observer,Sur
                     //重置倒计时 跳转到无法买水界面
                     onCom1Received105DataFromControlBoard(packet1.getData());
                 } else if (Arrays.equals(packet1.getCmd(), new byte[]{0x02, 0x04})) {
-                    //andorid端主动发送104之后，主控板回复204，跳转到IC卡买水或APP买水或现金出水界面
+                    //android端主动发送104之后，主控板回复204，跳转到IC卡买水或APP买水或现金出水界面
                     onCom1Received204DataFromControlBoard(packet1.getFrame());
                 }
             }
@@ -180,24 +177,23 @@ public class MainWaterVideoActivity extends BaseActivity implements Observer,Sur
             }
         }
     }
-
     private void onCom1Received104DataFromControlBoard(ArrayList<Byte> data) {
         try {
             if (data!=null&&data.size()>=ConstantUtil.CONTROL_MAX_SIZE) {
                 FormatInformationUtil.saveCom1ReceivedDataToFormatInformation(data);
-                if (FormatInformationBean.Balance <= 1) {
-                    pageStatus=false;
-                    Intent intent = new Intent(mContext, NotSufficientActivity.class);
-                    unbindPortServiceAndRemoveObserver();
-                    startActivity(intent);
-                } else {
-                    String stringWork = DataCalculateUtils.intToBinary(FormatInformationBean.Updateflag3);
-                    if (!DataCalculateUtils.isEvent(stringWork, 3)) {
-                        /*打开屏幕背光*/
-                        if (nightStatus){
-                            onControlScreenBackground(1);
-                            timeCount=0;
-                        }
+                String stringWork = DataCalculateUtils.intToBinary(FormatInformationBean.Updateflag3);
+                if (!DataCalculateUtils.isEvent(stringWork, 3)) {
+                    /*打开屏幕背光*/
+                    if (nightStatus){
+                        onControlScreenBackground(1);
+                        timeCount=0;
+                    }
+                    if (FormatInformationBean.Balance <= 1){
+                        pageStatus=false;
+                        Intent intent = new Intent(mContext, NotSufficientActivity.class);
+                        unbindPortServiceAndRemoveObserver();
+                        startActivity(intent);
+                    }else {
                         if (FormatInformationBean.ConsumptionType == 1) {
                             pageStatus=false;
                             Intent intent = new Intent(mContext, IcCardOutWaterActivity.class);
@@ -214,23 +210,23 @@ public class MainWaterVideoActivity extends BaseActivity implements Observer,Sur
                             unbindPortServiceAndRemoveObserver();
                             startActivity(intent);
                         }
-                    } else {
-                        //刷卡结账
-                        calculateData();    //没联网计算取缓存数据
-                        double consumption = FormatInformationBean.ConsumptionAmount / 100.0;
-                        double waterVolume = FormatInformationBean.WaterYield * volume;
-                        String afterAmount = String.valueOf(DataCalculateUtils.getTwoDecimal(consumption));
-                        String afterWater = String.valueOf(DataCalculateUtils.getTwoDecimal(waterVolume));
-                        String mAccount = String.valueOf(FormatInformationBean.StringCardNo);
-                        Intent intent = new Intent(mContext, PaySuccessActivity.class);
-                        intent.putExtra("afterAmount", afterAmount);
-                        intent.putExtra("afterWater", afterWater);
-                        intent.putExtra("mAccount", mAccount);
-                        intent.putExtra("sign", "0");
-                        unbindPortServiceAndRemoveObserver();
-                        startActivity(intent);
-                        pageStatus=false;
                     }
+                }else {
+                    //刷卡结账
+                    calculateData();    //没联网计算取缓存数据
+                    double consumption = FormatInformationBean.ConsumptionAmount / 100.0;
+                    double waterVolume = FormatInformationBean.WaterYield * volume;
+                    String afterAmount = String.valueOf(DataCalculateUtils.getTwoDecimal(consumption));
+                    String afterWater = String.valueOf(DataCalculateUtils.getTwoDecimal(waterVolume));
+                    String mAccount = String.valueOf(FormatInformationBean.StringCardNo);
+                    Intent intent = new Intent(mContext, PaySuccessActivity.class);
+                    intent.putExtra("afterAmount", afterAmount);
+                    intent.putExtra("afterWater", afterWater);
+                    intent.putExtra("mAccount", mAccount);
+                    intent.putExtra("sign", "0");
+                    unbindPortServiceAndRemoveObserver();
+                    startActivity(intent);
+                    pageStatus=false;
                 }
             }
         } catch (Exception e) {
@@ -278,8 +274,9 @@ public class MainWaterVideoActivity extends BaseActivity implements Observer,Sur
     }
     private void onCom2Received203DataFromServer(ArrayList<Byte> data) {
         try {
-            if (data != null && data.size() != 0) {
+            if (data != null && data.size() >= ConstantUtil.REQUEST_MAX_SIZE) {
                 FormatInformationUtil.saveDeviceInformationToFormatInformation(data);
+                CachePreferencesUtil.getIntData(context,CachePreferencesUtil.PRICE,FormatInformationBean.PriceNum);
                 CachePreferencesUtil.putIntData(this,CachePreferencesUtil.WATER_OUT_TIME,FormatInformationBean.OutWaterTime);
                 CachePreferencesUtil.putIntData(this,CachePreferencesUtil.WATER_NUM,FormatInformationBean.WaterNum);
                 CachePreferencesUtil.putChargeMode(this, CachePreferencesUtil.CHARGE_MODE, FormatInformationBean.ChargeMode);
@@ -340,7 +337,9 @@ public class MainWaterVideoActivity extends BaseActivity implements Observer,Sur
     }
     private void onCom2Received102DataFromServer(ArrayList<Byte> data) {
         if (ConsumeInformationUtils.controlModel(mContext, data)) {
-            /*  .....*/
+            /*  .....
+            Log.d("FormatInformationBean=","waterVolume="+String.valueOf(FormatInformationBean.WaterNum)+",time="+String.valueOf(FormatInformationBean.OutWaterTime));
+            */
         }
     }
     private void response207ToServer(byte[] frame) {
@@ -360,10 +359,10 @@ public class MainWaterVideoActivity extends BaseActivity implements Observer,Sur
     }
     /**
      * 扫码业务指令
-     * @param data
+     * @param data 107指令
      */
     private void onCom2Received107DataFromServer(ArrayList<Byte> data) {
-        if (data != null && data.size() != 0) {
+        if (data != null && data.size()>= ConstantUtil.BUSINESS_MAX_SIZE) {
             ConsumeInformationUtils.saveConsumptionInformationToFormatInformation(data);
             CachePreferencesUtil.putBoolean(this, CachePreferencesUtil.FIRST_OPEN, false);
             buyStatus = true;
@@ -436,7 +435,7 @@ public class MainWaterVideoActivity extends BaseActivity implements Observer,Sur
     }
     private void calculateData() {
         int mVolume = CachePreferencesUtil.getIntData(this,CachePreferencesUtil.WATER_NUM,5);
-        int mTime = CachePreferencesUtil.getIntData(this,CachePreferencesUtil.WATER_OUT_TIME,30);
+        int mTime =CachePreferencesUtil.getIntData(this,CachePreferencesUtil.WATER_OUT_TIME,30);
         volume = DataCalculateUtils.getWaterVolume(mVolume, mTime);
     }
     private void unbindPortServiceAndRemoveObserver() {
@@ -448,9 +447,38 @@ public class MainWaterVideoActivity extends BaseActivity implements Observer,Sur
             }
         }
     }
+    private void onControlScreenBackground(int status) {
+        if (portService!=null){
+            try {
+                byte[] frame = FrameUtils.getFrame(mContext);
+                byte[] type = new byte[]{0x01, 0x04};
+                byte[] data = FormatInformationUtil.setCloseScreenData(status);
+                byte[] packet = PacketUtils.makePackage(frame, type, data);
+                portService.sendToControlBoard(packet);
+            } catch (CRCException e) {
+                e.printStackTrace();
+            } catch (FrameException e) {
+                e.printStackTrace();
+            } catch (CmdTypeException e) {
+                e.printStackTrace();
+            }
+        }
+    }
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onMessageData(MessageEvent messageEvent) {
         List<OrderInfo> orderData=messageEvent.getMessage();
+        if (portService!=null){
+            if (portService.isConnection()){
+                for (int i=0;i<orderData.size();i++){
+                    VariableUtil.sendStatus=false;
+                    byte[] data=orderData.get(i).getOrderData();
+                    portService.sendToServer(data);
+                    OrderInfo singleData=orderData.get(i);
+                    deleteData(singleData);
+                }
+                VariableUtil.sendStatus=true;
+            }
+        }
     }
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onMessageDate(DateMassageEvent event) {
@@ -467,6 +495,13 @@ public class MainWaterVideoActivity extends BaseActivity implements Observer,Sur
                 timeCount=0;
 
             }
+        }
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onRestartApp(RestartAppEvent event){
+        if (event.getMessage()){
+            restartWaterApp();
         }
     }
     private OrderInfoDao getOrderDao() {
@@ -504,23 +539,6 @@ public class MainWaterVideoActivity extends BaseActivity implements Observer,Sur
             return super.onKeyDown(keyCode, event);
         }
     }
-    private void onControlScreenBackground(int status) {
-        if (portService!=null){
-            try {
-                byte[] frame = FrameUtils.getFrame(mContext);
-                byte[] type = new byte[]{0x01, 0x04};
-                byte[] data = FormatInformationUtil.setCloseScreenData(status);
-                byte[] packet = PacketUtils.makePackage(frame, type, data);
-                portService.sendToControlBoard(packet);
-            } catch (CRCException e) {
-                e.printStackTrace();
-            } catch (FrameException e) {
-                e.printStackTrace();
-            } catch (CmdTypeException e) {
-                e.printStackTrace();
-            }
-        }
-    }
     private void startBuyWater() {
         pageStatus=false;
         Intent intent = new Intent(mContext, BuyWaterActivity.class);
@@ -530,124 +548,30 @@ public class MainWaterVideoActivity extends BaseActivity implements Observer,Sur
     private void exitApp() {
         System.exit(0);
     }
-    @Override
-    public void surfaceCreated(SurfaceHolder holder) {
-        initMediaPlayer();
-    }
-
-    @Override
-    public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
-
-        if(mMediaPlayer==null){
-            initMediaPlayer();
-            mIsVideoSizeKnown = true;
-            mIsVideoReadyToBePlayed = true;
-            startVideoPlayback();
-        }
-    }
-
-    @Override
-    public void surfaceDestroyed(SurfaceHolder holder) {}
-    @Override
-    public void onPrepared(MediaPlayer mp) {
-        mIsVideoReadyToBePlayed = true;
-        if (mIsVideoSizeKnown) {
-            startVideoPlayback();
-        }
+    private  void restartWaterApp(){
+        Intent launchIntent = getPackageManager().getLaunchIntentForPackage(getPackageName());
+        startActivity(launchIntent);
+        //**杀死整个进程**//*
+        android.os.Process.killProcess(android.os.Process.myPid());
     }
     @Override
-    public void onCompletion(MediaPlayer mp) {
-        releaseMediaPlayer();
-        videoIndex++;
-        if (videoIndex==fileList.size()){
-            videoIndex=0;
-        }
-        initMediaPlayer();
-        mIsVideoSizeKnown = true;
-        mIsVideoReadyToBePlayed = true;
-        changeVideo = true;
-    }
-
-    @Override
-    public void onBufferingUpdate(MediaPlayer mp, int percent) {
-
-    }
-
-    @Override
-    public void onVideoSizeChanged(MediaPlayer mp, int width, int height) {
-        if (width == 0 || height == 0) {
-            return;
-        }
-        mIsVideoSizeKnown = true;
-    }
-
-    private void initMediaPlayer() {
-        doCleanUp();
-        try {
-            String videoPath=fileList.get(videoIndex);
-            if (TextUtils.isEmpty(videoPath)) {
-                Toast.makeText(MainWaterVideoActivity.this, "Please edit MediaPlayerDemo_Video Activity, " + "and set the path variable to your media file path." + " Your media file must be stored on sdcard.", Toast.LENGTH_LONG).show();
-                return;
-            }
-            mMediaPlayer = new MediaPlayer(this);
-            setDataPath(videoPath);
-            mMediaPlayer.setDisplay(holder);
-            mMediaPlayer.prepareAsync();
-            mMediaPlayer.setOnBufferingUpdateListener(this);
-            mMediaPlayer.setOnCompletionListener(this);
-            mMediaPlayer.setOnPreparedListener(this);
-            mMediaPlayer.setOnVideoSizeChangedListener(this);
-            /*高质*/
-            mMediaPlayer.setVideoQuality(MediaPlayer.VIDEOQUALITY_HIGH);
-            mMediaPlayer.setVolume(0.6f,0.6f);
-            setVolumeControlStream(AudioManager.STREAM_MUSIC);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-    private void setDataPath(String videoPath) {
-        try {
-            mMediaPlayer.setDataSource(videoPath);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-    private void doCleanUp() {
-        mIsVideoReadyToBePlayed = false;
-        mIsVideoSizeKnown = false;
-    }
-    private void startVideoPlayback() {
-        if(changeVideo){
-            changeVideo =false;
-        }else if(currentPosition != 0){
-            mMediaPlayer.seekTo(currentPosition);
-        }
-        mMediaPlayer.start();
-    }
-    private void releaseMediaPlayer() {
-        if (mMediaPlayer != null) {
-            currentPosition = mMediaPlayer.getCurrentPosition();
-            mMediaPlayer.release();
-            mMediaPlayer = null;
-        }
+    protected void onStart() {
+        super.onStart();
     }
     @Override
     protected void onRestart() {
         super.onRestart();
+        bindAndAddObserverToPortService();
         pageStatus=true;
     }
     @Override
     protected void onPause() {
         super.onPause();
-        releaseMediaPlayer();
-        doCleanUp();
     }
     @Override
     protected void onDestroy() {
         super.onDestroy();
         unbindPortServiceAndRemoveObserver();
-        releaseMediaPlayer();
-        doCleanUp();
         ThreadPoolManager.getInstance(context).onShutDown();
         EventBus.getDefault().unregister(context);
     }

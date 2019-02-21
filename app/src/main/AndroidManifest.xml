@@ -82,7 +82,7 @@
             android:name=".service.KillSelfService" />
 
         <activity android:name=".functionActivity.MainMyVideoActivity" />
-        <activity android:name=".functionActivity.MainWaterVideoActivity"/>
+        <activity android:name=".functionActivity.MainWaterImageActivity"/>
     </application>
 
 </manifest>

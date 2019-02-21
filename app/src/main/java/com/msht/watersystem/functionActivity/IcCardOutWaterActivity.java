@@ -408,19 +408,17 @@ public class IcCardOutWaterActivity extends BaseActivity implements Observer{
     }
     private void onCom2Received203DataFromServer(ArrayList<Byte> data) {
         try {
-            if(data!=null&&data.size()!=0){
+            if(data!=null&&data.size()>=ConstantUtil.REQUEST_MAX_SIZE){
                 FormatInformationUtil.saveDeviceInformationToFormatInformation(data);
                 CachePreferencesUtil.getIntData(this,CachePreferencesUtil.PRICE,FormatInformationBean.PriceNum);
                 CachePreferencesUtil.putIntData(this,CachePreferencesUtil.WATER_OUT_TIME,FormatInformationBean.OutWaterTime);
                 CachePreferencesUtil.putIntData(this,CachePreferencesUtil.WATER_NUM,FormatInformationBean.WaterNum);;
                 CachePreferencesUtil.getIntData(this,CachePreferencesUtil.DEDUCT_AMOUNT,FormatInformationBean.DeductAmount);
                 VariableUtil.setEquipmentStatus=false;
-               // mTime= FormatInformationBean.OutWaterTime;
                 mTime=DataCalculateUtils.getOutWaterTime(FormatInformationBean.DeductAmount,FormatInformationBean.PriceNum);
                 overTime=mTime+10;
                 volume=DataCalculateUtils.getWaterVolume(FormatInformationBean.WaterNum, FormatInformationBean.OutWaterTime);
                 priceNum=DataCalculateUtils.getWaterPrice(FormatInformationBean.PriceNum);
-                Log.d("overTime2=",String.valueOf(FormatInformationBean.DeductAmount));
             }
         }catch (Exception e){
             e.printStackTrace();

@@ -20,7 +20,7 @@ public class ConstantUtil {
     public static final  int CONTROL_MAX_SIZE=48;
     public static final  int RESPONSE_MAX_SIZE=0;
     /**业务指令最大长度**/
-    public static final  int BUSINESS_MAX_SIZE=40;
+    public static final  int BUSINESS_MAX_SIZE=38;
     /**203最大长度**/
     public static final  int REQUEST_MAX_SIZE=11;
     /**102最大长度**/
