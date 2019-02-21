@@ -133,7 +133,7 @@ public class MainMyVideoActivity extends BaseActivity implements Observer/*Surfa
             path = fileList.get(0);
             index = 0;
             mVideoView.setVideoPath(path);
-            mVideoView.setMediaController(new MediaController(this));
+          //  mVideoView.setMediaController(new MediaController(this));
             mVideoView.requestFocus();
 
             mVideoView.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
