@@ -197,7 +197,9 @@ public class BannerM extends RelativeLayout {
             vpBanner.setAdapter(adapter);
             //定时器开始工作
            // startPlay();
-            ThreadPoolManager.getInstance(mContext.getApplicationContext()).onThreadPoolInitiate(handler,intervalTime);
+            if(imageList.size()>1){
+                ThreadPoolManager.getInstance(mContext.getApplicationContext()).onThreadPoolInitiate(handler,intervalTime);
+            }
             //ThreadPoolManager.onThreadPoolStart(handler,intervalTime);
         }
     }
@@ -300,21 +302,6 @@ public class BannerM extends RelativeLayout {
         public void destroyItem(@NonNull ViewGroup container, int position, @NonNull Object object) {
           //  container.removeView((View) object);
         }
-        /*@Override
-        public Object instantiateItem(View container, int position) {
-            position %= ivList.size();
-            if (position<0){
-                position = ivList.size()+position;
-            }
-            ImageView imageView = ivList.get(position);
-            ViewParent vp =imageView.getParent();
-            if (vp!=null){
-                ViewGroup parent = (ViewGroup)vp;
-                parent.removeView(imageView);
-            }
-            ((ViewPager) container).addView(imageView);
-            return imageView;
-        }*/
         @NonNull
         @Override
         public Object instantiateItem(@NonNull ViewGroup container, int position) {

@@ -650,9 +650,19 @@ public class MainMyVideoActivity extends BaseActivity implements Observer,Surfac
                 return  true;
             }else if(!TextUtils.isEmpty(videoPath)&&mMediaPlayer!=null){
                 setDataPath(videoPath);
+                mMediaPlayer.setDisplay(holder);
+                mMediaPlayer.prepareAsync();
+                mMediaPlayer.setOnBufferingUpdateListener(this);
+                mMediaPlayer.setOnCompletionListener(this);
+                mMediaPlayer.setOnPreparedListener(this);
+                mMediaPlayer.setOnVideoSizeChangedListener(this);
+                /*高质*/
+                mMediaPlayer.setVideoQuality(MediaPlayer.VIDEOQUALITY_HIGH);
+                mMediaPlayer.setVolume(0.6f,0.6f);
+                setVolumeControlStream(AudioManager.STREAM_MUSIC);
                 return true;
             } else {
-                Log.d("initMediaPlayer",Log.getStackTraceString(new Throwable()));
+              //  Log.d("initMediaPlayer",Log.getStackTraceString(new Throwable()));
                 imageLayout.setVisibility(View.VISIBLE);
                 videoLayout .setVisibility(View.GONE);
                 return  false;
@@ -694,7 +704,7 @@ public class MainMyVideoActivity extends BaseActivity implements Observer,Surfac
     public void onCompletion(MediaPlayer mp) {
         releaseMediaPlayer();
         videoIndex++;
-        LogUtils.e("videoIndex","onCompletion videoIndex====== "+videoIndex+"fileList=="+fileList.size());
+       /// LogUtils.e("videoIndex","onCompletion videoIndex====== "+videoIndex+"fileList=="+fileList.size());
         if (videoIndex>=fileList.size()){
             videoIndex=0;
         }
@@ -708,7 +718,7 @@ public class MainMyVideoActivity extends BaseActivity implements Observer,Surfac
         if (mMediaPlayer != null) {
             currentPosition = mMediaPlayer.getCurrentPosition();
             mMediaPlayer.release();
-           // mMediaPlayer = null;
+            mMediaPlayer = null;
         }
     }
     @Override
