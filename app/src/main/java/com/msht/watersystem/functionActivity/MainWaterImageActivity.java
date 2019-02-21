@@ -64,7 +64,7 @@ import io.vov.vitamio.MediaPlayer;
  * @author hong
  * @date 2018/8/20  
  */
-public class MainWaterVideoActivity extends BaseActivity implements Observer{
+public class MainWaterImageActivity extends BaseActivity implements Observer{
 
     private static final String TAG = "MediaPlayerDemo";
     private PortService portService;
