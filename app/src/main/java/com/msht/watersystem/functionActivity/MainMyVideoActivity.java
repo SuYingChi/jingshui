@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.PixelFormat;
 import android.media.AudioManager;
+import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
 import android.text.TextUtils;
@@ -47,6 +48,7 @@ import com.msht.watersystem.entity.OrderInfo;
 import com.msht.watersystem.gen.OrderInfoDao;
 import com.msht.watersystem.service.ResendDataService;
 import com.msht.watersystem.widget.BannerM;
+import com.msht.watersystem.widget.CustomVideoView;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -58,7 +60,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import io.vov.vitamio.LibsChecker;
-import io.vov.vitamio.MediaPlayer;
+
 import io.vov.vitamio.widget.MediaController;
 import io.vov.vitamio.widget.VideoView;
 
@@ -103,7 +105,7 @@ public class MainMyVideoActivity extends BaseActivity implements Observer/*Surfa
     private int videoIndex = 0;
     private List<String> fileList;
     private Context context;
-    private VideoView mVideoView;
+    private CustomVideoView mVideoView;
     private String path;
     private int index;
 
@@ -121,7 +123,7 @@ public class MainMyVideoActivity extends BaseActivity implements Observer/*Surfa
         imageLayout = findViewById(R.id.id_layout_frame);
         videoLayout = findViewById(R.id.id_video_layout);
         // SurfaceView mPreview = (SurfaceView) findViewById(R.id.surface);
-        mVideoView = (VideoView) findViewById(R.id.surface_view);
+        mVideoView = (CustomVideoView) findViewById(R.id.surface_view);
         initBannerView();
         fileList = FileUtil.getVideoFilePath();
         if (fileList != null && fileList.size() >= 1) {
@@ -133,14 +135,14 @@ public class MainMyVideoActivity extends BaseActivity implements Observer/*Surfa
             path = fileList.get(0);
             index = 0;
             mVideoView.setVideoPath(path);
-         //   mVideoView.setMediaController(new MediaController(this));
-            mVideoView.requestFocus();
-            mVideoView.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+          //  mVideoView.setMediaController(new MediaController(this));
+           // mVideoView.requestFocus();
+       /*     mVideoView.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
                 @Override
                 public void onPrepared(MediaPlayer mediaPlayer) {
                     mediaPlayer.setPlaybackSpeed(1.0f);
                 }
-            });
+            });*/
             mVideoView.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
                 @Override
                 public void onCompletion(MediaPlayer mp) {
@@ -151,12 +153,19 @@ public class MainMyVideoActivity extends BaseActivity implements Observer/*Surfa
                     }
                     path = fileList.get(index);
                     mVideoView.setVideoPath(path);
+                    mVideoView.start();
                 }
             });
         } else {
             imageLayout.setVisibility(View.VISIBLE);
             videoLayout.setVisibility(View.GONE);
         }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        mVideoView.start();
     }
 
     private void bindAndAddObserverToPortService() {
@@ -742,7 +751,7 @@ public class MainMyVideoActivity extends BaseActivity implements Observer/*Surfa
         mIsVideoSizeKnown = false;
     }
 
-    private void startVideoPlayback() {
+  /*  private void startVideoPlayback() {
         if (changeVideo) {
             changeVideo = false;
         } else if (currentPosition != 0) {
@@ -750,7 +759,7 @@ public class MainMyVideoActivity extends BaseActivity implements Observer/*Surfa
         }
         mMediaPlayer.start();
     }
-
+*/
     /*   private void onStopVideo(){
            mMediaPlayer.stop();
            releaseMediaPlayer();
