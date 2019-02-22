@@ -3,6 +3,7 @@ package com.msht.watersystem.functionActivity;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.graphics.PixelFormat;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
@@ -154,6 +155,30 @@ public class MainMyVideoActivity extends BaseActivity implements Observer/*Surfa
                     path = fileList.get(index);
                     mVideoView.setVideoPath(path);
                     mVideoView.start();
+                }
+            });
+            mVideoView.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+                @Override
+                public void onPrepared(MediaPlayer mp) {
+                    mp.setOnInfoListener(new MediaPlayer.OnInfoListener() {
+                        @Override
+                        public boolean onInfo(MediaPlayer mp, int what, int extra) {
+                            if (what == MediaPlayer.MEDIA_INFO_VIDEO_RENDERING_START)
+                                mVideoView.setBackgroundColor(Color.TRANSPARENT);
+                            return true;
+                        }
+                    });
+                }
+            });
+            mVideoView.setOnErrorListener(new MediaPlayer.OnErrorListener() {
+                @Override
+                public boolean onError(MediaPlayer mp, int what, int extra) {
+                    LogUtils.e("videoView","what==="+what+"    extra==="+extra);
+                    index=0;
+                    path = fileList.get(index);
+                    mVideoView.setVideoPath(path);
+                    mVideoView.start();
+                    return true;
                 }
             });
         } else {
