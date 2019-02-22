@@ -23,7 +23,7 @@
                 android:layout_gravity="center" >
             </SurfaceView>
         </io.vov.vitamio.widget.CenterLayout>-->
-        <io.vov.vitamio.widget.VideoView
+        <!--<io.vov.vitamio.widget.VideoView
             android:id="@+id/surface_view"
             android:layout_width="fill_parent"
             android:layout_height="fill_parent"
@@ -31,6 +31,11 @@
             android:layout_alignParentTop="true"
             android:layout_alignParentRight="true"
             android:layout_alignParentBottom="true"
+            />-->
+        <com.msht.watersystem.widget.CustomVideoView
+            android:id="@+id/surface_view"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
             />
     </RelativeLayout>
     <FrameLayout
