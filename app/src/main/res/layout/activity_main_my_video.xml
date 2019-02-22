@@ -25,13 +25,8 @@
         </io.vov.vitamio.widget.CenterLayout>-->
         <io.vov.vitamio.widget.VideoView
             android:id="@+id/surface_view"
-            android:layout_width="fill_parent"
-            android:layout_height="fill_parent"
-            android:layout_alignParentLeft="true"
-            android:layout_alignParentTop="true"
-            android:layout_alignParentRight="true"
-            android:layout_alignParentBottom="true"
-            />
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"/>
     </RelativeLayout>
     <FrameLayout
         android:id="@+id/id_layout_frame"

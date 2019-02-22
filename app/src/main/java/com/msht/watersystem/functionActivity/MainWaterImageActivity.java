@@ -3,16 +3,11 @@ package com.msht.watersystem.functionActivity;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.media.AudioManager;
 import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
-import android.text.TextUtils;
 import android.view.KeyEvent;
-import android.view.SurfaceHolder;
-import android.view.SurfaceView;
 import android.view.View;
 import android.widget.ImageView;
-import android.widget.Toast;
 
 import com.mcloyal.serialport.entity.Packet;
 import com.mcloyal.serialport.exception.CRCException;
@@ -55,8 +50,6 @@ import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
 
-import io.vov.vitamio.MediaPlayer;
-
 /**
  * Demo class
  * 〈一句话功能简述〉
@@ -82,7 +75,7 @@ public class MainWaterImageActivity extends BaseActivity implements Observer{
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main_water_video);
+        setContentView(R.layout.activity_main_water_image);
         context=this;
         bindAndAddObserverToPortService();
         EventBus.getDefault().register(context);
