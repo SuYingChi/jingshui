@@ -40,7 +40,6 @@ public class ByteUtils {
         byte[] bytes = bout.toByteArray();
         bout.close();
         out.close();
-
         return bytes;
     }
     public static byte[] hexStr2Byte(String hex) {

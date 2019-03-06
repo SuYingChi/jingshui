@@ -1,0 +1,34 @@
+<resources>
+    <dimen name="margin_2">2dp</dimen>
+    <dimen name="margin_3">3dp</dimen>
+    <dimen name="margin_5">5dp</dimen>
+    <dimen name="margin_8">8dp</dimen>
+    <dimen name="margin_10">10dp</dimen>
+    <dimen name="margin_15">15dp</dimen>
+    <dimen name="margin_20">20dp</dimen>
+    <dimen name="margin_30">30dp</dimen>
+    <dimen name="margin_40">40dp</dimen>
+    <dimen name="margin_50">50dp</dimen>
+    <dimen name="margin_60">60dp</dimen>
+    <dimen name="margin_70">70dp</dimen>
+    <dimen name="margin_80">80dp</dimen>
+    <dimen name="margin_90">90dp</dimen>
+    <dimen name="margin_100">100dp</dimen>
+    <dimen name="more_subtext_size">18sp</dimen>
+    <dimen name="line_width">1px</dimen>
+    <dimen name="corners_radius">8px</dimen>
+    <dimen name="title_height">@dimen/margin_60</dimen>
+    <!-- 应用程序字体大小(开始)-->
+    <dimen name="text_normal">15sp</dimen>
+    <dimen name="text_big">18sp</dimen>
+    <dimen name="text_lager">22sp</dimen>
+    <dimen name="text_17">17sp</dimen>
+    <dimen name="text_16">16sp</dimen>
+    <dimen name="text_15">15sp</dimen>
+    <dimen name="text_14">14sp</dimen>
+    <dimen name="text_13">13sp</dimen>
+    <dimen name="text_12">12sp</dimen>
+    <dimen name="text_11">11sp</dimen>
+    <dimen name="text_10">13sp</dimen>
+    <!-- 应用程序字体大小(结束)-->
+</resources>

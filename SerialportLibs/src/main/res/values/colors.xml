@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#3F51B5</color>
+    <color name="colorPrimaryDark">#303F9F</color>
+    <color name="colorAccent">#FF4081</color>
+
+    <color name="window_background">@android:color/white</color>
+    <color name="layout_bg_color">#ececec</color>
+    <color name="app_base_color_64">#64FFB90F</color>
+    <color name="app_base_color_enable">#CCCCCC</color>
+
+    <color name="app_base_color">#3F51B5</color>
+
+    <color name="transparent">#00000000</color>
+    <color name="black">#000000</color>
+    <color name="white">#ffffff</color>
+    <color name="item_click">#fff2fafc</color>
+    <color name="line_color">#dddddd</color>
+    <color name="titlebar_color">#fdfafa</color>
+    <color name="bottom_menu_textcolor">@color/app_base_color</color>
+    <color name="bottom_menu_textcolor_normal">#ff878a90</color>
+    <color name="bottom_menu_textcolor64">#64ffb701</color>
+    <color name="picture_background">#7d7f7f7f</color>
+    <color name="layout_bg">#cccccc</color>
+    <color name="jsj_color">#00FFFF</color>
+</resources>

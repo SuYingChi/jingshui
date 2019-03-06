@@ -18,12 +18,14 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import com.mcloyal.serialport.constant.Cmd;
 import com.mcloyal.serialport.entity.Packet;
 import com.mcloyal.serialport.exception.CRCException;
 import com.mcloyal.serialport.exception.CmdTypeException;
 import com.mcloyal.serialport.exception.FrameException;
 import com.mcloyal.serialport.service.PortService;
 import com.mcloyal.serialport.utils.ComServiceConnection;
+import com.mcloyal.serialport.utils.Crc16;
 import com.mcloyal.serialport.utils.FrameUtils;
 import com.mcloyal.serialport.utils.PacketUtils;
 import com.mcloyal.serialport.utils.logs.LogUtils;
@@ -38,6 +40,7 @@ import com.msht.watersystem.utilpackage.ByteUtils;
 import com.msht.watersystem.utilpackage.CachePreferencesUtil;
 import com.msht.watersystem.utilpackage.ConstantUtil;
 import com.msht.watersystem.utilpackage.ConsumeInformationUtils;
+import com.msht.watersystem.utilpackage.CreateOrderType;
 import com.msht.watersystem.utilpackage.DataCalculateUtils;
 import com.msht.watersystem.utilpackage.DateTimeUtils;
 import com.msht.watersystem.utilpackage.FileUtil;
@@ -60,10 +63,6 @@ import java.util.Observer;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import io.vov.vitamio.LibsChecker;
-
-import io.vov.vitamio.widget.MediaController;
-import io.vov.vitamio.widget.VideoView;
 
 
 import org.greenrobot.eventbus.EventBus;
@@ -113,9 +112,6 @@ public class MainMyVideoActivity extends BaseActivity implements Observer/*Surfa
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if (!LibsChecker.checkVitamioLibs(this)) {
-            return;
-        }
         setContentView(R.layout.activity_main_my_video);
         context = this;
         bindAndAddObserverToPortService();
@@ -341,7 +337,6 @@ public class MainMyVideoActivity extends BaseActivity implements Observer/*Surfa
             e.printStackTrace();
         }
     }
-
     private void onCom1Received105DataFromControlBoard(ArrayList<Byte> data) {
         try {
             if (data != null && data.size() >= ConstantUtil.HEARTBEAT_INSTRUCT_MAX_SIZE) {

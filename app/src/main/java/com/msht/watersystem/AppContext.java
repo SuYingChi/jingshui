@@ -15,7 +15,6 @@ import com.msht.watersystem.receiver.PortReceiver;
 import java.util.ArrayList;
 import java.util.List;
 
-import io.vov.vitamio.Vitamio;
 
 /**
  *
@@ -44,7 +43,7 @@ public class AppContext extends AppLibsContext {
         instances = this;
        // mContext = getApplicationContext();
         /*初始化视频播放*/
-        Vitamio.initialize(getApplicationContext());
+       // Vitamio.initialize(getApplicationContext());
        // LogUtils.initLogs(this,true,true,true,true,true,true);
         LogUtils.initLogs(this,false,false,false,false,false,true);
        // GreenDaoManager.getInstance();    //数据库存储订单数据
