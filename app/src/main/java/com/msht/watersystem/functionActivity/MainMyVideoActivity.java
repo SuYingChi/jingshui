@@ -28,7 +28,6 @@ import com.mcloyal.serialport.utils.ComServiceConnection;
 import com.mcloyal.serialport.utils.Crc16;
 import com.mcloyal.serialport.utils.FrameUtils;
 import com.mcloyal.serialport.utils.PacketUtils;
-import com.mcloyal.serialport.utils.logs.LogUtils;
 import com.msht.watersystem.AppContext;
 import com.msht.watersystem.base.BaseActivity;
 import com.msht.watersystem.eventmanager.DateMassageEvent;
@@ -121,7 +120,6 @@ public class MainMyVideoActivity extends BaseActivity implements Observer/*Surfa
         videoLayout = findViewById(R.id.id_video_layout);
         // SurfaceView mPreview = (SurfaceView) findViewById(R.id.surface);
         mVideoView = (CustomVideoView) findViewById(R.id.surface_view);
-        initBannerView();
         fileList = FileUtil.getVideoFilePath();
         if (fileList != null && fileList.size() >= 1) {
             imageLayout.setVisibility(View.GONE);
@@ -169,7 +167,7 @@ public class MainMyVideoActivity extends BaseActivity implements Observer/*Surfa
             mVideoView.setOnErrorListener(new MediaPlayer.OnErrorListener() {
                 @Override
                 public boolean onError(MediaPlayer mp, int what, int extra) {
-                    LogUtils.e("videoView","what==="+what+"    extra==="+extra);
+
                     index=0;
                     path = fileList.get(index);
                     mVideoView.setVideoPath(path);
@@ -178,6 +176,7 @@ public class MainMyVideoActivity extends BaseActivity implements Observer/*Surfa
                 }
             });
         } else {
+            initBannerView();
             imageLayout.setVisibility(View.VISIBLE);
             videoLayout.setVisibility(View.GONE);
         }

@@ -183,10 +183,13 @@ public class MinaClient {
             @Override
             public void messageReceived(IoSession session, Object message) throws Exception {
 
+                Log.d(TAG, "client messageReceived2 ");
                 Message msg = new Message();
                 msg.arg1 = 4;
                 Bundle bundle = new Bundle();
-                bundle.putByteArray(MESSAGE, ByteUtils.getBytes(message));
+                if(message instanceof byte[]) {
+                    bundle.putByteArray(MESSAGE, (byte[]) message);
+                }
                 msg.setData(bundle);
                 minaHandler.sendMessage(msg);
             }
@@ -196,7 +199,9 @@ public class MinaClient {
                 Message msg = new Message();
                 msg.arg1 = 5;
                 Bundle bundle = new Bundle();
-                bundle.putByteArray(MESSAGE, ByteUtils.getBytes(message));
+                if(message instanceof byte[]) {
+                    bundle.putByteArray(MESSAGE, (byte[]) message);
+                }
                 msg.setData(bundle);
                 minaHandler.sendMessage(msg);
 

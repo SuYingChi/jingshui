@@ -31,7 +31,7 @@ public class ClientConfig {
 
     public static class Builder {
         private String ip =Cmd.IP_ADDRESS;
-        private int port = 8888;
+        private int port = 16080;
         private int readBufferSize = 1024 * 10;
         private long connectionTimeout = 1000 * 30;
 

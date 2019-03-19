@@ -176,7 +176,7 @@ public class PortService extends Service {
         scheduledThreadPool.scheduleAtFixedRate(new ParserCom2ReceivedDataTask(),0,100,TimeUnit.MILLISECONDS);
         scheduledThreadPool.scheduleAtFixedRate(new CountdownTask(),0,1,TimeUnit.SECONDS);
         //建造者模式进行相关配置
-        ClientConfig clientConfig = new ClientConfig.Builder().setIp(Cmd.IP_ADDRESS).setPort(Cmd.PORT).build();
+       /* ClientConfig clientConfig = new ClientConfig.Builder().setIp(Cmd.IP_ADDRESS).setPort(Cmd.PORT).build();
         minaClient = new MinaClient(clientConfig,scheduledThreadPool);
         //状态进行监听
         minaClient.setClientStateListener(new MinaClient.ClientStateListener() {
@@ -188,9 +188,8 @@ public class PortService extends Service {
             @Override
             public void sessionOpened() {
                 Log.d(TAG, "client sessionOpened ");
-
+               // minaClient.sendMessage(Cmd.ComCmd.HEART_BEAT_);
             }
-
             @Override
             public void sessionClosed() {
                 Log.d(TAG, "client sessionClosed ");
@@ -205,7 +204,7 @@ public class PortService extends Service {
                 Log.d(TAG, "client messageSent "+ByteUtils.byte2hex(message));
             }
         });
-
+*/
     }
   private class CountdownTask implements Runnable {
         @Override
@@ -321,7 +320,7 @@ public class PortService extends Service {
                         response204ToControlBoard(frame);
                     }
                     //如果在联网的情况下直接把数据转发到TCP平台
-                    if (true/*isConnection*/) {
+                    if (isConnection) {
                       //  LogUtils.d(TAG, "上送到服务器" + ByteUtils.byte2hex(buffer));
                         //主控板的105指令是连接指令，5次未连接上就断电重启
                         if (Arrays.equals(cmd, new byte[]{0x01, 0x05})) {
@@ -335,9 +334,8 @@ public class PortService extends Service {
                         }
                         /*判断是否com104,消费类型3,结账数据,为该数据不发后台*/
                         if (AnalysisUtils.isCmd104ConsumptionType3(packet)){
-                           // sendToServer(buffer);
-                            minaClient.sendMessage(buffer);
-                            Log.d(TAG, "parserCom1Data="+ByteUtils.byte2hex(buffer));
+                            sendToServer(buffer);
+                           // minaClient.sendMessage(buffer);
                         }
                         //主控板发送给com1的数据都会转发给后端
                        // sendToServer(buffer);
@@ -642,6 +640,7 @@ public class PortService extends Service {
                        // LogUtils.e(TAG, "接收到服务器205指令，重置pgkTime计数为0");
                         pgkTime.set(0);
                     }
+                   // Log.d("PACKET107=",ByteUtils.byte2hex(buffer));
                     //服务器下发107包时则启动第二功能键
                     if (Arrays.equals(packet.getCmd(), new byte[]{0x01, 0x07})) {
                         try {
