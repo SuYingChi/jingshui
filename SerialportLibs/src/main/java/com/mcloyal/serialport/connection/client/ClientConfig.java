@@ -1,6 +1,4 @@
-package com.mcloyal.serialport.connection;
-
-import com.mcloyal.serialport.constant.Cmd;
+package com.mcloyal.serialport.connection.client;
 
 /**
  * Created by cuihp on 2017/4/15.
@@ -30,10 +28,10 @@ public class ClientConfig {
     }
 
     public static class Builder {
-        private String ip =Cmd.IP_ADDRESS;
-        private int port = 16080;
+        private String ip = "127.0.0.1";
+        private int port = 8888;
         private int readBufferSize = 1024 * 10;
-        private long connectionTimeout = 1000 * 30;
+        private long connectionTimeout = 1000 * 10;
 
         public Builder() {
         }

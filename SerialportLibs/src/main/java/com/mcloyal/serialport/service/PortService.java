@@ -1,7 +1,12 @@
 package com.mcloyal.serialport.service;
 
 import android.app.Service;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Binder;
 import android.os.Handler;
 import android.os.IBinder;
@@ -12,8 +17,8 @@ import android.util.Log;
 
 import com.mcloyal.serialport.AppLibsContext;
 import com.mcloyal.serialport.R;
-import com.mcloyal.serialport.connection.ClientConfig;
-import com.mcloyal.serialport.connection.MinaClient;
+import com.mcloyal.serialport.connection.client.ClientConfig;
+import com.mcloyal.serialport.connection.client.MinaClient;
 import com.mcloyal.serialport.constant.Cmd;
 import com.mcloyal.serialport.constant.ConstantUtil;
 import com.mcloyal.serialport.entity.Packet;
@@ -47,40 +52,47 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import android_serialport_api.SerialPort;
 
+import static com.mcloyal.serialport.constant.Cmd.IP_ADDRESS;
+import static com.mcloyal.serialport.constant.Cmd.PORT;
+
 /**
- * 串口通信常驻后台Service
+ * 串口通信常驻后台Service 前端用到的就是包头的开始标志，判断是否是新包，包长度字段，便于开始读取之后的解析，CMD指令类型，执行相应操作。
+ *
  * @author hong
+ * bindservice启动该后台service ，常驻后台开启子线程做串口的数据收发工作，前台可以拿到实例，通过注册observer触发前台执行对应逻辑（其实直接使用eventbus更简单）
  */
 public class PortService extends Service {
     private final static String TAG = PortService.class.getSimpleName();
     private AppLibsContext appLibsContext = null;
     private MinaClient minaClient;
     /**
-     *主控制板为COM1，参数
+     * 主控制板为COM1，参数
      */
     protected SerialPort mSerialPort1;
     protected volatile static OutputStream mOutputStream1;
     private volatile static InputStream mInputStream1;
     private ScheduledExecutorService scheduledThreadPool;
+    //com1接收到的一个完整的数据包，PACKET_LEN1是完整的包的长度
     private Vector<Byte> data1 = new Vector<Byte>();
     public static AtomicInteger PACKET_LEN1 = new AtomicInteger(100);
     /**
-     *通讯模块为COM2，参数
+     * 通讯模块为COM2，参数
      */
     protected SerialPort mSerialPort2;
     protected volatile static OutputStream mOutputStream2;
     private volatile static InputStream mInputStream2;
-    private  Vector<Byte> data2 = new Vector<Byte>();
-    public static AtomicInteger  PACKET_LEN2 = new AtomicInteger(100);
+    //com2接收到的一个完整的数据包，PACKET_LEN2是完整的包的长度
+    private Vector<Byte> data2 = new Vector<Byte>();
+    public static AtomicInteger PACKET_LEN2 = new AtomicInteger(100);
     private MyObservable mObservable;
     /**
      * 是否联网
      */
-    private volatile boolean  isConnection = false;
+    private volatile boolean isConnection = false;
     /**
-     * 是否在联网中
-     */
-    private volatile boolean isAtCommandTaskRunning = false;
+/*     * 是否在联网中
+     *//*
+    private volatile boolean isAtCommandTaskRunning = false;*/
     /**
      * COM1常量标记
      */
@@ -89,38 +101,42 @@ public class PortService extends Service {
      * COM2常量标记
      */
     private final static int COM2_SERIAL = 2;
-   // private final static int COM1_COUNT = 4;
+    // private final static int COM1_COUNT = 4;
     /**
-     *  重启服务标记
+     * 重启服务标记
      */
     private final static int RESTART = 3;
     /**
-     *  最大包数
+     * 最大包数
      */
     private final static int MAX_PGK_TIME = 5;
     /**
-     *  发送包数据计数
+     * 发送包数据计数
      */
-    private static AtomicInteger  pgkTime = new AtomicInteger(0);
+    private static AtomicInteger pgkTime = new AtomicInteger(0);
     //TCP连接返回值等待时间
     private final static int TCP_MAX_OUT_TIME = 10 * 1000;
 
 
-    private static  AtomicInteger  count = new AtomicInteger(0);
+    private static AtomicInteger count = new AtomicInteger(0);
     private Handler handler = new PortServiceHandler(PortService.this);
     /**
      * 线程间通信Handler，通知关机，触发activity主线程界面更新
      */
     /**
-     *倒计时最大等大时长
+     * 倒计时最大等大时长
      */
     private static final long MAX_COUNT = 5 * 60;
 
-    private static class PortServiceHandler extends Handler{
-        private  WeakReference<PortService> weakPortService;
-        PortServiceHandler(PortService portService){
-            weakPortService= new WeakReference<PortService>(portService);
+    //后台service里的线程池里边的子线程拿到数据后通过主线程Handler发回主线程后，把数据包给内部的Observable,notify前台注册到后台service 里Observable的observer，
+    // 前台observer接收到更新通知后根据自身需求重写update方法触发处理相应逻辑
+    private static class PortServiceHandler extends Handler {
+        private WeakReference<PortService> weakPortService;
+
+        PortServiceHandler(PortService portService) {
+            weakPortService = new WeakReference<PortService>(portService);
         }
+
         @Override
         public void handleMessage(Message msg) {
             switch (msg.what) {
@@ -145,6 +161,35 @@ public class PortService extends Service {
             }
         }
     }
+
+    private ConnectivityManager connectivityManager;
+    private NetworkInfo info;
+    private BroadcastReceiver mReceiver = new BroadcastReceiver() {
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            String action = intent.getAction();
+            if (action.equals(ConnectivityManager.CONNECTIVITY_ACTION)) {
+                Log.d("mark", "网络状态已经改变");
+                connectivityManager = (ConnectivityManager)
+
+                        getSystemService(Context.CONNECTIVITY_SERVICE);
+                info = connectivityManager.getActiveNetworkInfo();
+                if(info != null && info.isAvailable()) {
+                    String name = info.getTypeName();
+                    Log.d("mark", "当前网络名称：" + name);
+                    if(!isConnection) {
+                        initMinaClient();
+                    }
+                } else {
+                    Log.d("mark", "没有可用网络");
+                    if(minaClient!=null) {
+                        minaClient.disConnect();
+                    }
+                }
+            }
+        }
+    };
     @Override
     public void onCreate() {
         super.onCreate();
@@ -160,8 +205,8 @@ public class PortService extends Service {
          */
         scheduledThreadPool = new ScheduledThreadPoolExecutor(6, new ThreadFactory() {
             @Override
-            public Thread newThread(Runnable  r) {
-                return new Thread(r,Thread.currentThread().getName());
+            public Thread newThread(Runnable r) {
+                return new Thread(r, Thread.currentThread().getName());
             }
         });
         //开启COM1接收线程  主板和Android板之前数据通信
@@ -171,60 +216,97 @@ public class PortService extends Service {
                 TimeUnit.MILLISECONDS);
 
         //开启COM2接收线程 ,通信模块和Android板之间通信
-        startCom2Received();
+     //   startCom2Received();
         //启动COM2数据拼包线程
-        scheduledThreadPool.scheduleAtFixedRate(new ParserCom2ReceivedDataTask(),0,100,TimeUnit.MILLISECONDS);
-        scheduledThreadPool.scheduleAtFixedRate(new CountdownTask(),0,1,TimeUnit.SECONDS);
-        //建造者模式进行相关配置
-       /* ClientConfig clientConfig = new ClientConfig.Builder().setIp(Cmd.IP_ADDRESS).setPort(Cmd.PORT).build();
-        minaClient = new MinaClient(clientConfig,scheduledThreadPool);
-        //状态进行监听
+        //scheduleAtFixedRate period指每隔多久执行下一次任务，如果任务执行时间大于周期，会等到执行完毕再执行下一次任务，每隔100毫秒解析一次数据
+
+        //有没有可能读取子线程读取到包，解析子线程还没来的及拿去解析，又再次读取了新的数据包？其实应该把解析操作放在读取之后，在读取到完整数据包之后就新开一个子线程去做解析操作。
+        //这种需求要明确读取和解析会耗时多久才好设定线程的时间间隔
+        //读取子线程要延迟100MS再开始，解析子线程立即开启解析。每次接收完都要等100MS再次接受，解析子线程每隔100MS解析一次，就是为了避免这种情况。
+        //假设读取要50MS，解析也要50MS，在100MS时没有数据解析，到150MS时读取到数据，到200MS时候开始第二次解析，解析的就是读取子线程150秒时的数据。250MS时开始地第三次读取，300MS开始第三次解析，
+        //这样保证不会漏解析读取的数据，有必要可以调大读取间隔时间，保证解析子线程来的及解析
+
+    //    scheduledThreadPool.scheduleAtFixedRate(new ParserCom2ReceivedDataTask(), 0, 100, TimeUnit.MILLISECONDS);
+        scheduledThreadPool.scheduleAtFixedRate(new CountdownTask(), 0, 1, TimeUnit.SECONDS);
+        IntentFilter mFilter = new IntentFilter();
+        mFilter.addAction(ConnectivityManager.CONNECTIVITY_ACTION);
+        registerReceiver(mReceiver, mFilter);
+    }
+
+    private void initMinaClient() {
+
+        //客户端初始化
+        ClientConfig clientConfig = new ClientConfig.Builder().setIp(IP_ADDRESS).setPort(PORT).build();
+        //创建minaclient的时候已经启动一个常驻每隔5S的自动重连子线程
+        minaClient = new MinaClient(clientConfig);
         minaClient.setClientStateListener(new MinaClient.ClientStateListener() {
             @Override
             public void sessionCreated() {
-                Log.d(TAG, "client sessionCreated");
+                Log.d(TAG, "client sessionCreated ");
             }
 
             @Override
             public void sessionOpened() {
                 Log.d(TAG, "client sessionOpened ");
-               // minaClient.sendMessage(Cmd.ComCmd.HEART_BEAT_);
+                isConnection = true;
             }
+
             @Override
             public void sessionClosed() {
                 Log.d(TAG, "client sessionClosed ");
+                isConnection = false;
             }
 
             @Override
             public void messageReceived(byte[] message) {
-                Log.d(TAG, "client messageReceived "+ByteUtils.byte2hex(message));
+              logByte("接收到后台数据",message);
+              onMinaClientReceived(message);
             }
+
             @Override
             public void messageSent(byte[] message) {
-                Log.d(TAG, "client messageSent "+ByteUtils.byte2hex(message));
+                logByte("发送给后台数据",message);
             }
         });
-*/
+
     }
-  private class CountdownTask implements Runnable {
+
+    private void logByte(String logDesc, byte[] message) {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < message.length; i++) {
+            if (i == 0 && i != message.length - 1) {
+                sb.append("[").append("0x").append(String.format("%02x", message[i] & 0xff)).append(",");
+            } else if (i == 0 && i == message.length - 1) {
+                sb.append("[").append("0x").append(String.format("%02x", message[i] & 0xff)).append("]");
+            } else if (0 < i && i < message.length - 1) {
+                sb.append("0x").append(String.format("%02x", message[i] & 0xff)).append(",");
+            } else if (0 < i && i == message.length - 1) {
+                sb.append("0x").append(String.format("%02x", message[i] & 0xff)).append("]");
+            }
+        }
+        Log.d(TAG, logDesc + sb.toString());
+    }
+
+    private class CountdownTask implements Runnable {
         @Override
         public void run() {
             int incrementAndGet = count.incrementAndGet();
             if (incrementAndGet > MAX_COUNT) {
                 count.set(0);
-             //   LogUtils.d(TAG, MAX_COUNT + "s 倒计时结束，执行断电重启");
+                //   LogUtils.d(TAG, MAX_COUNT + "s 倒计时结束，执行断电重启");
                 handler.sendEmptyMessage(RESTART);
             }
         }
     }
     /*---------------------------  主控制板COM1数据接收发（开始）-----------------------------------*/
+
     /**
      * COM1轮询线程任务
      */
     private class ParserCom1ReceivedDataTask implements Runnable {
         @Override
         public void run() {
-           // LogUtils.d(TAG, "ParseReadCom1Task线程");
+            // LogUtils.d(TAG, "ParseReadCom1Task线程");
             if (data1 != null && data1.size() >= PACKET_LEN1.get()) {
                 Byte[] data = data1.subList(0, PACKET_LEN1.get()).toArray(new Byte[PACKET_LEN1.get()]);
                 if (data[0] != ConstantUtil.START_) {
@@ -235,6 +317,7 @@ public class PortService extends Service {
             }
         }
     }
+
     /**
      * 开启COM1口数据接收线程
      */
@@ -243,7 +326,7 @@ public class PortService extends Service {
             mSerialPort1 = appLibsContext.getSerialPort1();
             mOutputStream1 = mSerialPort1.getOutputStream();
             mInputStream1 = mSerialPort1.getInputStream();
-            scheduledThreadPool.scheduleWithFixedDelay(new ReadCom1DataTask(),100,100,TimeUnit.MILLISECONDS);
+            scheduledThreadPool.scheduleWithFixedDelay(new ReadCom1DataTask(), 100, 100, TimeUnit.MILLISECONDS);
         } catch (SecurityException e) {
             LogUtils.d(TAG, getString(R.string.error_security));
         } catch (IOException e) {
@@ -252,42 +335,141 @@ public class PortService extends Service {
             LogUtils.d(TAG, getString(R.string.error_configuration));
         }
     }
+
     private class ReadCom1DataTask implements Runnable {
         @Override
         public void run() {
-                int size;
-                try {
-                    byte[] buffer = new byte[PACKET_LEN1.get()];
-                    if (mInputStream1 == null) {
-                        return;
-                    }
-                    size = mInputStream1.read(buffer);
-                    //过滤出现一个单字节的数据包
-                    if (size > 0) {
-                        byte[] data = Arrays.copyOfRange(buffer, 0, size);
-                       // LogUtils.d(TAG, "COM1接收到" + size + " 字节");
-                       // LogUtils.d(TAG, "COM1接收数据data==" + ByteUtils.byte2hex(data));
-                        //有新的数据包
-                        if (  data[0] == ConstantUtil.START_) {
-                            data1.clear();
-                            //data1 = new ArrayList<>();
-                            //包头+2字节长度
-                            if (size >= 3) {
-                                int len = NumberUtil.byte2ToUnsignedShort(new byte[]{data[1], data[2]});
-                                //len不包含包头长度，1为包头的长度
-                                PACKET_LEN1.set( len + 1);
-                            }
-                        }
-                        for (byte aData : data) {
-                            data1.add(aData);
-                        }
-                        //在此处进行包条件对比
-                    }
-                } catch (Exception e) {
-                    e.printStackTrace();
+            int size;
+            try {
+                byte[] buffer = new byte[PACKET_LEN1.get()];
+                if (mInputStream1 == null) {
+                    return;
                 }
+                size = mInputStream1.read(buffer);
+                if (size > 0) {
+                    byte[] data = Arrays.copyOfRange(buffer, 0, size);
+                    //有新的数据包
+                    if (data[0] == ConstantUtil.START_) {
+                        data1.clear();
+                        //data1 = new ArrayList<>();
+                        //包头+2字节长度
+                        if (size >= 3) {
+                            int len = NumberUtil.byte2ToUnsignedShort(new byte[]{data[1], data[2]});
+                            //len不包含包头长度，1为包头的长度
+                            PACKET_LEN1.set(len + 1);
+                        }
+                    }
+                    for (byte aData : data) {
+                        data1.add(aData);
+                    }
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
     }
+
+    private void onMinaClientReceived(byte[] receivedByte) {
+        if (receivedByte.length > 0) {
+            String context = null;
+            try {
+                context = new String(receivedByte, "UTF-8").trim().toUpperCase();
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
+            }
+            LogUtils.d(TAG, "接收到" + receivedByte.length + " 字节");
+            LogUtils.d(TAG, "接收转码字符串：" + context);
+            logByte("接收到后台数据", receivedByte);
+            if (context != null && (context.contains("CLOSED") || context.contains("DISCONNECT"))) {
+                LogUtils.d(TAG, "接收到CLOSED或者DISCONNECT，判断是否需要进行断电重启...");
+                handler.sendEmptyMessage(RESTART);
+            }
+            //有新的数据包
+            if (receivedByte[0] == ConstantUtil.START_) {
+                data2.clear();
+                if (receivedByte.length >= 3) {
+                    int len = NumberUtil.byte2ToUnsignedShort(new byte[]{receivedByte[1], receivedByte[2]});
+                    //len不包含包头长度，1为包头的长度
+                    PACKET_LEN2.set(len + 1);
+                }
+            }
+            for (byte aData : receivedByte) {
+                data2.add(aData);
+            }
+            if (data2 != null && data2.size() > 3) {
+                int size = data2.size();
+                //读取包的子线程拿到的数据包，可能还没读取完，并发的解析包子线程就拿去解析，所以判断读取到包长度确实已经大于等于包里长度字段标明的包长度再开始解析。
+                if (size >= PACKET_LEN2.get()) {
+                    Byte[] data = data2.subList(0, PACKET_LEN2.get()).toArray(new Byte[PACKET_LEN2.get()]);
+                    //第一位总是以0X51开始的 代表是正确的数据包，不是的话，则清空不解析数据
+                    if (data[0] != ConstantUtil.START_) {
+                        data2.clear();
+                    } else {
+                        scheduledThreadPool.schedule(new ParseMinaClentReceivedByte(data), 0, TimeUnit.MILLISECONDS);
+                    }
+                }
+            }
+        }
+    }
+
+    private class ParseMinaClentReceivedByte implements Runnable {
+        private final int size;
+        private byte[] buffer;
+
+        ParseMinaClentReceivedByte(Byte[] receivedByte) {
+            size = receivedByte.length;
+            buffer = new byte[size];
+            //data2是读取到数据，当读取到一个完整数据包后 ，重置data2，重新读取数据，数组是地址引用，所以拷贝数据到解析子线程里去做解析操作,下次读取新数据不影响此次解析
+            for (int i = 0; i < receivedByte.length; i++) {
+                buffer[i] = receivedByte[i];
+            }
+        }
+
+        @Override
+        public void run() {
+            data2.clear();
+            if (size >= PACKET_LEN2.get()) {
+                try {
+                    Packet packet = AnalysisUtils.analysisFrame(buffer, PACKET_LEN2.get());
+                    if (packet != null) {
+                        //判断服务器是否返回205，如果存在则重置计数
+                        if (Arrays.equals(packet.getCmd(), new byte[]{0x02, 0x05})) {
+                            // LogUtils.e(TAG, "接收到服务器205指令，重置pgkTime计数为0");
+                            pgkTime.set(0);
+                        }
+                        //服务器下发107包时则启动第二功能键
+                        if (Arrays.equals(packet.getCmd(), new byte[]{0x01, 0x07})) {
+                            try {
+                                //封装数据返回207到服务器
+                                byte[] frame = packet.getFrame();
+                                byte repy[] = PacketUtils.makePackage(frame, new byte[]{0x02, 0x07}, null);
+                                if (repy != null && repy.length > 0) {
+                                   sendToServer(repy);
+                                }
+                            } catch (CRCException e) {
+                                e.printStackTrace();
+                            } catch (FrameException e) {
+                                e.printStackTrace();
+                            } catch (CmdTypeException e) {
+                                e.printStackTrace();
+                            }
+                        }//除了107 205 204,com2都直接转发后端的数据给主控板
+                        else if (!(Arrays.equals(packet.getCmd(), new byte[]{0x02, 0x05}) ||
+                                Arrays.equals(packet.getCmd(), new byte[]{0x02, 0x04}))) {
+                            sendToControlBoard(buffer);
+                        }
+                        Message msg = Message.obtain();
+                        msg.obj = packet;
+                        msg.what = COM2_SERIAL;
+                        handler.sendMessage(msg);
+                    }
+                } catch (AnalysisException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
     /**
      * COM1数据解析
      *
@@ -300,7 +482,6 @@ public class PortService extends Service {
             buffer[i] = bf[i];
         }
         data1.clear();
-       // LogUtils.d(TAG, "COM1数据包完整 parserCom1DataTask data==" + ByteUtils.byte2hex(buffer));
         if (size >= PACKET_LEN1.get()) {
             try {
                 Packet packet = AnalysisUtils.analysisFrame(buffer, PACKET_LEN1.get());
@@ -308,43 +489,43 @@ public class PortService extends Service {
                     //此处无需做CRC校验判断
                     byte[] cmd = packet.getCmd();
                     //不管是否断网都直接转发固定105
-                    byte[] frame=packet.getFrame();
+                    byte[] frame = packet.getFrame();
                     if (Arrays.equals(cmd, new byte[]{0x01, 0x05})) {
-                       // LogUtils.d(TAG, "COM1接收到105，重置倒计时操作");
+                        // LogUtils.d(TAG, "COM1接收到105，重置倒计时操作");
                         //重置倒计时计时
                         count.set(0);
-                       // sendToControlBoard(Cmd.ComCmd._NONET_HEARTBEAT_);
+                        // sendToControlBoard(Cmd.ComCmd._NONET_HEARTBEAT_);
                         response205ToControlBoard(frame);
                         //COM1接收到104 直接回复
-                    }else if (Arrays.equals(cmd, new byte[]{0x01, 0x04})){
+                    } else if (Arrays.equals(cmd, new byte[]{0x01, 0x04})) {
                         response204ToControlBoard(frame);
                     }
                     //如果在联网的情况下直接把数据转发到TCP平台
                     if (isConnection) {
-                      //  LogUtils.d(TAG, "上送到服务器" + ByteUtils.byte2hex(buffer));
+                        //  LogUtils.d(TAG, "上送到服务器" + ByteUtils.byte2hex(buffer));
                         //主控板的105指令是连接指令，5次未连接上就断电重启
                         if (Arrays.equals(cmd, new byte[]{0x01, 0x05})) {
-                            int incrementAndGet= pgkTime.incrementAndGet();
-                           // LogUtils.e(TAG, "数据包发送次数：" + incrementAndGet);
+                            int incrementAndGet = pgkTime.incrementAndGet();
+                            // LogUtils.e(TAG, "数据包发送次数：" + incrementAndGet);
                             //如果超过最大包数判断
                             if (incrementAndGet > MAX_PGK_TIME) {
-                              //  LogUtils.d(TAG, "已经超过最大包数阈值，执行断电重启");
+                                //  LogUtils.d(TAG, "已经超过最大包数阈值，执行断电重启");
                                 handler.sendEmptyMessage(RESTART);
                             }
                         }
                         /*判断是否com104,消费类型3,结账数据,为该数据不发后台*/
-                        if (AnalysisUtils.isCmd104ConsumptionType3(packet)){
+                        if (AnalysisUtils.isCmd104ConsumptionType3(packet)) {
                             sendToServer(buffer);
-                           // minaClient.sendMessage(buffer);
+                            // minaClient.sendMessage(buffer);
                         }
                         //主控板发送给com1的数据都会转发给后端
-                       // sendToServer(buffer);
+                        // sendToServer(buffer);
                     } else {
                         //添加注释
                         /*if (Arrays.equals(cmd, new byte[]{0x01, 0x04})) {//回复
                             sendToControlBoard(Cmd.ComCmd._NONET_AT104_);
                         }*/
-                       // LogUtils.d(TAG, "离线状态，判断是否需要进行断电重启...");
+                        // LogUtils.d(TAG, "离线状态，判断是否需要进行断电重启...");
                         handler.sendEmptyMessage(RESTART);
                     }
                     Message msg = Message.obtain();
@@ -357,12 +538,13 @@ public class PortService extends Service {
             }
         }
     }
+
     private void response205ToControlBoard(byte[] frame) {
         try {
             //封装数据返回205到主控板
             byte repy[] = PacketUtils.makePackage(frame, new byte[]{0x02, 0x05}, null);
             if (repy != null && repy.length > 0) {
-               // LogUtils.d(TAG, "回复205指令类型");
+                // LogUtils.d(TAG, "回复205指令类型");
                 sendToControlBoard(repy);
             }
         } catch (CRCException e) {
@@ -373,12 +555,13 @@ public class PortService extends Service {
             e.printStackTrace();
         }
     }
+
     private void response204ToControlBoard(byte[] frame) {
         try {
             //封装数据返回204到主控板
             byte repy[] = PacketUtils.makePackage(frame, new byte[]{0x02, 0x04}, null);
             if (repy != null && repy.length > 0) {
-               // LogUtils.d(TAG, "回复204指令类型");
+                // LogUtils.d(TAG, "回复204指令类型");
                 sendToControlBoard(repy);
             }
         } catch (CRCException e) {
@@ -389,15 +572,16 @@ public class PortService extends Service {
             e.printStackTrace();
         }
     }
+
     /**
      * 向com1发送操作指令
      *
      * @param cmd 操作指令
      */
-    public  void sendToControlBoard(byte[] cmd) {
+    public void sendToControlBoard(byte[] cmd) {
         if (mOutputStream1 != null && cmd != null) {
             try {
-               // LogUtils.d(TAG, "向COM1口发送：" + ByteUtils.byte2hex(cmd));
+                // LogUtils.d(TAG, "向COM1口发送：" + ByteUtils.byte2hex(cmd));
                 mOutputStream1.write(cmd);
                 mOutputStream1.flush();
             } catch (IOException e) {
@@ -407,6 +591,7 @@ public class PortService extends Service {
     }
     /*--------------------主控制板COM1数据接收发（结束）----------------------------------------------------*/
     /*--------------------通信模块COM2数据接收发（开始）----------------------------------------------------*/
+
     /**
      * COM2轮询线程任务
      */
@@ -415,11 +600,12 @@ public class PortService extends Service {
         public void run() {
             if (data2 != null && data2.size() > 3) {
                 int size = data2.size();
+                //读取包的子线程拿到的数据包，可能还没读取完，并发的解析包子线程就拿去解析，所以判断读取到包长度确实已经大于等于包里长度字段标明的包长度再开始解析。
                 if (size >= PACKET_LEN2.get()) {
                     Byte[] data = data2.subList(0, PACKET_LEN2.get()).toArray(new Byte[PACKET_LEN2.get()]);
+                    //第一位总是以0X51开始的 代表是正确的数据包，不是的话，则清空不解析数据
                     if (data[0] != ConstantUtil.START_) {
                         data2.clear();
-                        //data2 = new ArrayList();
                     } else {
                         parseCom2ReceivedTask(data);
                     }
@@ -427,6 +613,7 @@ public class PortService extends Service {
             }
         }
     }
+
     /**
      * 开启COM2口数据接收线程
      */
@@ -436,8 +623,8 @@ public class PortService extends Service {
             mOutputStream2 = mSerialPort2.getOutputStream();
             mInputStream2 = mSerialPort2.getInputStream();
             //启动接收数据线程,根据isConnect的状态值进行数据读取判断
-
-           scheduledThreadPool.scheduleWithFixedDelay(new ReadCom2DataTask(),100,100,TimeUnit.MILLISECONDS);
+            //scheduleAtFixedDelayed,delay 值得是在一次任务执行完之后隔多久执行下一次任务 ，com2口读取完一次数据后隔100毫秒读取下一次
+            scheduledThreadPool.scheduleWithFixedDelay(new ReadCom2DataTask(), 100, 100, TimeUnit.MILLISECONDS);
         } catch (SecurityException e) {
             LogUtils.d(TAG, getString(R.string.error_security));
         } catch (IOException e) {
@@ -446,81 +633,89 @@ public class PortService extends Service {
             LogUtils.d(TAG, getString(R.string.error_configuration));
         }
     }
+
     private class ReadCom2DataTask implements Runnable {
 
         @Override
         public void run() {
-                if (isConnection) {
-                    int size;
-                    try {
-                        byte[] buffer = new byte[PACKET_LEN2.get()];
-                        if (mInputStream2 == null) {
-                           // LogUtils.d(TAG, "mInputStream2  is null");
-                            return;
-                        }
-                        size = mInputStream2.read(buffer);
-                        if (size > 0) {
-                            //过滤掉出现一个字节的0x00或者一个字节的0xff
-                            byte[] data = Arrays.copyOfRange(buffer, 0, size);
-                            String context = new String(data, "UTF-8").trim().toUpperCase();
-                            LogUtils.d(TAG, "COM2接收到" + size + " 字节");
-                            LogUtils.d(TAG, "COM2字符串：" + context);
-                            LogUtils.d(TAG, "COM2接收数据data==" + ByteUtils.byte2hex(data));
-                            LogUtils.d(TAG, "COM2接收状态下：isConnection==" + isConnection);
-                            if (context.contains("CLOSED") || context.contains("DISCONNECT")) {
-                                LogUtils.d(TAG, "接收到CLOSED或者DISCONNECT，判断是否需要进行断电重启...");
-                                handler.sendEmptyMessage(RESTART);
-                            }
-                            //网络连接成功的情况下进行数据拼接
-                            if (isConnection) {
-                                if ( data[0] == ConstantUtil.START_) {
-                                    data2.clear();
-                                    //data2 = new ArrayList<>();
-                                    //包头+2字节长度
-                                    if (size >= 3) {
-                                        int len = NumberUtil.byte2ToUnsignedShort(new byte[]{data[1], data[2]});
-                                        //len不包含包头长度，1为包头的长度
-                                        PACKET_LEN2.set(len+1);
-                                    }
-                                }
-                                for (int i = 0; i < size; i++) {
-                                    data2.add(data[i]);
-                                }
-                            }
-                        }
-                    } catch (Exception e) {
-                        e.printStackTrace();
+            if (isConnection) {
+                int size;
+                try {
+                    byte[] buffer = new byte[PACKET_LEN2.get()];
+                    if (mInputStream2 == null) {
+                        return;
                     }
+                    size = mInputStream2.read(buffer);
+                    if (size > 0) {
+                        byte[] data = Arrays.copyOfRange(buffer, 0, size);
+                        String context = new String(data, "UTF-8").trim().toUpperCase();
+                        LogUtils.d(TAG, "COM2接收到" + size + " 字节");
+                        LogUtils.d(TAG, "COM2字符串：" + context);
+                        LogUtils.d(TAG, "COM2接收数据data==" + ByteUtils.byte2hex(data));
+                        LogUtils.d(TAG, "COM2接收状态下：isConnection==" + isConnection);
+                        if (context.contains("CLOSED") || context.contains("DISCONNECT")) {
+                            LogUtils.d(TAG, "接收到CLOSED或者DISCONNECT，判断是否需要进行断电重启...");
+                            handler.sendEmptyMessage(RESTART);
+                        }
+                        //网络连接成功的情况下进行数据拼接
+                        if (isConnection) {
+                            //一次读取有可能会无法完全读取完一个完整的包，当读取到包头是开始0X51开始标志的时候，data2清空重新拼接，并且长度大于等于3，得到第一第二位表示的包长度，
+                            //有没有可能本次读取还没拿到长度，没法重置数据包长度全局变量？
+                            if (data[0] == ConstantUtil.START_) {
+                                data2.clear();
+                                if (size >= 3) {
+                                    int len = NumberUtil.byte2ToUnsignedShort(new byte[]{data[1], data[2]});
+                                    //len不包含包头长度，1为包头的长度
+                                    PACKET_LEN2.set(len + 1);
+                                }
+                            }
+                            for (int i = 0; i < size; i++) {
+                                data2.add(data[i]);
+                            }
+                        }
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
+            }
         }
 
     }
+
     /**
      * 发送网络模块重启指令
      */
     public void sendNetRestartCmd() {
-        //向主控板发送网络模块断电重启
+      /*  //向主控板发送网络模块断电重启
         if (!isAtCommandTaskRunning) {
             isConnection = false;
             //重置计数
             pgkTime.set(0);
             //发送断电重启
             sendToControlBoard(Cmd.ComCmd._RESTART_NET_);
-           // LogUtils.d(TAG, "开始启动AT操作指令发送");
             //网络连接流程标记，正在联网中
             isAtCommandTaskRunning = true;
-            /*atScheduled = Executors.newSingleThreadScheduledExecutor();
-            atScheduled.schedule(new AtCommandTask(), 10, TimeUnit.SECONDS);//延时10s*/
-            scheduledThreadPool.schedule(new AtCommandTask(),10,TimeUnit.SECONDS);
+            scheduledThreadPool.schedule(new AtCommandTask(), 10, TimeUnit.SECONDS);
         } else {
             LogUtils.d(TAG, "AT操作指令已经正在运行...");
+        }*/
+
+      //使用4G后
+        isConnection = false;
+        //重置计数
+        pgkTime.set(0);
+        if(minaClient!=null){
+            minaClient.disConnect();
         }
+        initMinaClient();
+        //发送断电重启2G模块
+    //    sendToControlBoard(Cmd.ComCmd._RESTART_NET_);
     }
 
     /**
      * AT指令操作，包含信号检测，透传设置，TCP连接
      */
-    private class AtCommandTask implements Runnable {
+  /*  private class AtCommandTask implements Runnable {
         @Override
         public void run() {
             //forAtTaskHandler = new ForAtTaskHandler(Looper.myLooper());
@@ -563,12 +758,12 @@ public class PortService extends Service {
                         isAtCommandTaskRunning = false;
                         LogUtils.d(TAG, "网络连接成功,启动COM2数据接收服务");
                         //重置计数
-                        pgkTime .set(0);
+                        pgkTime.set(0);
                         isConnection = true;
                     } else {
                         LogUtils.d(TAG, "判断为TCP连接不成功，执断电重启");
                         isAtCommandTaskRunning = false;
-                       // atScheduled.shutdown();
+                        // atScheduled.shutdown();
                         handler.sendEmptyMessage(RESTART);
                     }
                 } else {
@@ -590,57 +785,56 @@ public class PortService extends Service {
 
     /**
      * 网络状态标记字段
-     *
-     *
      */
     public boolean isConnection() {
         return isConnection;
     }
-    public String sendAtCmdToServer(final byte[] aTcmd, final long time) {
-                try {
-                    if (mOutputStream2 != null && aTcmd != null) {
-                        mOutputStream2.write(aTcmd);
-                        mOutputStream2.flush();
-                    }
-                    SystemClock.sleep(time);
-                    byte[] buffer = new byte[1024];
-                    int size = mInputStream2.read(buffer);
-                   // LogUtils.d(TAG, "AT返回数据size==" + size);
-                    if (size > 1) {
-                        byte[] data = Arrays.copyOfRange(buffer, 0, size);
-                        return new String(data, "UTF-8").trim().toUpperCase();
 
-                    }
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-                return null;
+    public String sendAtCmdToServer(final byte[] aTcmd, final long time) {
+        try {
+            if (mOutputStream2 != null && aTcmd != null) {
+                mOutputStream2.write(aTcmd);
+                mOutputStream2.flush();
             }
+            SystemClock.sleep(time);
+            byte[] buffer = new byte[1024];
+            int size = mInputStream2.read(buffer);
+            // LogUtils.d(TAG, "AT返回数据size==" + size);
+            if (size > 1) {
+                byte[] data = Arrays.copyOfRange(buffer, 0, size);
+                return new String(data, "UTF-8").trim().toUpperCase();
+
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
 
     /**
      * COM2数据解析
      *
      * @param bf 接收到的数据
+     *           <p>
+     *           并发子线程解析接收到的数据包，根据数据包做前端做相应操作是接下来发给后台还是主控板
      */
     protected void parseCom2ReceivedTask(Byte[] bf) {
         int size = bf.length;
-        byte[] buffer= new byte[size];
+        //data2是读取到数据，当读取到一个完整数据包后 ，重置data2，重新读取数据，数组是地址引用，所以拷贝数据到解析子线程里去做解析操作,下次读取新数据不影响此次解析
+        byte[] buffer = new byte[size];
         for (int i = 0; i < bf.length; i++) {
             buffer[i] = bf[i];
         }
         data2.clear();
-        //data2 = new ArrayList<>();
-      //  LogUtils.d(TAG, "COM2数据包完整 parseCom2ReceivedTask data==" + ByteUtils.byte2hex(buffer));
         if (size >= PACKET_LEN2.get()) {
             try {
                 Packet packet = AnalysisUtils.analysisFrame(buffer, PACKET_LEN2.get());
                 if (packet != null) {
                     //判断服务器是否返回205，如果存在则重置计数
                     if (Arrays.equals(packet.getCmd(), new byte[]{0x02, 0x05})) {
-                       // LogUtils.e(TAG, "接收到服务器205指令，重置pgkTime计数为0");
+                        // LogUtils.e(TAG, "接收到服务器205指令，重置pgkTime计数为0");
                         pgkTime.set(0);
                     }
-                   // Log.d("PACKET107=",ByteUtils.byte2hex(buffer));
                     //服务器下发107包时则启动第二功能键
                     if (Arrays.equals(packet.getCmd(), new byte[]{0x01, 0x07})) {
                         try {
@@ -648,7 +842,7 @@ public class PortService extends Service {
                             byte[] frame = packet.getFrame();
                             byte repy[] = PacketUtils.makePackage(frame, new byte[]{0x02, 0x07}, null);
                             if (repy != null && repy.length > 0) {
-                              //  LogUtils.d(TAG, "回复207指令类型");
+                                //  LogUtils.d(TAG, "回复207指令类型");
                                 sendToServer(repy);
                             }
                         } catch (CRCException e) {
@@ -659,9 +853,9 @@ public class PortService extends Service {
                             e.printStackTrace();
                         }
                     }//除了107 205 204,com2都直接转发后端的数据给主控板
-                    else if(!(Arrays.equals(packet.getCmd(), new byte[]{0x02, 0x05})||
-                            Arrays.equals(packet.getCmd(), new byte[]{0x02, 0x04}))){
-                            sendToControlBoard(buffer);
+                    else if (!(Arrays.equals(packet.getCmd(), new byte[]{0x02, 0x05}) ||
+                            Arrays.equals(packet.getCmd(), new byte[]{0x02, 0x04}))) {
+                        sendToControlBoard(buffer);
                     }
                     Message msg = Message.obtain();
                     msg.obj = packet;
@@ -680,15 +874,16 @@ public class PortService extends Service {
      * @param cmd 操作指令
      */
     public void sendToServer(byte[] cmd) {
-        if (mOutputStream2 != null && cmd != null) {
+       /* if (mOutputStream2 != null && cmd != null) {
             try {
-               // LogUtils.d(TAG, "向COM2口发送：" + ByteUtils.byte2hex(cmd));
+                // LogUtils.d(TAG, "向COM2口发送：" + ByteUtils.byte2hex(cmd));
                 mOutputStream2.write(cmd);
                 mOutputStream2.flush();
             } catch (IOException e) {
                 e.printStackTrace();
             }
-        }
+        }*/
+       minaClient.sendMessage(cmd);
     }
 
     /*************************************通信模块COM2数据接收发（结束）***********************************/
@@ -705,20 +900,11 @@ public class PortService extends Service {
     @Override
     public void onDestroy() {
         super.onDestroy();
-       if (scheduledThreadPool != null&&!scheduledThreadPool.isShutdown()) {
-           scheduledThreadPool.shutdown();
+        if (scheduledThreadPool != null && !scheduledThreadPool.isShutdown()) {
+            scheduledThreadPool.shutdown();
         }
-     /*  if (scheduled2 != null&&!scheduled2.isShutdown()) {
-           scheduled2.shutdown();
-       }*/
-    /*   if (atScheduled != null&&!atScheduled.isShutdown()) {
-            atScheduled.shutdown();
-        }*/
-       /* if(countScheduled != null&&!countScheduled.isShutdown()){
-            countScheduled.shutdown();
-        }*/
-      /*  mReadThread1.stopThread();
-        mReadThread2.stopThread();*/
+        minaClient.disConnect();
+        unregisterReceiver(mReceiver);
     }
 
     @Override
@@ -811,4 +997,6 @@ public class PortService extends Service {
         }
     }
     /************************************观察者模式通知数据更新（结束）*************************************/
+
+
 }

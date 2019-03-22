@@ -34,10 +34,10 @@ public class AppLibsContext extends Application implements Observer {
             @Override
             public void onServiceConnected(PortService service) {
                 portService = service;
-                if (portService != null) {
+              /*  if (portService != null) {
                     LogUtils.d(TAG, "AppLibsContext onServiceConnected() 断电重启");
                     portService.sendNetRestartCmd();
-                }
+                }*/
             }
         });
         LogUtils.d(TAG, "onCreate()");
