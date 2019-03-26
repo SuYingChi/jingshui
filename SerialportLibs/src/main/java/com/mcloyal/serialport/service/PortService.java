@@ -211,9 +211,9 @@ public class PortService extends Service {
         });
         //开启COM1接收线程  主板和Android板之前数据通信
         startReadCom1Thread();
-        //启动COM1数据拼包线程
+        /*//启动COM1数据拼包线程
         scheduledThreadPool.scheduleAtFixedRate(new ParserCom1ReceivedDataTask(), 0, 100,
-                TimeUnit.MILLISECONDS);
+                TimeUnit.MILLISECONDS);*/
 
         //开启COM2接收线程 ,通信模块和Android板之间通信
      //   startCom2Received();
@@ -352,6 +352,7 @@ public class PortService extends Service {
                     //有新的数据包
                     if (data[0] == ConstantUtil.START_) {
                         data1.clear();
+                        mInputStream1.reset();
                         //data1 = new ArrayList<>();
                         //包头+2字节长度
                         if (size >= 3) {
@@ -363,7 +364,17 @@ public class PortService extends Service {
                     for (byte aData : data) {
                         data1.add(aData);
                     }
+                    if (data1 != null && data1.size() >= PACKET_LEN1.get()) {
+                        Byte[] data3 = data1.subList(0, PACKET_LEN1.get()).toArray(new Byte[PACKET_LEN1.get()]);
+                        if (data3[0] != ConstantUtil.START_) {
+                            data1.clear();
+                            mInputStream1.reset();
+                        } else {
+                            parserCom1DataTask(data3);
+                        }
+                    }
                 }
+
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -384,6 +395,7 @@ public class PortService extends Service {
             if (context != null && (context.contains("CLOSED") || context.contains("DISCONNECT"))) {
                 LogUtils.d(TAG, "接收到CLOSED或者DISCONNECT，判断是否需要进行断电重启...");
                 handler.sendEmptyMessage(RESTART);
+                return;
             }
             //有新的数据包
             if (receivedByte[0] == ConstantUtil.START_) {
@@ -483,6 +495,11 @@ public class PortService extends Service {
             buffer[i] = bf[i];
         }
         data1.clear();
+        try {
+            mInputStream1.reset();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         if (size >= PACKET_LEN1.get()) {
             try {
                 Packet packet = AnalysisUtils.analysisFrame(buffer, PACKET_LEN1.get());
