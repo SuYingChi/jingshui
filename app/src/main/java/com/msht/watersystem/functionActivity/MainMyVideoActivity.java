@@ -2,11 +2,13 @@ package com.msht.watersystem.functionActivity;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.PixelFormat;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
+import android.net.ConnectivityManager;
 import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
 import android.text.TextUtils;
@@ -34,6 +36,7 @@ import com.msht.watersystem.eventmanager.DateMassageEvent;
 import com.msht.watersystem.eventmanager.MessageEvent;
 import com.msht.watersystem.eventmanager.RestartAppEvent;
 import com.msht.watersystem.R;
+import com.msht.watersystem.service.NetBroadcastReceiver;
 import com.msht.watersystem.utilpackage.BitmapViewListUtil;
 import com.msht.watersystem.utilpackage.ByteUtils;
 import com.msht.watersystem.utilpackage.CachePreferencesUtil;
@@ -82,6 +85,7 @@ public class MainMyVideoActivity extends BaseActivity implements Observer/*Surfa
     private View imageLayout;
     private View videoLayout;
     private MediaPlayer mMediaPlayer;
+    private NetBroadcastReceiver receiver;
     //  private SurfaceHolder holder;
     private boolean mIsVideoSizeKnown = false;
     // private boolean mIsVideoReadyToBePlayed = false;
@@ -182,12 +186,23 @@ public class MainMyVideoActivity extends BaseActivity implements Observer/*Surfa
         }
     }
 
+
     @Override
     protected void onResume() {
         super.onResume();
         mVideoView.start();
     }
 
+    public void initNetBroadcast() {
+        if (receiver==null){
+            IntentFilter filter = new IntentFilter();
+            filter.addAction(ConnectivityManager.CONNECTIVITY_ACTION);
+            receiver = new NetBroadcastReceiver();
+            if (!receiver.isOrderedBroadcast()){
+                registerReceiver(receiver, filter);
+            }
+        }
+    }
     private void bindAndAddObserverToPortService() {
         serviceConnection = new ComServiceConnection(this, new ComServiceConnection.ConnectionCallBack() {
             @Override
@@ -832,6 +847,7 @@ public class MainMyVideoActivity extends BaseActivity implements Observer/*Surfa
     @Override
     protected void onStart() {
         super.onStart();
+        initNetBroadcast();
     }
 
     @Override

@@ -1,6 +1,7 @@
 package com.mcloyal.serialport;
 
 import android.app.Application;
+import android.support.multidex.MultiDex;
 
 import com.mcloyal.serialport.service.PortService;
 import com.mcloyal.serialport.utils.ComServiceConnection;
@@ -29,6 +30,7 @@ public class AppLibsContext extends Application implements Observer {
     public void onCreate() {
         super.onCreate();
         appLibsContext = this;
+        MultiDex.install(this);
         //启动服务
         ServicesUtils.startPortServices(this, new ComServiceConnection.ConnectionCallBack() {
             @Override

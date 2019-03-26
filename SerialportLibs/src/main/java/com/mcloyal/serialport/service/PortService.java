@@ -171,22 +171,24 @@ public class PortService extends Service {
             String action = intent.getAction();
             if (action.equals(ConnectivityManager.CONNECTIVITY_ACTION)) {
                 Log.d("mark", "网络状态已经改变");
-                connectivityManager = (ConnectivityManager)
-
-                        getSystemService(Context.CONNECTIVITY_SERVICE);
-                info = connectivityManager.getActiveNetworkInfo();
-                if(info != null && info.isAvailable()) {
-                    String name = info.getTypeName();
-                    Log.d("mark", "当前网络名称：" + name);
-                    if(!isConnection) {
-                        initMinaClient();
-                    }
-                } else {
-                    Log.d("mark", "没有可用网络");
-                    if(minaClient!=null) {
-                        minaClient.disConnect();
+                connectivityManager = (ConnectivityManager)getSystemService(Context.CONNECTIVITY_SERVICE);
+                if (connectivityManager != null) {
+                    info = connectivityManager.getActiveNetworkInfo();
+                    if(info != null && info.isAvailable()) {
+                        String name = info.getTypeName();
+                        Log.d("mark", "当前网络名称：" + name);
+                        if(!isConnection) {
+                            initMinaClient();
+                            Log.d("mark", "Connection");
+                        }
+                    } else {
+                        Log.d("mark", "没有可用网络");
+                        if(minaClient!=null) {
+                            minaClient.disConnect();
+                        }
                     }
                 }
+
             }
         }
     };
