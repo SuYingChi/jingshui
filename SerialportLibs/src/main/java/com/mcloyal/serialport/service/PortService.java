@@ -164,7 +164,7 @@ public class PortService extends Service {
 
     private ConnectivityManager connectivityManager;
     private NetworkInfo info;
-    private BroadcastReceiver mReceiver = new BroadcastReceiver() {
+ /*   private BroadcastReceiver mReceiver = new BroadcastReceiver() {
 
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -189,7 +189,7 @@ public class PortService extends Service {
                 }
             }
         }
-    };
+    };*/
     @Override
     public void onCreate() {
         super.onCreate();
@@ -228,9 +228,10 @@ public class PortService extends Service {
 
     //    scheduledThreadPool.scheduleAtFixedRate(new ParserCom2ReceivedDataTask(), 0, 100, TimeUnit.MILLISECONDS);
         scheduledThreadPool.scheduleAtFixedRate(new CountdownTask(), 0, 1, TimeUnit.SECONDS);
-        IntentFilter mFilter = new IntentFilter();
+       /* IntentFilter mFilter = new IntentFilter();
         mFilter.addAction(ConnectivityManager.CONNECTIVITY_ACTION);
-        registerReceiver(mReceiver, mFilter);
+        registerReceiver(mReceiver, mFilter);*/
+       initMinaClient();
     }
 
     private void initMinaClient() {
@@ -904,7 +905,7 @@ public class PortService extends Service {
             scheduledThreadPool.shutdown();
         }
         minaClient.disConnect();
-        unregisterReceiver(mReceiver);
+      /*  unregisterReceiver(mReceiver);*/
     }
 
     @Override
