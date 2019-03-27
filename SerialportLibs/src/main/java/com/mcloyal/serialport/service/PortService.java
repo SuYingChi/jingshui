@@ -378,7 +378,9 @@ public class PortService extends Service {
     }
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onEvent(ReConnectEvent messageEvent) {
-       initMinaClient();
+        if(!isConnection) {
+            initMinaClient();
+        }
     }
     private void onMinaClientReceived(byte[] receivedByte) {
         if (receivedByte.length > 0) {
