@@ -237,7 +237,6 @@ public class PortService extends Service {
     }
 
     private void initMinaClient() {
-
         //客户端初始化
         ClientConfig clientConfig = new ClientConfig.Builder().setIp(IP_ADDRESS).setPort(PORT).build();
         //创建minaclient的时候已经启动一个常驻每隔5S的自动重连子线程
@@ -253,27 +252,22 @@ public class PortService extends Service {
                 Log.d(TAG, "client sessionOpened ");
                 isConnection = true;
             }
-
             @Override
             public void sessionClosed() {
                 Log.d(TAG, "client sessionClosed ");
                 isConnection = false;
             }
-
             @Override
             public void messageReceived(byte[] message) {
               logByte("接收到后台数据",message);
               onMinaClientReceived(message);
             }
-
             @Override
             public void messageSent(byte[] message) {
                 logByte("发送给后台数据",message);
             }
         });
-
     }
-
     private void logByte(String logDesc, byte[] message) {
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < message.length; i++) {

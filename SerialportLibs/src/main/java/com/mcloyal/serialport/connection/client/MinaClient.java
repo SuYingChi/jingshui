@@ -150,6 +150,7 @@ public class MinaClient {
                 mSession = future.getSession();
                 Log.d(TAG, "是否链接: "+mSession == null ?"否":"是");
             } catch (Exception e) {
+                Log.d(TAG, "连接异常");
                 return false;
             }
             return mSession == null ? false : true;
