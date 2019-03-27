@@ -164,7 +164,7 @@ public class PortService extends Service {
 
     private ConnectivityManager connectivityManager;
     private NetworkInfo info;
-    private BroadcastReceiver mReceiver = new BroadcastReceiver() {
+ /*   private BroadcastReceiver mReceiver = new BroadcastReceiver() {
 
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -191,7 +191,7 @@ public class PortService extends Service {
 
             }
         }
-    };
+    };*/
     @Override
     public void onCreate() {
         super.onCreate();
@@ -230,9 +230,10 @@ public class PortService extends Service {
 
     //    scheduledThreadPool.scheduleAtFixedRate(new ParserCom2ReceivedDataTask(), 0, 100, TimeUnit.MILLISECONDS);
         scheduledThreadPool.scheduleAtFixedRate(new CountdownTask(), 0, 1, TimeUnit.SECONDS);
-        IntentFilter mFilter = new IntentFilter();
+       /* IntentFilter mFilter = new IntentFilter();
         mFilter.addAction(ConnectivityManager.CONNECTIVITY_ACTION);
-        registerReceiver(mReceiver, mFilter);
+        registerReceiver(mReceiver, mFilter);*/
+       initMinaClient();
     }
 
     private void initMinaClient() {
@@ -365,6 +366,7 @@ public class PortService extends Service {
                         data1.add(aData);
                     }
                 }
+
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -385,6 +387,7 @@ public class PortService extends Service {
             if (context != null && (context.contains("CLOSED") || context.contains("DISCONNECT"))) {
                 LogUtils.d(TAG, "接收到CLOSED或者DISCONNECT，判断是否需要进行断电重启...");
                 handler.sendEmptyMessage(RESTART);
+                return;
             }
             //有新的数据包
             if (receivedByte[0] == ConstantUtil.START_) {
@@ -906,7 +909,7 @@ public class PortService extends Service {
             scheduledThreadPool.shutdown();
         }
         minaClient.disConnect();
-        unregisterReceiver(mReceiver);
+      /*  unregisterReceiver(mReceiver);*/
     }
 
     @Override
