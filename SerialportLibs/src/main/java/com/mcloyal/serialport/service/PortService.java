@@ -17,6 +17,7 @@ import android.util.Log;
 
 import com.mcloyal.serialport.AppLibsContext;
 import com.mcloyal.serialport.R;
+import com.mcloyal.serialport.connection.ReConnectEvent;
 import com.mcloyal.serialport.connection.client.ClientConfig;
 import com.mcloyal.serialport.connection.client.MinaClient;
 import com.mcloyal.serialport.constant.Cmd;
@@ -33,6 +34,10 @@ import com.mcloyal.serialport.utils.PacketUtils;
 import com.mcloyal.serialport.utils.SpecialUtils;
 import com.mcloyal.serialport.utils.StringUtils;
 import com.mcloyal.serialport.utils.logs.LogUtils;
+
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -195,6 +200,7 @@ public class PortService extends Service {
         super.onCreate();
         mObservable = new MyObservable();
         appLibsContext = (AppLibsContext) getApplication();
+        EventBus.getDefault().register(this);
         /*
          * 定时接收Com1数据常驻子线程
          * 定时接收Com2数据常驻子线程
@@ -370,7 +376,10 @@ public class PortService extends Service {
             }
         }
     }
-
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onEvent(ReConnectEvent messageEvent) {
+       initMinaClient();
+    }
     private void onMinaClientReceived(byte[] receivedByte) {
         if (receivedByte.length > 0) {
             String context = null;
@@ -907,6 +916,7 @@ public class PortService extends Service {
             scheduledThreadPool.shutdown();
         }
         minaClient.disConnect();
+        EventBus.getDefault().unregister(this);
       /*  unregisterReceiver(mReceiver);*/
     }
 
