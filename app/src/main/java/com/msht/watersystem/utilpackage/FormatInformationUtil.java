@@ -103,6 +103,7 @@ public class FormatInformationUtil {
             deviceId[2]=byteList.get(2);
             deviceId[3]=byteList.get(3);
             FormatInformationBean.DeviceId=ByteUtils.byte4ToInt(deviceId);
+            FormatInformationBean.equipmentNo=ByteUtils.byte4ToInt(deviceId);
             byte[] installId=new byte[2];
             installId[0]=byteList.get(4);
             installId[1]=byteList.get(5);

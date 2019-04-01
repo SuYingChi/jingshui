@@ -5,6 +5,7 @@ import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
 
+import com.mcloyal.serialport.connection.ReConnectEvent;
 import com.mcloyal.serialport.connection.codeFactory.TestCodecFactory;
 
 import org.apache.mina.core.future.ConnectFuture;
@@ -14,6 +15,7 @@ import org.apache.mina.core.session.IoSession;
 import org.apache.mina.filter.codec.ProtocolCodecFilter;
 import org.apache.mina.filter.logging.LoggingFilter;
 import org.apache.mina.transport.socket.nio.NioSocketConnector;
+import org.greenrobot.eventbus.EventBus;
 
 import java.lang.ref.WeakReference;
 import java.net.InetSocketAddress;
@@ -111,9 +113,19 @@ public class MinaClient {
          */
         private void reConnect() {
                 boolean bool = false;
+                int num = 0;
                 while (!bool) {
                     bool = connect();
-                    //如果没有使能自动重连 则只连接一次就退出循环
+                    if(bool){
+                        num=0;
+                    }else {
+                        num++;
+                        if(num>=5){
+                            bool = true;
+                            num = 0;
+                            EventBus.getDefault().postSticky(new ReConnectEvent());
+                        }
+                    }
                     try {
                         Thread.sleep(5000);
                     } catch (InterruptedException e) {

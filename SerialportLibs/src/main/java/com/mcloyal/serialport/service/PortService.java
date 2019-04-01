@@ -17,6 +17,7 @@ import android.util.Log;
 
 import com.mcloyal.serialport.AppLibsContext;
 import com.mcloyal.serialport.R;
+import com.mcloyal.serialport.connection.ReConnectEvent;
 import com.mcloyal.serialport.connection.client.ClientConfig;
 import com.mcloyal.serialport.connection.client.MinaClient;
 import com.mcloyal.serialport.constant.Cmd;
@@ -33,6 +34,10 @@ import com.mcloyal.serialport.utils.PacketUtils;
 import com.mcloyal.serialport.utils.SpecialUtils;
 import com.mcloyal.serialport.utils.StringUtils;
 import com.mcloyal.serialport.utils.logs.LogUtils;
+
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -52,8 +57,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import android_serialport_api.SerialPort;
 
-import static com.mcloyal.serialport.constant.Cmd.IP_ADDRESS;
-import static com.mcloyal.serialport.constant.Cmd.PORT;
+
 
 /**
  * 串口通信常驻后台Service 前端用到的就是包头的开始标志，判断是否是新包，包长度字段，便于开始读取之后的解析，CMD指令类型，执行相应操作。
@@ -197,6 +201,7 @@ public class PortService extends Service {
         super.onCreate();
         mObservable = new MyObservable();
         appLibsContext = (AppLibsContext) getApplication();
+        EventBus.getDefault().register(this);
         /*
          * 定时接收Com1数据常驻子线程
          * 定时接收Com2数据常驻子线程
@@ -238,7 +243,7 @@ public class PortService extends Service {
 
     private void initMinaClient() {
         //客户端初始化
-        ClientConfig clientConfig = new ClientConfig.Builder().setIp(IP_ADDRESS).setPort(PORT).build();
+        ClientConfig clientConfig = new ClientConfig.Builder().setIp(Cmd.IP_ADDRESS).setPort(Cmd.PORT).build();
         //创建minaclient的时候已经启动一个常驻每隔5S的自动重连子线程
         minaClient = new MinaClient(clientConfig);
         minaClient.setClientStateListener(new MinaClient.ClientStateListener() {
@@ -366,7 +371,12 @@ public class PortService extends Service {
             }
         }
     }
-
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onEvent(ReConnectEvent messageEvent) {
+        if(!isConnection) {
+            initMinaClient();
+        }
+    }
     private void onMinaClientReceived(byte[] receivedByte) {
         if (receivedByte.length > 0) {
             String context = null;
@@ -903,6 +913,7 @@ public class PortService extends Service {
             scheduledThreadPool.shutdown();
         }
         minaClient.disConnect();
+        EventBus.getDefault().unregister(this);
       /*  unregisterReceiver(mReceiver);*/
     }
 

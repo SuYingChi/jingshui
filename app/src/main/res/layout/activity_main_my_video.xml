@@ -35,8 +35,7 @@
         <com.msht.watersystem.widget.CustomVideoView
             android:id="@+id/surface_view"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            />
+            android:layout_height="match_parent"/>
     </RelativeLayout>
     <FrameLayout
         android:id="@+id/id_layout_frame"
@@ -56,15 +55,11 @@
             android:gravity="center"
             android:contentDescription="@string/ad_picture"
             android:src="@drawable/water_advertisement" />
-        <TextClock
+        <TextView
+            android:id="@+id/id_text_welcome"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:format24Hour="kk:mm"
-            android:layout_marginTop="@dimen/margin_width10"
-            android:layout_marginEnd="@dimen/margin_width10"
-            android:layout_gravity="top|end"
-            android:textColor="@color/color_red"
-            android:textSize="@dimen/text_width12"/>
+            android:layout_height="wrap_content" />
+
     </FrameLayout>
     <TextClock
         android:layout_width="wrap_content"

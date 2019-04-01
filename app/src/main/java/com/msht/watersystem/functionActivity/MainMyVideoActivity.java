@@ -1,6 +1,7 @@
 package com.msht.watersystem.functionActivity;
 
 import android.content.Context;
+import android.content.ContextWrapper;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.Bitmap;
@@ -11,6 +12,7 @@ import android.media.MediaPlayer;
 import android.net.ConnectivityManager;
 import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
+import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -18,6 +20,8 @@ import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.RelativeLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.mcloyal.serialport.constant.Cmd;
@@ -83,7 +87,7 @@ public class MainMyVideoActivity extends BaseActivity implements Observer/*Surfa
     private PortService portService;
     private ComServiceConnection serviceConnection;
     private View imageLayout;
-    private View videoLayout;
+    private RelativeLayout mVideoViewContainer;
     private MediaPlayer mMediaPlayer;
     private NetBroadcastReceiver receiver;
     //  private SurfaceHolder holder;
@@ -107,7 +111,7 @@ public class MainMyVideoActivity extends BaseActivity implements Observer/*Surfa
     private boolean nightStatus = true;
     private int videoIndex = 0;
     private List<String> fileList;
-    private Context context;
+    private Context mContext;
     private CustomVideoView mVideoView;
     private String path;
     private int index;
@@ -116,21 +120,27 @@ public class MainMyVideoActivity extends BaseActivity implements Observer/*Surfa
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main_my_video);
-        context = this;
+        mContext = this;
         bindAndAddObserverToPortService();
-        EventBus.getDefault().register(context);
+        EventBus.getDefault().register(mContext);
         initService();
         imageLayout = findViewById(R.id.id_layout_frame);
-        videoLayout = findViewById(R.id.id_video_layout);
+        mVideoViewContainer = findViewById(R.id.id_video_layout);
         // SurfaceView mPreview = (SurfaceView) findViewById(R.id.surface);
         mVideoView = (CustomVideoView) findViewById(R.id.surface_view);
         fileList = FileUtil.getVideoFilePath();
         if (fileList != null && fileList.size() >= 1) {
             imageLayout.setVisibility(View.GONE);
-            videoLayout.setVisibility(View.VISIBLE);
+            mVideoViewContainer.setVisibility(View.VISIBLE);
            /* holder = mPreview.getHolder();
             holder.addCallback(this);
             holder.setFormat(PixelFormat.RGBX_8888);*/
+           /* if (mVideoViewContainer != null) {
+                mVideoViewContainer.removeAllViews();
+            }
+            mVideoView = new CustomVideoView(getApplicationContext());
+            mVideoViewContainer.addView(mVideoView);*/
+
             path = fileList.get(0);
             index = 0;
             mVideoView.setVideoPath(path);
@@ -182,14 +192,57 @@ public class MainMyVideoActivity extends BaseActivity implements Observer/*Surfa
         } else {
             initBannerView();
             imageLayout.setVisibility(View.VISIBLE);
-            videoLayout.setVisibility(View.GONE);
+            mVideoViewContainer.setVisibility(View.GONE);
         }
     }
 
 
+    private void initVideoData(){
+        if (fileList != null && fileList.size() >= 1) {
+            mVideoView.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+                @Override
+                public void onCompletion(MediaPlayer mp) {
+                    if (index == fileList.size() - 1) {
+                        index = 0;
+                    } else if (index < fileList.size() - 1) {
+                        index++;
+                    }
+                    path = fileList.get(index);
+                    mVideoView.setVideoPath(path);
+                    mVideoView.start();
+                }
+            });
+            mVideoView.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+                @Override
+                public void onPrepared(MediaPlayer mp) {
+                    mp.setOnInfoListener(new MediaPlayer.OnInfoListener() {
+                        @Override
+                        public boolean onInfo(MediaPlayer mp, int what, int extra) {
+                            if (what == MediaPlayer.MEDIA_INFO_VIDEO_RENDERING_START)
+                                mVideoView.setBackgroundColor(Color.TRANSPARENT);
+                            return true;
+                        }
+                    });
+                }
+            });
+            mVideoView.setOnErrorListener(new MediaPlayer.OnErrorListener() {
+                @Override
+                public boolean onError(MediaPlayer mp, int what, int extra) {
+
+                    index=0;
+                    path = fileList.get(index);
+                    mVideoView.setVideoPath(path);
+                    mVideoView.start();
+                    return true;
+                }
+            });
+        }
+    }
+
     @Override
     protected void onResume() {
         super.onResume();
+        //initVideoData();
         mVideoView.start();
     }
 
@@ -219,19 +272,19 @@ public class MainMyVideoActivity extends BaseActivity implements Observer/*Surfa
 
     private void initService() {
         /**开启一个新的服务，*/
-        Intent resendDataService = new Intent(context, ResendDataService.class);
+        Intent resendDataService = new Intent(mContext, ResendDataService.class);
         startService(resendDataService);
     }
 
     private void initBannerView() {
         ImageView advertImage = findViewById(R.id.textView);
         BannerM mBanner = findViewById(R.id.id_banner);
-        List<Bitmap> imageViewList = BitmapViewListUtil.getBitmapListUtil(context);
+        List<Bitmap> imageViewList = BitmapViewListUtil.getBitmapListUtil(mContext);
         if (imageViewList != null && imageViewList.size() > 0) {
             mBanner.setBannerBeanList(VariableUtil.imageViewList)
                     .setDefaultImageResId(R.drawable.water_advertisement)
                     .setIndexPosition(BannerM.INDEX_POSITION_BOTTOM)
-                    .setIndexColor(ContextCompat.getColor(context, R.color.colorPrimary))
+                    .setIndexColor(ContextCompat.getColor(mContext, R.color.colorPrimary))
                     .setIntervalTime(10)
                     .show();
             mBanner.setVisibility(View.VISIBLE);
@@ -391,12 +444,11 @@ public class MainMyVideoActivity extends BaseActivity implements Observer/*Surfa
             }
         }
     }
-
     private void onCom2Received203DataFromServer(ArrayList<Byte> data) {
         try {
             if (data != null && data.size() >= ConstantUtil.REQUEST_MAX_SIZE) {
                 FormatInformationUtil.saveDeviceInformationToFormatInformation(data);
-                CachePreferencesUtil.getIntData(context, CachePreferencesUtil.PRICE, FormatInformationBean.PriceNum);
+                CachePreferencesUtil.getIntData(mContext, CachePreferencesUtil.PRICE, FormatInformationBean.PriceNum);
                 CachePreferencesUtil.putIntData(this, CachePreferencesUtil.WATER_OUT_TIME, FormatInformationBean.OutWaterTime);
                 CachePreferencesUtil.putIntData(this, CachePreferencesUtil.WATER_NUM, FormatInformationBean.WaterNum);
                 CachePreferencesUtil.putChargeMode(this, CachePreferencesUtil.CHARGE_MODE, FormatInformationBean.ChargeMode);
@@ -408,7 +460,6 @@ public class MainMyVideoActivity extends BaseActivity implements Observer/*Surfa
             e.printStackTrace();
         }
     }
-
     private void response204ToServer(byte[] frame) {
         if (portService != null) {
             try {
@@ -424,7 +475,6 @@ public class MainMyVideoActivity extends BaseActivity implements Observer/*Surfa
             }
         }
     }
-
     private void onCom2Received104DataFromServer(ArrayList<Byte> data) {
         try {
             if (data != null && data.size() >= ConstantUtil.CONTROL_MAX_SIZE) {
@@ -442,7 +492,6 @@ public class MainMyVideoActivity extends BaseActivity implements Observer/*Surfa
             e.printStackTrace();
         }
     }
-
     private void response202ToServer(byte[] frame) {
         if (portService != null) {
             try {
@@ -458,7 +507,6 @@ public class MainMyVideoActivity extends BaseActivity implements Observer/*Surfa
             }
         }
     }
-
     private void onCom2Received102DataFromServer(ArrayList<Byte> data) {
         if (ConsumeInformationUtils.controlModel(mContext, data)) {
             /*  .....
@@ -466,7 +514,6 @@ public class MainMyVideoActivity extends BaseActivity implements Observer/*Surfa
             */
         }
     }
-
     private void response207ToServer(byte[] frame) {
         if (portService != null) {
             try {
@@ -482,7 +529,6 @@ public class MainMyVideoActivity extends BaseActivity implements Observer/*Surfa
             }
         }
     }
-
     /**
      * 扫码业务指令
      *
@@ -518,7 +564,6 @@ public class MainMyVideoActivity extends BaseActivity implements Observer/*Surfa
             }
         }
     }
-
     private void onCom2Received206DataFromServer(ArrayList<Byte> data) {
         if (data != null && data.size() != 0) {
             FormatInformationUtil.saveTimeInformationToFormatInformation(data);
@@ -537,7 +582,6 @@ public class MainMyVideoActivity extends BaseActivity implements Observer/*Surfa
             }
         }
     }
-
     private void sendBuyWaterCommand104ToControlBoard(int business) {
         if (portService != null) {
             try {
@@ -638,15 +682,12 @@ public class MainMyVideoActivity extends BaseActivity implements Observer/*Surfa
             restartWaterApp();
         }
     }
-
     private OrderInfoDao getOrderDao() {
         return AppContext.getInstance().getDaoSession().getOrderInfoDao();
     }
-
     private void deleteData(OrderInfo info) {
         getOrderDao().delete(info);
     }
-
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         if (keyCode == KeyEvent.KEYCODE_BACK && event.getRepeatCount() == 0) {
@@ -676,23 +717,25 @@ public class MainMyVideoActivity extends BaseActivity implements Observer/*Surfa
             return super.onKeyDown(keyCode, event);
         }
     }
-
     private void startBuyWater() {
         pageStatus = false;
         Intent intent = new Intent(mContext, BuyWaterActivity.class);
         unbindPortServiceAndRemoveObserver();
         startActivity(intent);
     }
-
     private void exitApp() {
         System.exit(0);
     }
-
     private void restartWaterApp() {
+        releaseVideoData();
         Intent launchIntent = getPackageManager().getLaunchIntentForPackage(getPackageName());
-        startActivity(launchIntent);
+        if (launchIntent!=null){
+            launchIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(launchIntent);
+        }
         //**杀死整个进程**//*
         android.os.Process.killProcess(android.os.Process.myPid());
+        System.exit(0);
     }
 
     /*    @Override
@@ -858,19 +901,39 @@ public class MainMyVideoActivity extends BaseActivity implements Observer/*Surfa
     }
 
     @Override
+    protected void attachBaseContext(Context newBase) {
+        super.attachBaseContext(new ContextWrapper(newBase){
+            @Override
+            public Object getSystemService(String name) {
+                if (Context.AUDIO_SERVICE.equals(name))
+                    return getApplicationContext().getSystemService(name);
+                return super.getSystemService(name);
+            }
+        });
+    }
+    private void  releaseVideoData(){
+        if (mVideoView!=null){
+            mVideoView.suspend();
+            mVideoView.setOnErrorListener(null);
+            mVideoView.setOnPreparedListener(null);
+            mVideoView.setOnCompletionListener(null);
+            mVideoView=null;
+            mVideoViewContainer.removeAllViews();
+        }
+    }
+    @Override
     protected void onPause() {
         super.onPause();
         releaseMediaPlayer();
         doCleanUp();
     }
-
     @Override
     protected void onDestroy() {
         super.onDestroy();
         unbindPortServiceAndRemoveObserver();
         releaseMediaPlayer();
         doCleanUp();
-        ThreadPoolManager.getInstance(context).onShutDown();
-        EventBus.getDefault().unregister(context);
+        ThreadPoolManager.getInstance(mContext).onShutDown();
+        EventBus.getDefault().unregister(mContext);
     }
 }

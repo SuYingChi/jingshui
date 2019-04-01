@@ -16,9 +16,9 @@ public class Cmd {
         //线上地址：sb-server.msbapp.cn:16080
         //测试地址：120.25.195.173,
         //线上环境
-       // public static final String _CIP_START_ = "AT+CIPSTART=TCP,sb-server.msbapp.cn,16080" + "\n";//建立TCP(UDP)/IP连接
+        public static final String _CIP_START_ = "AT+CIPSTART=TCP,sb-server.msbapp.cn,16080" + "\n";//建立TCP(UDP)/IP连接
         //测试环境
-        public static final String _CIP_START_ = "AT+CIPSTART=TCP,120.25.195.173,16080" + "\n";//建立TCP(UDP)/IP连接
+       // public static final String _CIP_START_ = "AT+CIPSTART=TCP,120.25.195.173,16080" + "\n";//建立TCP(UDP)/IP连接
         //public static final String _CIP_MODE_IFC_ = "AT+IFC=2,2" + "\n";//开启硬件流控功能设置
         public static final String _CIP_MODE_ = "AT+CIPMODE=1\n";//设置为透传模式
         //public static final String _CIP_CSQ_ = "AT+CSQ;+cops?;+creg?\r\n";//指令检测卡信号
@@ -29,8 +29,8 @@ public class Cmd {
     }
 
     public static final int PORT=16080;
-    public static final String IP_ADDRESS="120.25.195.173";
-   // public static final String IP_ADDRESS="sb-server.msbapp.cn";
+   // public static final String IP_ADDRESS="120.25.195.173";
+    public static final String IP_ADDRESS="sb-server.msbapp.cn";
 
     public static class ComCmd {
         //启动灌装09

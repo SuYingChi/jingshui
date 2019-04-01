@@ -1,28 +1,15 @@
 package com.msht.watersystem.functionActivity;
 
-import android.annotation.SuppressLint;
-import android.content.ContentResolver;
 
-
-import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
-import android.net.ConnectivityManager;
-import android.net.DhcpInfo;
-import android.net.LinkAddress;
-import android.net.LinkProperties;
-import android.net.NetworkInfo;
 
-import android.net.wifi.WifiInfo;
-import android.net.wifi.WifiManager;
-import android.os.Build;
 import android.os.CountDownTimer;
 import android.os.Bundle;
 
 
-import android.support.annotation.RequiresApi;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
@@ -52,23 +39,16 @@ import com.msht.watersystem.utilpackage.FormatInformationUtil;
 import com.msht.watersystem.utilpackage.DataCalculateUtils;
 import com.msht.watersystem.utilpackage.VariableUtil;
 import com.msht.watersystem.widget.BannerM;
+import com.msht.watersystem.widget.ToastUtils;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.net.Inet4Address;
-import java.net.InetAddress;
-import java.net.NetworkInterface;
-import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.Enumeration;
 import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * Demo class
@@ -118,72 +98,7 @@ public class BuyWaterActivity extends BaseActivity implements Observer{
         initWaterQuality();
         bindAndAddObserverToPortService();
         initData();
-        initIpView();
     }
-
-    private void initIpView() {
-        String ip;
-        ConnectivityManager conMann = (ConnectivityManager)this.getSystemService(Context.CONNECTIVITY_SERVICE);
-        NetworkInfo mobileNetworkInfo = null;
-        NetworkInfo wifiNetworkInfo = null;
-        if (conMann != null) {
-            mobileNetworkInfo = conMann.getNetworkInfo(ConnectivityManager.TYPE_MOBILE);
-            wifiNetworkInfo = conMann.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
-            NetworkInfo ethernetNetworkInfo = conMann.getNetworkInfo(ConnectivityManager.TYPE_ETHERNET);
-            if (mobileNetworkInfo.isConnected()) {
-                ip = getLocalIpV4Address();
-                Log.d("MyIpV4Address=",ip);
-            }else if(wifiNetworkInfo.isConnected()) {
-                WifiManager wifiManager = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
-                WifiInfo wifiInfo = wifiManager != null ? wifiManager.getConnectionInfo() : null;
-                int ipAddress = wifiInfo != null ? wifiInfo.getIpAddress() : 0;
-                ip = intToIp(ipAddress);
-                Log.d("MyIpV4Address=",ip);
-            }else if (ethernetNetworkInfo.isConnected()){
-               /* EthernetManager mEthManager = (EthernetManager)mContext.getSystemService("ethernet");
-                EthernetInfo ethernetInfo= null;
-                if (mEthManager != null) {
-                    ethernetInfo = mEthManager.getConnectionInfo();
-                    ip=String.valueOf(ethernetInfo.getIpAddress());
-                    Log.d("MyIpV4Address=",ip);
-                }else {
-                    Log.d("MyIpV4Address=","nulllllll");
-                }*/
-            }
-        }else {
-            Log.d("MyIpV4Address=","aaaaa");
-        }
-        // 需要<uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-    }
-    public String getLocalIpV4Address() {
-                 try {
-                        String ipv4;
-                         ArrayList<NetworkInterface> nilist = Collections.list(NetworkInterface.getNetworkInterfaces());
-                         for (NetworkInterface ni: nilist)
-                            {
-                ArrayList<InetAddress>  ialist = Collections.list(ni.getInetAddresses());
-                for (InetAddress address: ialist){
-                                        if (!address.isLoopbackAddress() && !address.isLinkLocalAddress())
-                                        {
-                                                ipv4=address.getHostAddress();
-                                                 return ipv4;
-                                            }
-                                     }
-
-                             }
-
-                     } catch (SocketException ex) {
-                         Log.e("localip", ex.toString());
-                    }
-                 return null;
-             }
-            //获取Wifi ip 地址
-     private String intToIp(int i) {
-                 return (i & 0xFF) + "." +
-                                 ((i >> 8) & 0xFF) + "." +
-                                 ((i >> 16) & 0xFF) + "." +
-                                 (i >> 24 & 0xFF);
-             }
     private void initViewImages() {
         BannerM mBanner = (BannerM) findViewById(R.id.id_banner);
         ImageView advertImage = findViewById(R.id.textView);
@@ -237,7 +152,7 @@ public class BuyWaterActivity extends BaseActivity implements Observer{
         tvTime =findViewById(R.id.id_time) ;
         imageCode =findViewById(R.id.id_erwei_code) ;
         layoutOnline =findViewById(R.id.id_online_view);
-        ((TextView)findViewById(R.id.id_equipment)).setText(String.valueOf(FormatInformationBean.DeviceId));
+        ((TextView)findViewById(R.id.id_equipment)).setText(String.valueOf(FormatInformationBean.equipmentNo));
         int chargeMode= CachePreferencesUtil.getChargeMode(this,CachePreferencesUtil.CHARGE_MODE,0);
         if (chargeMode==1){
             tvFreeCharge.setVisibility(View.VISIBLE);
@@ -260,7 +175,12 @@ public class BuyWaterActivity extends BaseActivity implements Observer{
         if (VariableUtil.qrCodeBitmap !=null&&!VariableUtil.qrCodeBitmap.isRecycled()){
             imageCode.setImageBitmap(VariableUtil.qrCodeBitmap);
         }else {
-            createQRCodeWithLogo(result);
+            if (FormatInformationBean.equipmentNo!=0){
+                createQRCodeWithLogo(result);
+            }else {
+                ToastUtils.onToastLong("设备号异常，请稍后25秒");
+                finish();
+            }
         }
     }
     private void createQRCodeWithLogo(String result) {
@@ -278,7 +198,7 @@ public class BuyWaterActivity extends BaseActivity implements Observer{
     private String createQRCodeMessageJson() {
         String jsonResult="";
         String qrCodeType="1";
-        String equipmentNo=String.valueOf(FormatInformationBean.DeviceId);
+        String equipmentNo=String.valueOf(FormatInformationBean.equipmentNo);
         JSONObject object=new JSONObject();
         try{
             JSONObject jsonData=new JSONObject();

@@ -9,6 +9,7 @@ package com.msht.watersystem.utilpackage;
 public class FormatInformationBean {
 
     public static int DeviceId;
+    public static int equipmentNo;
     public static int InstallId;
     public static int PriceNum;
     public static int temperature;

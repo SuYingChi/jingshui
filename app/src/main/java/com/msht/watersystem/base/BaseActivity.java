@@ -45,7 +45,7 @@ public abstract class BaseActivity extends AppCompatActivity  {
             params.systemUiVisibility=View.SYSTEM_UI_FLAG_HIDE_NAVIGATION;
             window.setAttributes(params);
         }*/
-        ((AppContext)getApplication()).addActivity(this);
+      //  ((AppContext)getApplication()).addActivity(this);
         mContext = this;
         appLibsContext = (AppLibsContext) this.getApplicationContext();
         appPreferences = AppPreferences.getInstance(appLibsContext);
@@ -74,6 +74,8 @@ public abstract class BaseActivity extends AppCompatActivity  {
     protected void onPause() {
         super.onPause();
     }
+
+   // public abstract void onDestroyView();
 
     @Override
     protected void onDestroy() {

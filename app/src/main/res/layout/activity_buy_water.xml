@@ -129,7 +129,6 @@
                     android:textColor="@color/white"
                     android:textStyle="bold"
                     android:visibility="gone"/>
-
                 <RelativeLayout
                     android:layout_width="@dimen/margin_width180"
                     android:layout_height="@dimen/margin_width180"
@@ -140,8 +139,8 @@
                     <ImageView
                         android:id="@+id/id_erwei_code"
                         android:layout_width="@dimen/margin_width180"
-                        android:layout_height="@dimen/margin_width180" />
-
+                        android:layout_height="@dimen/margin_width180"
+                        android:contentDescription="@string/ad_picture"/>
                     <RelativeLayout
                         android:id="@+id/id_online_view"
                         android:layout_width="@dimen/margin_width180"

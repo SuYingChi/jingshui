@@ -5,12 +5,14 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.StrictMode;
+import android.util.Log;
 
 import com.mcloyal.serialport.AppLibsContext;
 import com.mcloyal.serialport.utils.logs.LogUtils;
 import com.msht.watersystem.gen.DaoMaster;
 import com.msht.watersystem.gen.DaoSession;
 import com.msht.watersystem.receiver.PortReceiver;
+import com.tencent.bugly.crashreport.CrashReport;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,7 +24,7 @@ import java.util.List;
  * @date 2017/11/6
  */
 public class AppContext extends AppLibsContext {
-    private List<Activity> mActivityList;
+    private static List<Activity> mActivityList;
     public static AppContext instances;
 
     private DaoSession mDaoSession;
@@ -39,6 +41,7 @@ public class AppContext extends AppLibsContext {
         super.onCreate();
         mActivityList=new ArrayList<>();
         initPortBroadcast();
+        CrashReport.initCrashReport(getApplicationContext(), "fd0454d299", false);
        // CaughtExceptionTool.getInstance().init(this);  //异常捕获
         instances = this;
        // mContext = getApplicationContext();
@@ -51,7 +54,7 @@ public class AppContext extends AppLibsContext {
        /* ArrayList<byte[]> types = new ArrayList<>();
         types.add(new byte[]{0x01, 0x04});//如果需要新增其他类型的特例则使用 add 方法叠加即可
         SpecialUtils.addTypes(types);*/
-       if (BuildConfig.DEBUG){
+      /* if (BuildConfig.DEBUG){
            StrictMode.setThreadPolicy(new StrictMode.ThreadPolicy.Builder()
                    .detectCustomSlowCalls()
                    .detectDiskReads()
@@ -65,7 +68,7 @@ public class AppContext extends AppLibsContext {
                    .detectLeakedSqlLiteObjects()
                    .penaltyLog()
                    .build());
-       }
+       }*/
     }
 
     private void setDatabase() {
@@ -113,19 +116,20 @@ public class AppContext extends AppLibsContext {
     public static Context getWaterApplicationContext() {
         return instances.getApplicationContext();
     }
-    public void addActivity(Activity activity){
+    public  void addActivity(Activity activity){
         if (!mActivityList.contains(activity)){
             mActivityList.add(activity);
         }
     }
-    public void removeAllActivity(){
+    public  void removeAllActivity(){
         for (Activity activity:mActivityList){
             if (activity!=null){
                 activity.finish();
             }
+            Log.d("releaseVideoData","removeAll");
         }
     }
-    public void removeActivity(Activity activity){
+    public  void removeActivity(Activity activity){
         if (mActivityList.contains(activity)){
             mActivityList.remove(activity);
             if (activity!=null){
