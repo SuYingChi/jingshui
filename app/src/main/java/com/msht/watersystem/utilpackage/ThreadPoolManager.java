@@ -93,7 +93,7 @@ public class ThreadPoolManager {
                 /*开背光*/
                 EventBus.getDefault().post(new DateMassageEvent(1));
             }
-            if (DateTimeUtils.isCheckTime(2,2,10,50)){
+            if (DateTimeUtils.isCheckTime(2,2,10,13)){
                 if (VariableUtil.mFirstOpen){
                     EventBus.getDefault().post(new RestartAppEvent(true));
                 }
