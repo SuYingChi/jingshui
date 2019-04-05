@@ -54,21 +54,6 @@ public class AppContext extends AppLibsContext {
        /* ArrayList<byte[]> types = new ArrayList<>();
         types.add(new byte[]{0x01, 0x04});//如果需要新增其他类型的特例则使用 add 方法叠加即可
         SpecialUtils.addTypes(types);*/
-      /* if (BuildConfig.DEBUG){
-           StrictMode.setThreadPolicy(new StrictMode.ThreadPolicy.Builder()
-                   .detectCustomSlowCalls()
-                   .detectDiskReads()
-                   .detectDiskWrites()
-                   .detectNetwork()
-                   .penaltyLog()
-                   .build());
-           StrictMode.setVmPolicy(new StrictMode.VmPolicy.Builder()
-                   .detectActivityLeaks()
-                   .detectLeakedClosableObjects()
-                   .detectLeakedSqlLiteObjects()
-                   .penaltyLog()
-                   .build());
-       }*/
     }
 
     private void setDatabase() {

@@ -191,7 +191,8 @@ public class BuyWaterActivity extends BaseActivity implements Observer{
             }
             @Override
             public void onResultFail(boolean failStatus) {
-                Toast.makeText(mContext, "系统故障", Toast.LENGTH_SHORT).show();
+                ToastUtils.onToastLong("设备号异常，请稍后25秒");
+                //Toast.makeText(mContext, "系统故障", Toast.LENGTH_SHORT).show();
             }
         });
     }
