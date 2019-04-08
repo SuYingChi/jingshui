@@ -62,7 +62,7 @@ dependencies {
     implementation 'org.greenrobot:greendao-generator:3.0.0'
     implementation 'org.greenrobot:eventbus:3.0.0'
     testImplementation 'junit:junit:4.12'
-   // implementation project(':SerialportLibs')
+    implementation project(':SerialportLibs')
     implementation 'org.greenrobot:eventbus:3.0.0'
     implementation 'com.tencent.bugly:crashreport:latest.release'
 }

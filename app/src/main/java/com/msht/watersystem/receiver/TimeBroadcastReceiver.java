@@ -23,7 +23,7 @@ public class TimeBroadcastReceiver extends BroadcastReceiver {
         if (intent.getAction().equals(Intent.ACTION_TIME_TICK)) {
             boolean TimeFlag= DateTimeUtils.isCheckTime(hour1,hour2,minute1,minute2);
             if (DateTimeUtils.isCheckTime(hour1,hour2,minute2,minute3)){
-                RestartAppUtil.restartApp(context);
+                RestartAppUtil.restartApp();
             }
         }
     }

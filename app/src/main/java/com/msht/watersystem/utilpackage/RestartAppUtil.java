@@ -22,18 +22,21 @@ import java.io.OutputStream;
 
 public class RestartAppUtil {
 
-   public static void restartApp(Context mContext){
-       ((AppContext)mContext.getApplicationContext()).removeAllActivity();
-       Intent restartIntent =new Intent(mContext.getApplicationContext(), SplashActivity.class);
+   public static void restartApp(){
+
+       Intent restartIntent =new Intent(AppContext.getWaterApplicationContext(), SplashActivity.class);
        restartIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-       mContext.startActivity(restartIntent);
+     //  mContext.startActivity(restartIntent);
        PendingIntent pendingIntent = PendingIntent.getActivity(
-               mContext.getApplicationContext(), 0, restartIntent, 0);
+               AppContext.getWaterApplicationContext(), 0, restartIntent, 0);
        //退出程序
-       AlarmManager mgr = (AlarmManager)mContext.getSystemService(Context.ALARM_SERVICE);
-       mgr.set(AlarmManager.RTC, System.currentTimeMillis() + 600,
-               pendingIntent);
-      ((AppContext) mContext.getApplicationContext()).onKillProcess();
+       AlarmManager mgr = (AlarmManager)AppContext.getWaterApplicationContext().getSystemService(Context.ALARM_SERVICE);
+       if (mgr != null) {
+           mgr.set(AlarmManager.RTC, System.currentTimeMillis() + 680,
+                   pendingIntent);
+       }
+       android.os.Process.killProcess(android.os.Process.myPid());
+       System.exit(0);
     }
     public static void  restartSystem(){
         try {

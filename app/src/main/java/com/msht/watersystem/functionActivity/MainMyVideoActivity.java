@@ -52,6 +52,7 @@ import com.msht.watersystem.utilpackage.DateTimeUtils;
 import com.msht.watersystem.utilpackage.FileUtil;
 import com.msht.watersystem.utilpackage.FormatInformationBean;
 import com.msht.watersystem.utilpackage.FormatInformationUtil;
+import com.msht.watersystem.utilpackage.RestartAppUtil;
 import com.msht.watersystem.utilpackage.ThreadPoolManager;
 import com.msht.watersystem.utilpackage.VariableUtil;
 import com.msht.watersystem.entity.OrderInfo;
@@ -679,6 +680,7 @@ public class MainMyVideoActivity extends BaseActivity implements Observer/*Surfa
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onRestartApp(RestartAppEvent event) {
         if (event.getMessage()) {
+            RestartAppUtil.restartApp();
             restartWaterApp();
         }
     }
@@ -905,8 +907,9 @@ public class MainMyVideoActivity extends BaseActivity implements Observer/*Surfa
         super.attachBaseContext(new ContextWrapper(newBase){
             @Override
             public Object getSystemService(String name) {
-                if (Context.AUDIO_SERVICE.equals(name))
+                if (Context.AUDIO_SERVICE.equals(name)){
                     return getApplicationContext().getSystemService(name);
+                }
                 return super.getSystemService(name);
             }
         });
