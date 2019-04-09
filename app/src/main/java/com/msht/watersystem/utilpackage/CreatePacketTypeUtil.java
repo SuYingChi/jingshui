@@ -85,8 +85,6 @@ public class CreatePacketTypeUtil {
         }
         return mDataString;
     }
-
-
     public static byte[] getPacketData103(){
         try {
             byte[] frame = FrameUtils.getFrame(AppContext.getWaterApplicationContext());
