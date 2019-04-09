@@ -12,6 +12,7 @@ import com.mcloyal.serialport.utils.logs.LogUtils;
 import com.msht.watersystem.gen.DaoMaster;
 import com.msht.watersystem.gen.DaoSession;
 import com.msht.watersystem.receiver.PortReceiver;
+import com.msht.watersystem.utilpackage.CaughtExceptionTool;
 import com.tencent.bugly.crashreport.CrashReport;
 
 import java.util.ArrayList;
@@ -42,7 +43,7 @@ public class AppContext extends AppLibsContext {
         mActivityList=new ArrayList<>();
         initPortBroadcast();
         CrashReport.initCrashReport(getApplicationContext(), "fd0454d299", false);
-       // CaughtExceptionTool.getInstance().init(this);  //异常捕获
+        CaughtExceptionTool.getInstance().init(this);  //异常捕获
         instances = this;
        // mContext = getApplicationContext();
         /*初始化视频播放*/

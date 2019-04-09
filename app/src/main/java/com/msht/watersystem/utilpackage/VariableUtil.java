@@ -49,7 +49,7 @@ public class VariableUtil {
                 HttpURLConnection conn = null;
                 DataInputStream dis = null;
                 try {
-                    byte[] orderData= CreateOrderType.byteOrderByteDataToString(packet1);
+                    byte[] orderData= CreatePacketTypeUtil.byteOrderByteDataToString(packet1);
                     OrderInfo insertData = new OrderInfo(null, orderData);
                     getOrderDao().insert(insertData);
                     resultListener.onResultSuccess(SAVE_DATA_SUCCESS);

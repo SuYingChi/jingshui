@@ -5,7 +5,6 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.ImageView;
@@ -29,11 +28,11 @@ import com.msht.watersystem.utilpackage.ByteUtils;
 import com.msht.watersystem.utilpackage.CachePreferencesUtil;
 import com.msht.watersystem.utilpackage.ConstantUtil;
 import com.msht.watersystem.utilpackage.ConsumeInformationUtils;
-import com.msht.watersystem.utilpackage.CreateOrderType;
 import com.msht.watersystem.utilpackage.DataCalculateUtils;
 import com.msht.watersystem.utilpackage.DateTimeUtils;
 import com.msht.watersystem.utilpackage.FormatInformationBean;
 import com.msht.watersystem.utilpackage.FormatInformationUtil;
+import com.msht.watersystem.utilpackage.RestartAppUtil;
 import com.msht.watersystem.utilpackage.ThreadPoolManager;
 import com.msht.watersystem.utilpackage.VariableUtil;
 import com.msht.watersystem.entity.OrderInfo;
@@ -160,8 +159,7 @@ public class MainWaterImageActivity extends BaseActivity implements Observer{
                     response202ToServer(packet2.getFrame());
                     onCom2Received102DataFromServer(packet2.getData());
                 } else if (Arrays.equals(packet2.getCmd(), new byte[]{0x01, 0x07})) {
-                    //扫码取水，后端主动发送107，回复207给后端,发送104给主控板取水
-                    response207ToServer(packet2.getFrame());
+                   // response207ToServer(packet2.getFrame());
                     VariableUtil.byteArray.clear();
                     VariableUtil.byteArray = packet2.getData();
                     onCom2Received107DataFromServer(packet2.getData());
@@ -496,7 +494,8 @@ public class MainWaterImageActivity extends BaseActivity implements Observer{
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onRestartApp(RestartAppEvent event){
         if (event.getMessage()){
-            restartWaterApp();
+            RestartAppUtil.restartApp();
+            //restartWaterApp();
         }
     }
     private OrderInfoDao getOrderDao() {

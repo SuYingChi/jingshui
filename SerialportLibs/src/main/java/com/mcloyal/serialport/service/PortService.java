@@ -710,10 +710,10 @@ public class PortService extends Service {
         }*/
 
       //使用4G后
-        isConnection = false;
+
         //重置计数
         pgkTime.set(0);
-        if(minaClient!=null){
+        if(minaClient!=null&&isConnection){
             minaClient.disConnect();
         }
         initMinaClient();

@@ -27,6 +27,7 @@ import com.msht.watersystem.utilpackage.ConstantUtil;
 import com.msht.watersystem.utilpackage.ConsumeInformationUtils;
 import com.msht.watersystem.utilpackage.ByteUtils;
 import com.msht.watersystem.utilpackage.CachePreferencesUtil;
+import com.msht.watersystem.utilpackage.CreatePacketTypeUtil;
 import com.msht.watersystem.utilpackage.FormatInformationBean;
 import com.msht.watersystem.utilpackage.FormatInformationUtil;
 import com.msht.watersystem.utilpackage.DataCalculateUtils;
@@ -447,7 +448,8 @@ public class IcCardOutWaterActivity extends BaseActivity implements Observer{
                 myCountDownTimer.cancel();
                 if (portService != null) {
                     calculateData();    //没联网计算取缓存数据
-                    try {
+                    portService.sendToServer(CreatePacketTypeUtil.getPacketData103());
+                    /*try {
                         byte[] mFrame = FrameUtils.getFrame(mContext);
                         byte[] type = new byte[]{0x01, 0x03};
                         byte[] packet = PacketUtils.makePackage(mFrame, type, null);
@@ -458,7 +460,7 @@ public class IcCardOutWaterActivity extends BaseActivity implements Observer{
                         e.printStackTrace();
                     } catch (CmdTypeException e) {
                         e.printStackTrace();
-                    }
+                    }*/
                     startOut=false;
                     handler.post(runnable);
                 }

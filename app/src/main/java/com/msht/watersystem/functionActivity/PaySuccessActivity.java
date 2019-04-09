@@ -170,7 +170,6 @@ public class PaySuccessActivity extends BaseActivity implements Observer {
             Packet packet1 = myObservable.getCom1Packet();
             if (packet1 != null) {
                 if (Arrays.equals(packet1.getCmd(),new byte[]{0x01,0x04})){
-                   // MyLogUtil.d("主板回复指令104",CreateOrderType.getPacketString(packet1));
                     onCom1Received104DataFromControlBoard(packet1.getData());
                 }else if (Arrays.equals(packet1.getCmd(),new byte[]{0x01,0x05})){
                     onCom1Received105DataFromControlBoard(packet1.getData());
@@ -189,7 +188,7 @@ public class PaySuccessActivity extends BaseActivity implements Observer {
                     }
                     onCom2Received104DataFromServer(packet2.getData());
                 }else if (Arrays.equals(packet2.getCmd(),new byte[]{0x01,0x07})){
-                    response207ToServer(packet2.getFrame());
+                   // response207ToServer(packet2.getFrame());
                     onCom2Received107DataFromServer(packet2.getData());
                 }else if (Arrays.equals(packet2.getCmd(),new byte[]{0x01,0x02})){
                     response102ToServer(packet2.getFrame());
@@ -272,7 +271,7 @@ public class PaySuccessActivity extends BaseActivity implements Observer {
                 VariableUtil.byteArray=data;
                 buyStatus=true;
                 if (FormatInformationBean.BusinessType==1){
-                    if (FormatInformationBean.AppBalance<20){
+                    if (FormatInformationBean.AppBalance<10){
                         Intent intent=new Intent(mContext,AppNotSufficientActivity.class);
                         startActivity(intent);
                         finish();

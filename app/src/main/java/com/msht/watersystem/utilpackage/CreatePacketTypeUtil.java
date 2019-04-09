@@ -1,6 +1,13 @@
 package com.msht.watersystem.utilpackage;
 
+import com.mcloyal.serialport.constant.Cmd;
 import com.mcloyal.serialport.entity.Packet;
+import com.mcloyal.serialport.exception.CRCException;
+import com.mcloyal.serialport.exception.CmdTypeException;
+import com.mcloyal.serialport.exception.FrameException;
+import com.mcloyal.serialport.utils.FrameUtils;
+import com.mcloyal.serialport.utils.PacketUtils;
+import com.msht.watersystem.AppContext;
 
 import java.util.ArrayList;
 
@@ -10,7 +17,7 @@ import java.util.ArrayList;
  * @date 2018/1/26
  */
 
-public class CreateOrderType {
+public class CreatePacketTypeUtil {
     public static byte[] byteOrderByteDataToString(Packet packet1){
         byte   head=packet1.getStart();
         byte[] len=packet1.getLen();
@@ -77,6 +84,26 @@ public class CreateOrderType {
             mDataString=ByteUtils.ByteArrToHex(byteData);
         }
         return mDataString;
+    }
+
+
+    public static byte[] getPacketData103(){
+        try {
+            byte[] frame = FrameUtils.getFrame(AppContext.getWaterApplicationContext());
+            byte[] type = new byte[]{0x01, 0x03};
+            byte[] packet = PacketUtils.makePackage(frame, type, null);
+            byte[] version=ByteUtils.intTo2Byte(AppPackageUtil.getPackageVersionCode());
+            packet[9]=version[0];
+            packet[10]=version[1];
+            return packet;
+        } catch (CRCException e) {
+            e.printStackTrace();
+        } catch (FrameException e) {
+            e.printStackTrace();
+        } catch (CmdTypeException e) {
+            e.printStackTrace();
+        }
+        return Cmd.ComCmd.EQUIPMENT_INFO;
     }
 
 }

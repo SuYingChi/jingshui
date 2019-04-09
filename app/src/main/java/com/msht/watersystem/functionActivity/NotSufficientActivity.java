@@ -138,7 +138,7 @@ public class NotSufficientActivity extends BaseActivity implements Observer {
                     }
                    onCom2Received104DataFromServer(packet2.getData());
                 } else if (Arrays.equals(packet2.getCmd(),new byte[]{0x01,0x07})){
-                    response207ToServer(packet2.getFrame());
+                   // response207ToServer(packet2.getFrame());
                    onCom2Received107DataFromServer(packet2.getData());
                 }else if (Arrays.equals(packet2.getCmd(),new byte[]{0x01,0x02})){
                    response102ToServer(packet2.getFrame());

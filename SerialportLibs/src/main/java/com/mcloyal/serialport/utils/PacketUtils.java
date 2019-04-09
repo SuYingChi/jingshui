@@ -85,7 +85,7 @@ public class PacketUtils {
         replyList.add(0, len[1]);
         replyList.add(0, len[0]);
         try {
-            Byte[] tc = replyList.toArray(new Byte[replyList.size()]);
+            Byte[] tc = replyList.toArray(new Byte[0]);//自己修改
             byte[] cc = new byte[replyList.size()];
             for (int i = 0; i < tc.length; i++) {
                 cc[i] = tc[i];
@@ -96,7 +96,7 @@ public class PacketUtils {
             ListUtils.append(replyList, crc);//尾部追加crc16数值
             //最后添加包头，确保包头不参与CRC计算
             replyList.add(0, ConstantUtil.START_);//包头
-            Byte[] tb = replyList.toArray(new Byte[replyList.size()]);
+            Byte[] tb = replyList.toArray(new Byte[0]);   //自己修改
             byte reply[] = new byte[replyList.size()];
             for (int i = 0; i < tb.length; i++) {
                 reply[i] = tb[i];

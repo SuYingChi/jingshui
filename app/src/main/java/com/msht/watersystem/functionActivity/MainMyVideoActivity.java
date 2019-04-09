@@ -1,37 +1,25 @@
 package com.msht.watersystem.functionActivity;
 
 import android.content.Context;
-import android.content.ContextWrapper;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.Bitmap;
 import android.graphics.Color;
-import android.graphics.PixelFormat;
-import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.net.ConnectivityManager;
 import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
-import android.support.v7.app.AppCompatActivity;
-import android.text.TextUtils;
-import android.util.Log;
 import android.view.KeyEvent;
-import android.view.SurfaceHolder;
-import android.view.SurfaceView;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
-import android.widget.TextView;
-import android.widget.Toast;
 
-import com.mcloyal.serialport.constant.Cmd;
 import com.mcloyal.serialport.entity.Packet;
 import com.mcloyal.serialport.exception.CRCException;
 import com.mcloyal.serialport.exception.CmdTypeException;
 import com.mcloyal.serialport.exception.FrameException;
 import com.mcloyal.serialport.service.PortService;
 import com.mcloyal.serialport.utils.ComServiceConnection;
-import com.mcloyal.serialport.utils.Crc16;
 import com.mcloyal.serialport.utils.FrameUtils;
 import com.mcloyal.serialport.utils.PacketUtils;
 import com.msht.watersystem.AppContext;
@@ -46,7 +34,6 @@ import com.msht.watersystem.utilpackage.ByteUtils;
 import com.msht.watersystem.utilpackage.CachePreferencesUtil;
 import com.msht.watersystem.utilpackage.ConstantUtil;
 import com.msht.watersystem.utilpackage.ConsumeInformationUtils;
-import com.msht.watersystem.utilpackage.CreateOrderType;
 import com.msht.watersystem.utilpackage.DataCalculateUtils;
 import com.msht.watersystem.utilpackage.DateTimeUtils;
 import com.msht.watersystem.utilpackage.FileUtil;
@@ -67,9 +54,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
-import java.util.Timer;
-import java.util.TimerTask;
-
 
 
 import org.greenrobot.eventbus.EventBus;
@@ -244,7 +228,13 @@ public class MainMyVideoActivity extends BaseActivity implements Observer/*Surfa
     protected void onResume() {
         super.onResume();
         //initVideoData();
-        mVideoView.start();
+        if (mVideoView!=null){
+            mVideoView.start();
+        }else {
+            imageLayout.setVisibility(View.VISIBLE);
+            mVideoViewContainer.setVisibility(View.GONE);
+        }
+
     }
 
     public void initNetBroadcast() {
@@ -337,7 +327,7 @@ public class MainMyVideoActivity extends BaseActivity implements Observer/*Surfa
                     onCom2Received102DataFromServer(packet2.getData());
                 } else if (Arrays.equals(packet2.getCmd(), new byte[]{0x01, 0x07})) {
                     //扫码取水，后端主动发送107，回复207给后端,发送104给主控板取水
-                    response207ToServer(packet2.getFrame());
+                   // response207ToServer(packet2.getFrame());
                     VariableUtil.byteArray.clear();
                     VariableUtil.byteArray = packet2.getData();
                     onCom2Received107DataFromServer(packet2.getData());
@@ -680,8 +670,9 @@ public class MainMyVideoActivity extends BaseActivity implements Observer/*Surfa
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onRestartApp(RestartAppEvent event) {
         if (event.getMessage()) {
+            releaseVideoData();
             RestartAppUtil.restartApp();
-            restartWaterApp();
+           // restartWaterApp();
         }
     }
     private OrderInfoDao getOrderDao() {
@@ -902,7 +893,7 @@ public class MainMyVideoActivity extends BaseActivity implements Observer/*Surfa
         pageStatus = true;
     }
 
-    @Override
+    /*@Override
     protected void attachBaseContext(Context newBase) {
         super.attachBaseContext(new ContextWrapper(newBase){
             @Override
@@ -913,9 +904,10 @@ public class MainMyVideoActivity extends BaseActivity implements Observer/*Surfa
                 return super.getSystemService(name);
             }
         });
-    }
+    }*/
     private void  releaseVideoData(){
         if (mVideoView!=null){
+            mVideoView.stopPlayback();
             mVideoView.suspend();
             mVideoView.setOnErrorListener(null);
             mVideoView.setOnPreparedListener(null);

@@ -129,7 +129,7 @@ public class AppNotSufficientActivity extends BaseActivity implements Observer {
                     response102ToServer(packet2.getFrame());
                     onCom2Received102DataFromServer(packet2.getData());
                 }else if (Arrays.equals(packet2.getCmd(),new byte[]{0x01,0x07})){
-                    response207ToServer(packet2.getFrame());
+                   // response207ToServer(packet2.getFrame());
                     onCom2Received107DataFromServer(packet2.getData());
                 }
             }
@@ -191,7 +191,7 @@ public class AppNotSufficientActivity extends BaseActivity implements Observer {
                 CachePreferencesUtil.putBoolean(this,CachePreferencesUtil.FIRST_OPEN,false);
                 buyStatus=true;
                 if (FormatInformationBean.BusinessType==1){
-                    if (FormatInformationBean.AppBalance<20){
+                    if (FormatInformationBean.AppBalance<10){
                         double balance= DataCalculateUtils.getTwoDecimal(FormatInformationBean.Balance/100.0);
                         tvBalance.setText(String.valueOf(balance));
                         tvCustomerNo.setText(FormatInformationBean.StringCardNo);

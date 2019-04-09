@@ -2,8 +2,6 @@ package com.msht.watersystem.functionActivity;
 
 
 import android.content.Intent;
-import android.content.pm.PackageInfo;
-import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 
 import android.os.CountDownTimer;
@@ -15,7 +13,6 @@ import android.view.KeyEvent;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.mcloyal.serialport.entity.Packet;
 import com.mcloyal.serialport.exception.CRCException;
@@ -28,12 +25,13 @@ import com.mcloyal.serialport.utils.PacketUtils;
 import com.msht.watersystem.base.BaseActivity;
 import com.msht.watersystem.Interface.BitmapListener;
 import com.msht.watersystem.R;
+import com.msht.watersystem.utilpackage.AppPackageUtil;
 import com.msht.watersystem.utilpackage.ConstantUtil;
 import com.msht.watersystem.utilpackage.ConsumeInformationUtils;
 import com.msht.watersystem.utilpackage.ByteUtils;
 import com.msht.watersystem.utilpackage.CachePreferencesUtil;
 import com.msht.watersystem.utilpackage.CodeUtils;
-import com.msht.watersystem.utilpackage.CreateOrderType;
+import com.msht.watersystem.utilpackage.CreatePacketTypeUtil;
 import com.msht.watersystem.utilpackage.FormatInformationBean;
 import com.msht.watersystem.utilpackage.FormatInformationUtil;
 import com.msht.watersystem.utilpackage.DataCalculateUtils;
@@ -61,6 +59,7 @@ public class BuyWaterActivity extends BaseActivity implements Observer{
     private TextView tvTime;
     private boolean  buyStatus=false;
     private boolean  bindStatus=false;
+    private int      count=0;
     /**
      * @parame  mAppFrame 扫码发送104帧序
      */
@@ -120,7 +119,11 @@ public class BuyWaterActivity extends BaseActivity implements Observer{
   private void initSetData() {
         if (portService != null) {
             if (portService.isConnection()){
-                try {
+                if (count<3){
+                    portService.sendToServer(CreatePacketTypeUtil.getPacketData103());
+                    count++;
+                }
+                /*try {
                     byte[] frame = FrameUtils.getFrame(mContext);
                     byte[] type = new byte[]{0x01, 0x03};
                     byte[] packet = PacketUtils.makePackage(frame, type, null);
@@ -131,7 +134,8 @@ public class BuyWaterActivity extends BaseActivity implements Observer{
                     e.printStackTrace();
                 } catch (CmdTypeException e) {
                     e.printStackTrace();
-                }
+                }*/
+
             }
         }
     }
@@ -159,14 +163,8 @@ public class BuyWaterActivity extends BaseActivity implements Observer{
         }else {
             tvFreeCharge.setVisibility(View.GONE);
         }
-        try {
-            PackageManager pm = mContext.getPackageManager();
-            PackageInfo pi = pm.getPackageInfo(getPackageName(), 0);
-            String name="version:"+pi.versionName;
-            tvVersion.setText(name);
-        }catch (Exception e){
-            e.printStackTrace();
-        }
+        String name="version:"+AppPackageUtil.getPackageVersionName();
+        tvVersion.setText(name);
     }
     private void initData() {
         myCountDownTimer.start();
@@ -220,7 +218,6 @@ public class BuyWaterActivity extends BaseActivity implements Observer{
             Packet packet1 = myObservable.getCom1Packet();
             if (packet1 != null) {
                 if (Arrays.equals(packet1.getCmd(),new byte[]{0x01,0x04})){
-                   // MyLogUtil.d("主板控制指令104：", CreateOrderType.getPacketString(packet1));
                     onCom1Received104dataFromControlBoard(packet1.getData());
                 }else if (Arrays.equals(packet1.getCmd(),new byte[]{0x02,0x04})){
                     onCom1Received204DataControlBoard(packet1.getFrame());
@@ -230,9 +227,8 @@ public class BuyWaterActivity extends BaseActivity implements Observer{
             }
             Packet packet2 = myObservable.getCom2Packet();
             if (packet2 != null) {
-                Log.d("Com2Packet=",CreateOrderType.getPacketString(packet2));
                 if (Arrays.equals(packet2.getCmd(),new byte[]{0x01,0x07})){
-                    response207ToServer(packet2.getFrame());
+                   // response207ToServer(packet2.getFrame());
                     VariableUtil.byteArray.clear();
                     VariableUtil.byteArray=packet2.getData();
                     onCom2Received107DataFromServer(packet2.getData());

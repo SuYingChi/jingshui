@@ -239,7 +239,9 @@ public class MinaClient {
      * 断开连接
      */
     public void disConnect() {
-        mConnection.dispose();
+        if (mConnection!=null){
+            mConnection.dispose();
+        }
         mConnection = null;
         mAddress = null;
         mSession = null;
