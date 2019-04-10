@@ -71,10 +71,10 @@ public class SplashActivity extends BaseActivity  implements Observer{
             if (loadingdialog.isShowing()&&loadingdialog!=null){
                 loadingdialog.dismiss();
             }
-          /* startActivity(new Intent(SplashActivity.this,
-                    MainWaterImageActivity.class));*/
            startActivity(new Intent(SplashActivity.this,
-                    MainMyVideoActivity.class));
+                    MainWaterImageActivity.class));
+          /* startActivity(new Intent(SplashActivity.this,
+                    MainMyVideoActivity.class));*/
 
             finish();
         }

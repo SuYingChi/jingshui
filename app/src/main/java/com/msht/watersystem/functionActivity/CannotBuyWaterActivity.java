@@ -49,7 +49,7 @@ public class CannotBuyWaterActivity extends BaseActivity implements Observer {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_cannot_buywater);
         mContext=this;
-        initBannerView();
+       // initBannerView();
         initWaterQuality();
         bindPortService();
     }

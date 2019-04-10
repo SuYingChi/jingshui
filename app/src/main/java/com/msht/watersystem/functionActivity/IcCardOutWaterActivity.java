@@ -131,7 +131,7 @@ public class IcCardOutWaterActivity extends BaseActivity implements Observer{
         mContext=this;
         myCountDownTimer=new MyCountDownTimer(185000,1000);
         initView();
-        initBannerView();
+       // initBannerView();
         initWaterQuality();
         bindPortService();
     }

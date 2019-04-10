@@ -16,11 +16,11 @@
             android:layout_height="match_parent"
             android:layout_weight="0.7"
             android:background="@color/white">
-            <com.msht.watersystem.widget.BannerM
+            <!--<com.msht.watersystem.widget.BannerM
                 android:id="@+id/id_banner"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent">
-            </com.msht.watersystem.widget.BannerM>
+            </com.msht.watersystem.widget.BannerM>-->
             <ImageView
                 android:id="@+id/textView"
                 android:layout_width="match_parent"

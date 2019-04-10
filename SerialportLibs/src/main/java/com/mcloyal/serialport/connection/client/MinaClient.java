@@ -15,7 +15,7 @@ import org.apache.mina.core.session.IoSession;
 import org.apache.mina.filter.codec.ProtocolCodecFilter;
 import org.apache.mina.filter.logging.LoggingFilter;
 import org.apache.mina.transport.socket.nio.NioSocketConnector;
-import org.greenrobot.eventbus.EventBus;
+
 
 import java.lang.ref.WeakReference;
 import java.net.InetSocketAddress;
@@ -133,7 +133,6 @@ public class MinaClient {
 
                 }
         }
-
         /**
          * 发送消息
          *
@@ -241,6 +240,8 @@ public class MinaClient {
     public void disConnect() {
         if (mConnection!=null){
             mConnection.dispose();
+            mConnection.getFilterChain().clear();
+
         }
         mConnection = null;
         mAddress = null;

@@ -82,7 +82,7 @@ public class MainWaterImageActivity extends BaseActivity implements Observer{
         bindAndAddObserverToPortService();
         EventBus.getDefault().register(context);
         initService();
-        initBannerView();
+        //initBannerView();
     }
     private void bindAndAddObserverToPortService() {
         serviceConnection = new ComServiceConnection(this, new ComServiceConnection.ConnectionCallBack() {

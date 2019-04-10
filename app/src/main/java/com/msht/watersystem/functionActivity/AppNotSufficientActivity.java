@@ -64,7 +64,7 @@ public class AppNotSufficientActivity extends BaseActivity implements Observer {
         mContext=this;
         myCountDownTimer=new MyCountDownTimer(30000,1000);
         initView();
-        initBannerView();
+       // initBannerView();
         initWaterQuality();
         bindPortService();
     }

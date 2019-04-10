@@ -93,7 +93,7 @@ public class BuyWaterActivity extends BaseActivity implements Observer{
         VariableUtil.mPos=0;
         myCountDownTimer=new MyCountDownTimer(120000,1000);
         initView();
-        initViewImages();
+       // initViewImages();
         initWaterQuality();
         bindAndAddObserverToPortService();
         initData();

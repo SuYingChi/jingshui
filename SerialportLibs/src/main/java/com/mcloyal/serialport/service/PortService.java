@@ -38,9 +38,7 @@ import com.mcloyal.serialport.utils.SpecialUtils;
 import com.mcloyal.serialport.utils.StringUtils;
 import com.mcloyal.serialport.utils.logs.LogUtils;
 
-import org.greenrobot.eventbus.EventBus;
-import org.greenrobot.eventbus.Subscribe;
-import org.greenrobot.eventbus.ThreadMode;
+
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -116,7 +114,7 @@ public class PortService extends Service {
     /**
      * 最大包数
      */
-    private final static int MAX_PGK_TIME = 3;
+    private final static int MAX_PGK_TIME = 2;
     /**
      * 发送包数据计数
      */
@@ -715,11 +713,10 @@ public class PortService extends Service {
         count.set(0);
         restartTime++;
         if(restartTime<=5) {
+            minaClient.disConnect();
             initMinaClient();
-            Log.d(TAG,"initMinaClient() restartTime=="+restartTime);
         }else {
-                mObservable.restartApp(true);
-                Log.d(TAG,"RestartApp");
+            mObservable.restartApp(true);
         }
         //发送断电重启2G模块
     //    sendToControlBoard(Cmd.ComCmd._RESTART_NET_);

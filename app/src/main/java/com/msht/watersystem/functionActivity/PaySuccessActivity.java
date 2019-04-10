@@ -64,12 +64,14 @@ public class PaySuccessActivity extends BaseActivity implements Observer {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_pay_success);
         mContext=this;
-        afterWater=getIntent().getStringExtra("afterWater");
-        afterAmount=getIntent().getStringExtra("afterAmount");
-        mAccount=getIntent().getStringExtra("mAccount");
-        sign=getIntent().getStringExtra("sign");
+        if (getIntent()!=null){
+            afterWater=getIntent().getStringExtra("afterWater");
+            afterAmount=getIntent().getStringExtra("afterAmount");
+            mAccount=getIntent().getStringExtra("mAccount");
+            sign=getIntent().getStringExtra("sign");
+        }
         initView();
-        initBannerView();
+       // initBannerView();
         initWaterQuality();
         bindPortService();
         myCountDownTimer=new MyCountDownTimer(30000,1000);

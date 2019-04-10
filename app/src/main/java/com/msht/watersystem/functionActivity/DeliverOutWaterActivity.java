@@ -96,7 +96,7 @@ public class DeliverOutWaterActivity extends BaseActivity implements Observer{
         mContext=this;
         myCountDownTimer=new MyCountDownTimer(30000,1000);
         initView();
-        initBannerView();
+        //initBannerView();
         initWaterQuality();
         bindPortService();
         startCountDownTime(35);
