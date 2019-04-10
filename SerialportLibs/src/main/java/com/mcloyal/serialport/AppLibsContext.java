@@ -49,6 +49,7 @@ public class AppLibsContext extends Application implements Observer {
         return appLibsContext;
     }
 
+
     //***************COM1操作（开始）*************
     //*************COM1 串口配置
     private final static String COM1_PATH = "/dev/ttyS0";

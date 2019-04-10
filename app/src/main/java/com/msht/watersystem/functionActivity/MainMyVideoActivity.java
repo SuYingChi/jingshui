@@ -336,6 +336,9 @@ public class MainMyVideoActivity extends BaseActivity implements Observer/*Surfa
                     onCom2Received206DataFromServer(packet2.getData());
                 }
             }
+            if(myObservable.getRestart()){
+                RestartAppUtil.restartApp();
+            }
         }
     }
 

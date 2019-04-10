@@ -32,7 +32,8 @@ public class ServicesUtils {
                 isServiceRunning = true;
             }
         }
-        if (!isServiceRunning) {//服务还未启动
+        //服务还未启动
+        if (!isServiceRunning) {
             ComServiceConnection serviceConnection = new ComServiceConnection(context, connectionCallBack);
             context.bindService(new Intent(context, PortService.class), serviceConnection,
                     BIND_AUTO_CREATE);

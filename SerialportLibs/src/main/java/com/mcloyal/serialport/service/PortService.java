@@ -33,6 +33,7 @@ import com.mcloyal.serialport.utils.AnalysisUtils;
 import com.mcloyal.serialport.utils.ByteUtils;
 import com.mcloyal.serialport.utils.NumberUtil;
 import com.mcloyal.serialport.utils.PacketUtils;
+import com.mcloyal.serialport.utils.ServicesUtils;
 import com.mcloyal.serialport.utils.SpecialUtils;
 import com.mcloyal.serialport.utils.StringUtils;
 import com.mcloyal.serialport.utils.logs.LogUtils;
@@ -381,10 +382,10 @@ public class PortService extends Service {
             } catch (UnsupportedEncodingException e) {
                 e.printStackTrace();
             }
-            LogUtils.d(TAG, "接收到" + receivedByte.length + " 字节");
-            LogUtils.d(TAG, "接收转码字符串：" + context);
+            Log.d(TAG, "接收到" + receivedByte.length + " 字节");
+            Log.d(TAG, "接收转码字符串：" + context);
             if (context != null && (context.contains("CLOSED") || context.contains("DISCONNECT"))) {
-                LogUtils.d(TAG, "接收到CLOSED或者DISCONNECT，判断是否需要进行断电重启...");
+                Log.d(TAG, "接收到CLOSED或者DISCONNECT，判断是否需要进行断电重启...");
                 handler.sendEmptyMessage(RESTART);
                 return;
             }
@@ -715,10 +716,10 @@ public class PortService extends Service {
         restartTime++;
         if(restartTime<=5) {
             initMinaClient();
-            LogUtils.d(TAG,"initMinaClient() restartTime=="+restartTime);
+            Log.d(TAG,"initMinaClient() restartTime=="+restartTime);
         }else {
-
-            LogUtils.d(TAG,"RestartApp");
+                mObservable.restartApp(true);
+                Log.d(TAG,"RestartApp");
         }
         //发送断电重启2G模块
     //    sendToControlBoard(Cmd.ComCmd._RESTART_NET_);
@@ -914,7 +915,10 @@ public class PortService extends Service {
         if (scheduledThreadPool != null && !scheduledThreadPool.isShutdown()) {
             scheduledThreadPool.shutdown();
         }
-        minaClient.disConnect();
+        if (minaClient!=null){
+            minaClient.disConnect();
+        }
+        LogUtils.d(TAG,"onDestroy()");
        // EventBus.getDefault().unregister(this);
       /*  unregisterReceiver(mReceiver);*/
     }
@@ -940,6 +944,7 @@ public class PortService extends Service {
          * 第二功能按键的启用和停用标记，true表示启用，false表示停止
          */
         private boolean isSKeyEnable;
+        private Boolean isRestart=false;
 
         public boolean isSKeyEnable() {
             return isSKeyEnable;
@@ -983,6 +988,16 @@ public class PortService extends Service {
                     isSKeyEnable = true;
                 }
             }
+        }
+
+        public Boolean getRestart() {
+            return isRestart;
+        }
+
+        public void restartApp(Boolean isRestart) {
+            this.isRestart=isRestart;
+            setChanged();
+            notifyObservers();
         }
     }
 
