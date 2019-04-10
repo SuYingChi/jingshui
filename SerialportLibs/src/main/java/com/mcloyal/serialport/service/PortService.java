@@ -1,5 +1,7 @@
 package com.mcloyal.serialport.service;
 
+import android.app.AlarmManager;
+import android.app.PendingIntent;
 import android.app.Service;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -113,7 +115,7 @@ public class PortService extends Service {
     /**
      * 最大包数
      */
-    private final static int MAX_PGK_TIME = 5;
+    private final static int MAX_PGK_TIME = 3;
     /**
      * 发送包数据计数
      */
@@ -131,6 +133,7 @@ public class PortService extends Service {
      * 倒计时最大等大时长
      */
     private static final long MAX_COUNT = 5 * 60;
+    private int restartTime=0;
 
     //后台service里的线程池里边的子线程拿到数据后通过主线程Handler发回主线程后，把数据包给内部的Observable,notify前台注册到后台service 里Observable的observer，
     // 前台observer接收到更新通知后根据自身需求重写update方法触发处理相应逻辑
@@ -201,7 +204,7 @@ public class PortService extends Service {
         super.onCreate();
         mObservable = new MyObservable();
         appLibsContext = (AppLibsContext) getApplication();
-        EventBus.getDefault().register(this);
+       // EventBus.getDefault().register(this);
         /*
          * 定时接收Com1数据常驻子线程
          * 定时接收Com2数据常驻子线程
@@ -235,10 +238,7 @@ public class PortService extends Service {
 
     //    scheduledThreadPool.scheduleAtFixedRate(new ParserCom2ReceivedDataTask(), 0, 100, TimeUnit.MILLISECONDS);
         scheduledThreadPool.scheduleAtFixedRate(new CountdownTask(), 0, 1, TimeUnit.SECONDS);
-       /* IntentFilter mFilter = new IntentFilter();
-        mFilter.addAction(ConnectivityManager.CONNECTIVITY_ACTION);
-        registerReceiver(mReceiver, mFilter);*/
-       initMinaClient();
+        initMinaClient();
     }
 
     private void initMinaClient() {
@@ -256,6 +256,7 @@ public class PortService extends Service {
             public void sessionOpened() {
                 Log.d(TAG, "client sessionOpened ");
                 isConnection = true;
+                restartTime=0;
             }
             @Override
             public void sessionClosed() {
@@ -371,12 +372,7 @@ public class PortService extends Service {
             }
         }
     }
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onEvent(ReConnectEvent messageEvent) {
-        if(!isConnection) {
-            initMinaClient();
-        }
-    }
+
     private void onMinaClientReceived(byte[] receivedByte) {
         if (receivedByte.length > 0) {
             String context = null;
@@ -387,7 +383,6 @@ public class PortService extends Service {
             }
             LogUtils.d(TAG, "接收到" + receivedByte.length + " 字节");
             LogUtils.d(TAG, "接收转码字符串：" + context);
-            logByte("接收到后台数据", receivedByte);
             if (context != null && (context.contains("CLOSED") || context.contains("DISCONNECT"))) {
                 LogUtils.d(TAG, "接收到CLOSED或者DISCONNECT，判断是否需要进行断电重启...");
                 handler.sendEmptyMessage(RESTART);
@@ -517,8 +512,11 @@ public class PortService extends Service {
                             int incrementAndGet = pgkTime.incrementAndGet();
                             // LogUtils.e(TAG, "数据包发送次数：" + incrementAndGet);
                             //如果超过最大包数判断
+                            logByte(TAG,packet.getCmd());
+                            LogUtils.d(TAG,"pgkTime=="+pgkTime);
                             if (incrementAndGet > MAX_PGK_TIME) {
                                 //  LogUtils.d(TAG, "已经超过最大包数阈值，执行断电重启");
+
                                 handler.sendEmptyMessage(RESTART);
                             }
                         }
@@ -713,14 +711,18 @@ public class PortService extends Service {
 
         //重置计数
         pgkTime.set(0);
-        if(minaClient!=null&&isConnection){
-            minaClient.disConnect();
+        count.set(0);
+        restartTime++;
+        if(restartTime<=5) {
+            initMinaClient();
+            LogUtils.d(TAG,"initMinaClient() restartTime=="+restartTime);
+        }else {
+
+            LogUtils.d(TAG,"RestartApp");
         }
-        initMinaClient();
         //发送断电重启2G模块
     //    sendToControlBoard(Cmd.ComCmd._RESTART_NET_);
     }
-
     /**
      * AT指令操作，包含信号检测，透传设置，TCP连接
      */
@@ -913,7 +915,7 @@ public class PortService extends Service {
             scheduledThreadPool.shutdown();
         }
         minaClient.disConnect();
-        EventBus.getDefault().unregister(this);
+       // EventBus.getDefault().unregister(this);
       /*  unregisterReceiver(mReceiver);*/
     }
 

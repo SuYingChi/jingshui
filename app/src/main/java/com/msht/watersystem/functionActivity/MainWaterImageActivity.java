@@ -14,6 +14,7 @@ import com.mcloyal.serialport.exception.CRCException;
 import com.mcloyal.serialport.exception.CmdTypeException;
 import com.mcloyal.serialport.exception.FrameException;
 import com.mcloyal.serialport.service.PortService;
+import com.mcloyal.serialport.service.RestartApp;
 import com.mcloyal.serialport.utils.ComServiceConnection;
 import com.mcloyal.serialport.utils.FrameUtils;
 import com.mcloyal.serialport.utils.PacketUtils;
@@ -497,6 +498,11 @@ public class MainWaterImageActivity extends BaseActivity implements Observer{
             RestartAppUtil.restartApp();
             //restartWaterApp();
         }
+    }
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onRestartApp(RestartApp event){
+            RestartAppUtil.restartApp();
+            //restartWaterApp();
     }
     private OrderInfoDao getOrderDao() {
         return AppContext.getInstance().getDaoSession().getOrderInfoDao();

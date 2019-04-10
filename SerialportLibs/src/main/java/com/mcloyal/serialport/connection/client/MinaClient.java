@@ -120,17 +120,17 @@ public class MinaClient {
                         num=0;
                     }else {
                         num++;
-                        if(num>=5){
+                        if(num%5==0){
                             bool = true;
-                            num = 0;
-                            EventBus.getDefault().postSticky(new ReConnectEvent());
+                        }else{
+                            try {
+                                Thread.sleep(5000);
+                            } catch (InterruptedException e) {
+                                e.printStackTrace();
+                            }
                         }
                     }
-                    try {
-                        Thread.sleep(5000);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
+
                 }
         }
 

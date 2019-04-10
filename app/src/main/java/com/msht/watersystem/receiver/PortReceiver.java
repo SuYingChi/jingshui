@@ -26,8 +26,6 @@ public class PortReceiver extends BroadcastReceiver {
             AppLibsContext appLibsContext = (AppLibsContext) context.getApplicationContext();
             ServicesUtils.startPortServices(appLibsContext, null);
         }
-        if (DateTimeUtils.isCheckTime(hour1,hour2,minute2,minute3)){
-            RestartAppUtil.restartWaterSystem(context);
-        }
+
     }
 }
