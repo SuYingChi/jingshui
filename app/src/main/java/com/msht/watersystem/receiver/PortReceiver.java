@@ -6,7 +6,9 @@ import android.content.Intent;
 
 import com.mcloyal.serialport.AppLibsContext;
 import com.mcloyal.serialport.utils.ServicesUtils;
+import com.msht.watersystem.AppContext;
 import com.msht.watersystem.utilpackage.DateTimeUtils;
+import com.msht.watersystem.utilpackage.MyServiceUtil;
 import com.msht.watersystem.utilpackage.RestartAppUtil;
 
 
@@ -25,6 +27,7 @@ public class PortReceiver extends BroadcastReceiver {
             //一分钟检测一次状态>>>>>>>>>>>
             AppLibsContext appLibsContext = (AppLibsContext) context.getApplicationContext();
             ServicesUtils.startPortServices(appLibsContext, null);
+            MyServiceUtil.startResendDataServices(AppContext.getInstance());
         }
 
     }
