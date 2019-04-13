@@ -198,7 +198,7 @@ public class NotSufficientActivity extends BaseActivity implements Observer {
                 FormatInformationBean.Balance= FormatInformationBean.Balance+ FormatInformationBean.rechargeAmount;
                 double balance= DataCalculateUtils.getTwoDecimal(FormatInformationBean.Balance/100.0);
                 tvBalance.setText(String.valueOf(balance));
-                if (FormatInformationBean.AppBalance<20){
+                if (FormatInformationBean.Balance<1){
                     imageView.setVisibility(View.VISIBLE);
                     tvNotBalance.setVisibility(View.VISIBLE);
                     tvSuccess.setVisibility(View.GONE);
@@ -212,7 +212,7 @@ public class NotSufficientActivity extends BaseActivity implements Observer {
                 VariableUtil.byteArray=data;
                 buyStatus=true;
                 if (FormatInformationBean.BusinessType==1){
-                    if (FormatInformationBean.AppBalance<20){
+                    if (FormatInformationBean.AppBalance<1){
                         double balance= DataCalculateUtils.getTwoDecimal(FormatInformationBean.AppBalance/100.0);
                         tvBalance.setText(String.valueOf(balance));
                     }else {
@@ -273,7 +273,7 @@ public class NotSufficientActivity extends BaseActivity implements Observer {
                     tvBalance.setText(String.valueOf(balance));
                     tvCardNo.setText(String.valueOf(FormatInformationBean.StringCardNo));
                 }else {
-                    if (FormatInformationBean.Balance<2){
+                    if (FormatInformationBean.Balance<1){
                         double balance= DataCalculateUtils.getTwoDecimal(FormatInformationBean.Balance/100.0);
                         tvBalance.setText(String.valueOf(balance));
                         tvCardNo.setText(String.valueOf(FormatInformationBean.StringCardNo));
@@ -342,6 +342,18 @@ public class NotSufficientActivity extends BaseActivity implements Observer {
                     Intent intent=new Intent(mContext, CloseSystemActivity.class);
                     startActivityForResult(intent,1);
                     finish();
+                }
+                if (ByteUtils.byteToInt(data.get(37))==2) {
+                    VariableUtil.mNoticeText="此卡已挂失，如需取水请重新换卡!!";
+                    VariableUtil.cardStatus=1;
+                }else {
+                    String workStatus= DataCalculateUtils.intToBinary(data.get(46));
+                    if (ByteUtils.byteToInt(data.get(32))==2&&DataCalculateUtils.isEvent(workStatus,7)){
+                        VariableUtil.mNoticeText="卡号"+String.valueOf(FormatInformationBean.StringCardNo)+"的用户，您的张卡有异常已禁止购水，请再次刷卡返还扣款，如有疑问请致电963666转2！";
+                        VariableUtil.cardStatus=2;
+                    }else {
+                        VariableUtil.cardStatus=0;
+                    }
                 }
             }
         }catch (Exception e){

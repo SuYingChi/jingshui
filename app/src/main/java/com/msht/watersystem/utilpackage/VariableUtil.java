@@ -27,6 +27,8 @@ import java.util.List;
 public class VariableUtil {
     public static long dataId;
     public static int mPos;
+    public static int cardStatus=0;
+    public static boolean isRecharge=false;
     public static boolean mKeyEnable;
     public static Bitmap qrCodeBitmap =null;
     public static boolean setTimeStatus=false;
@@ -41,13 +43,10 @@ public class VariableUtil {
 
     ArrayList<HashMap<String, String>> List = new ArrayList<HashMap<String, String>>();
     public static List<Bitmap> imageViewList= new ArrayList<Bitmap>();
-
-    public static void LongTimeSavaData(final Packet packet1, final ResultListener resultListener) {
+    public static void requestLongTimeSaveData(final Packet packet1, final ResultListener resultListener) {
         new Thread(new Runnable() {
             @Override
             public void run() {
-                HttpURLConnection conn = null;
-                DataInputStream dis = null;
                 try {
                     byte[] orderData= CreatePacketTypeUtil.byteOrderByteDataToString(packet1);
                     OrderInfo insertData = new OrderInfo(null, orderData);
@@ -56,10 +55,19 @@ public class VariableUtil {
                 }catch (Exception e){
                     e.printStackTrace();
                     resultListener.onResultFail(SAVE_DATA_FAIL);
-                }finally {
-                    if (conn != null) {
-                        conn.disconnect();
-                    }
+                }
+            }
+        }).start();
+    }
+    public static void requestLongTimeSaveData(final byte[] packet1) {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    OrderInfo insertData = new OrderInfo(null, packet1);
+                    getOrderDao().insert(insertData);
+                }catch (Exception e){
+                    e.printStackTrace();
                 }
             }
         }).start();

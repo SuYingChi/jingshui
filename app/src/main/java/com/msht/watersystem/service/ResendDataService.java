@@ -30,14 +30,15 @@ public class ResendDataService extends Service {
     public ResendDataEvent events = BaseActivity.event;
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        if(intent != null){
-            ThreadPoolManager.getInstance(getApplicationContext()).onThreadPoolDateStart();
-        }
+       /* if(intent != null){
+
+        }*/
         return super.onStartCommand(intent, flags, startId);
     }
     @Override
     public void onCreate() {
         super.onCreate();
+        ThreadPoolManager.getInstance(getApplicationContext()).onThreadPoolDateStart();
     }
     private class RegularlyCheckTimeTask implements Runnable {
         @Override
@@ -67,6 +68,5 @@ public class ResendDataService extends Service {
     @Override
     public void onDestroy() {
         super.onDestroy();
-
     }
 }

@@ -49,4 +49,6 @@ limitations under the License.\n
     <string name="not_clean_water">未净化水</string>
     <string name="pollution_water">污染水</string>
 
+    <string name="network_tip">当前网络已断开，请稍后或联系客服，或者使用IC卡刷卡购水</string>
+
 </resources>

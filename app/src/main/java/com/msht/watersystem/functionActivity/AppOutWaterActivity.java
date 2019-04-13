@@ -19,6 +19,7 @@ import com.mcloyal.serialport.service.PortService;
 import com.mcloyal.serialport.utils.ComServiceConnection;
 import com.mcloyal.serialport.utils.FrameUtils;
 import com.mcloyal.serialport.utils.PacketUtils;
+import com.msht.watersystem.Interface.ResultListener;
 import com.msht.watersystem.base.BaseActivity;
 import com.msht.watersystem.R;
 import com.msht.watersystem.utilpackage.ConstantUtil;
@@ -425,6 +426,10 @@ public class AppOutWaterActivity extends BaseActivity implements Observer{
                     data[28]=water[0];
                     data[29]=water[1];
                     byte[] packet = PacketUtils.makePackage(frame, type, data);
+                    //没联网数据保存
+                    if (!portService.isConnection()){
+                        VariableUtil.requestLongTimeSaveData(packet);
+                    }
                     portService.sendToServer(packet);
                 }else {
                     byte[] data= ConsumeInformationUtils.settleData(FormatInformationBean.phoneType, FormatInformationBean.orderType);
@@ -442,7 +447,12 @@ public class AppOutWaterActivity extends BaseActivity implements Observer{
                     data[28]=water[0];
                     data[29]=water[1];
                     byte[] packet = PacketUtils.makePackage(frame, type, data);
+                    //没联网数据保存
+                    if (!portService.isConnection()){
+                        VariableUtil.requestLongTimeSaveData(packet);
+                    }
                     portService.sendToServer(packet);
+
                 }
             } catch (CRCException e) {
                 e.printStackTrace();
@@ -452,6 +462,10 @@ public class AppOutWaterActivity extends BaseActivity implements Observer{
                 e.printStackTrace();
             }
         }
+    }
+
+    private void onSaveData(byte[] packet) {
+        VariableUtil.requestLongTimeSaveData(packet);
     }
     private void onSettleAccountEndOutWater() {
         if (portService != null) {

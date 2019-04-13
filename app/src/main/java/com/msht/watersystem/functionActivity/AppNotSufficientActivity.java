@@ -355,6 +355,18 @@ public class AppNotSufficientActivity extends BaseActivity implements Observer {
                     startActivityForResult(intent,1);
                     finish();
                 }
+                if (ByteUtils.byteToInt(data.get(37))==2) {
+                    VariableUtil.mNoticeText="此卡已挂失，如需取水请重新换卡!!";
+                    VariableUtil.cardStatus=1;
+                }else {
+                    String workStatus= DataCalculateUtils.intToBinary(data.get(46));
+                    if (ByteUtils.byteToInt(data.get(32))==2&&DataCalculateUtils.isEvent(workStatus,7)){
+                        VariableUtil.mNoticeText="卡号"+String.valueOf(FormatInformationBean.StringCardNo)+"的用户，您的张卡有异常已禁止购水，请再次刷卡返还扣款，如有疑问请致电963666转2！";
+                        VariableUtil.cardStatus=2;
+                    }else {
+                        VariableUtil.cardStatus=0;
+                    }
+                }
             }
         }catch (Exception e){
             e.printStackTrace();

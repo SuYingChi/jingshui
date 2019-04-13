@@ -259,4 +259,9 @@ public class MinaClient {
 
         void messageSent(byte[] message);
     }
+    public  void onShutDown(){
+        if (mThreadPool!=null){
+            mThreadPool.shutdown();
+        }
+    }
 }

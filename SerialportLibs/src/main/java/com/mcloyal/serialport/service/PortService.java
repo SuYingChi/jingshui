@@ -714,9 +714,13 @@ public class PortService extends Service {
         restartTime++;
         if(restartTime<=5) {
             minaClient.disConnect();
+            minaClient.onShutDown();
             initMinaClient();
         }else {
-            mObservable.restartApp(true);
+            minaClient.disConnect();
+            minaClient.onShutDown();
+            initMinaClient();
+           // mObservable.restartApp(true);
         }
         //发送断电重启2G模块
     //    sendToControlBoard(Cmd.ComCmd._RESTART_NET_);

@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginStart="@dimen/margin_width10"
+    android:layout_marginEnd="@dimen/margin_width10"
+    android:background="@color/transparent"
+    android:layout_marginTop="@dimen/margin_width70">
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:background="@drawable/shape_transparent_corner_bg"
+        android:orientation="horizontal">
+        <ImageView
+            android:id="@+id/id_icon"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:contentDescription="@string/ad_picture"
+            android:layout_gravity="center_vertical"
+            android:paddingBottom="@dimen/margin_width10"
+            android:paddingTop="@dimen/margin_width10"
+            android:layout_marginTop="@dimen/margin_width10"
+            android:layout_marginBottom="@dimen/margin_width10"
+            android:layout_marginStart="@dimen/margin_width20"
+            android:src="@drawable/qmui_icon_notify_info" />
+        <TextView
+            android:id="@+id/toast_txt"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:layout_marginStart="@dimen/margin_width15"
+            android:layout_marginEnd="@dimen/margin_width15"
+            android:paddingBottom="@dimen/margin_width10"
+            android:paddingLeft="@dimen/margin_width15"
+            android:paddingRight="@dimen/margin_width15"
+            android:paddingTop="@dimen/margin_width10"
+            android:textColor="@color/white"
+            android:textSize="@dimen/text_width14"
+            android:text="@string/network_tip"/>
+    </LinearLayout>
+
+</LinearLayout>

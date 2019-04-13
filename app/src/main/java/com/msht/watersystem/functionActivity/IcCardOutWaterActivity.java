@@ -6,7 +6,6 @@ import android.os.CountDownTimer;
 import android.os.Handler;
 import android.os.Message;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.ImageView;
@@ -148,9 +147,37 @@ public class IcCardOutWaterActivity extends BaseActivity implements Observer{
         tvBalance.setText(String.valueOf(balance));
         tvCardNo.setText(String.valueOf(FormatInformationBean.StringCardNo));
         mAccount=String.valueOf(FormatInformationBean.StringCardNo);
-        tvText5.setText("请您在");
-        tvText6.setText("秒前启动灌装或再次刷卡结账，否则扣款将无法返还");
+        checkCardStatus();
+        VariableUtil.cardStatus=0;
         myCountDownTimer.start();
+    }
+    private void checkCardStatus() {
+        switch (VariableUtil.cardStatus){
+            case 0:
+                tvText5.setText("请您在");
+                tvText6.setText("秒前启动灌装或再次刷卡结账，否则扣款将无法返还");
+                tvBlackCard.setVisibility(View.GONE);
+                break;
+            case 1:
+                VariableUtil.mNoticeText="此卡已挂失，如需取水请重新换卡!!";
+                tvText5.setText("请您在");
+                tvText6.setText("秒前启动灌装或再次刷卡结账，否则扣款将无法返还");
+                tvBlackCard.setText(VariableUtil.mNoticeText);
+                tvBlackCard.setVisibility(View.VISIBLE);
+                onDelayExecute();
+                break;
+            case 2:
+                VariableUtil.mNoticeText="卡号"+String.valueOf(FormatInformationBean.StringCardNo)+"的用户，您的张卡有异常已禁止购水，请再次刷卡返还扣款，如有疑问请致电963666转2！";
+                tvBlackCard.setText(VariableUtil.mNoticeText);
+                tvBlackCard.setVisibility(View.VISIBLE);
+                tvText5.setText("当前无法购水,请您在");
+                tvText6.setText("秒后再进行刷卡或扫码购水操作");
+                break;
+                default:
+                    tvText5.setText("请您在");
+                    tvText6.setText("秒前启动灌装或再次刷卡结账，否则扣款将无法返还");
+                    break;
+        }
     }
     private void initBannerView() {
         BannerM mBanner = (BannerM) findViewById(R.id.id_banner);
@@ -390,7 +417,7 @@ public class IcCardOutWaterActivity extends BaseActivity implements Observer{
         finish();
     }
     private void onSaveData(Packet packet1) {   //数据库操作保存数据
-        VariableUtil.LongTimeSavaData(packet1, new ResultListener() {
+        VariableUtil.requestLongTimeSaveData(packet1, new ResultListener() {
             @Override
             public void onResultSuccess(String success) {
                 Message msg = new Message();

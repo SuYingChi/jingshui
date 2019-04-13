@@ -2,6 +2,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:layout_marginTop="@dimen/margin_width20"
     android:background="@drawable/shape_transparent_corner_bg">
     <ImageView
         android:id="@+id/id_icon"
@@ -12,8 +13,7 @@
         android:paddingBottom="@dimen/margin_width10"
         android:paddingTop="@dimen/margin_width10"
         android:layout_marginStart="@dimen/margin_width10"
-        android:src="@drawable/qmui_icon_notify_info"
-        android:visibility="gone"/>
+        android:src="@drawable/qmui_icon_notify_info" />
     <TextView
         android:id="@+id/toast_txt"
         android:layout_width="wrap_content"
