@@ -38,7 +38,7 @@ public class ResendDataService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
-        ThreadPoolManager.getInstance(getApplicationContext()).onThreadPoolDateStart();
+       // ThreadPoolManager.getInstance(getApplicationContext()).onThreadPoolDateStart();
     }
     private class RegularlyCheckTimeTask implements Runnable {
         @Override
@@ -68,5 +68,7 @@ public class ResendDataService extends Service {
     @Override
     public void onDestroy() {
         super.onDestroy();
+        ThreadPoolManager.getInstance(getApplicationContext()).onShutDown();
+
     }
 }
