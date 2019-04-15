@@ -21,6 +21,10 @@ import java.lang.ref.WeakReference;
 import java.net.InetSocketAddress;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.LinkedBlockingDeque;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 import static android.content.ContentValues.TAG;
 
@@ -78,6 +82,9 @@ public class MinaClient {
         this.mConfig = mConfig;
         mConnectRunnale = new ConnectRunnale();
         mThreadPool = Executors.newFixedThreadPool(1);
+        /*mThreadPool=new ThreadPoolExecutor(1, 1,
+                5, TimeUnit.SECONDS, new LinkedBlockingDeque<Runnable>(128));*/
+
         mThreadPool.execute(mConnectRunnale);
     }
 
@@ -261,7 +268,7 @@ public class MinaClient {
     }
     public  void onShutDown(){
         if (mThreadPool!=null){
-            mThreadPool.shutdown();
+            mThreadPool.shutdownNow();
         }
     }
 }

@@ -37,6 +37,7 @@ public class ThreadPoolManager {
     /**单利引用 **/
     private static volatile ThreadPoolManager mInstance;
     private ScheduledThreadPoolExecutor scheduledThreadPoolExecutor;
+    private RegularlyCheckTimeTask regularlyCheckTimeTask;
     private ThreadPoolManager(Context context){
         scheduledThreadPoolExecutor = new ScheduledThreadPoolExecutor(4, new ThreadFactory() {
             @Override
@@ -72,11 +73,11 @@ public class ThreadPoolManager {
                 TimeUnit.SECONDS);
     }
     public void onThreadPoolDateStart(){
-        scheduledThreadPoolExecutor.scheduleAtFixedRate(new RegularlyCheckTimeTask(), 0, 3,
-                TimeUnit.MINUTES);
-       /* scheduledThreadPoolExecutor.scheduleAtFixedRate(new RegularlyCheckForegroundTask(), 0, 3,
-                TimeUnit.MINUTES);
-*/
+        if (regularlyCheckTimeTask==null){
+            regularlyCheckTimeTask=new RegularlyCheckTimeTask();
+            scheduledThreadPoolExecutor.scheduleAtFixedRate(new RegularlyCheckTimeTask(), 0, 3,
+                    TimeUnit.MINUTES);
+        }
     }
     private class RegularlyCheckTimeTask implements Runnable {
         @Override
@@ -142,6 +143,9 @@ public class ThreadPoolManager {
     }
     public  void onShutDown(){
         if (scheduledThreadPoolExecutor!=null){
+            if (regularlyCheckTimeTask!=null){
+                scheduledThreadPoolExecutor.remove(regularlyCheckTimeTask);
+            }
             scheduledThreadPoolExecutor.shutdown();
         }
     }

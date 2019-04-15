@@ -132,7 +132,7 @@ public class PortService extends Service {
      * 倒计时最大等大时长
      */
     private static final long MAX_COUNT = 5 * 60;
-    private int restartTime=0;
+   // private int restartTime=0;
 
     //后台service里的线程池里边的子线程拿到数据后通过主线程Handler发回主线程后，把数据包给内部的Observable,notify前台注册到后台service 里Observable的observer，
     // 前台observer接收到更新通知后根据自身需求重写update方法触发处理相应逻辑
@@ -168,8 +168,8 @@ public class PortService extends Service {
         }
     }
 
-    private ConnectivityManager connectivityManager;
-    private NetworkInfo info;
+  /*  private ConnectivityManager connectivityManager;
+    private NetworkInfo info;*/
  /*   private BroadcastReceiver mReceiver = new BroadcastReceiver() {
 
         @Override
@@ -254,8 +254,10 @@ public class PortService extends Service {
             @Override
             public void sessionOpened() {
                 Log.d(TAG, "client sessionOpened ");
+                count.set(0);
+                pgkTime.set(0);
                 isConnection = true;
-                restartTime=0;
+               // restartTime=0;
             }
             @Override
             public void sessionClosed() {
@@ -711,8 +713,11 @@ public class PortService extends Service {
         //重置计数
         pgkTime.set(0);
         count.set(0);
-        restartTime++;
-        if(restartTime<=5) {
+        minaClient.disConnect();
+        minaClient.onShutDown();
+        initMinaClient();
+        //restartTime++;
+        /*if(restartTime<=5) {
             minaClient.disConnect();
             minaClient.onShutDown();
             initMinaClient();
@@ -721,7 +726,7 @@ public class PortService extends Service {
             minaClient.onShutDown();
             initMinaClient();
            // mObservable.restartApp(true);
-        }
+        }*/
         //发送断电重启2G模块
     //    sendToControlBoard(Cmd.ComCmd._RESTART_NET_);
     }

@@ -158,13 +158,13 @@ public class FormatInformationUtil {
         return stringNo+ addZeroPrefix(addzero);
     }
     private static String addZeroPrefix(String addZero) {
-        String zeroString=addZero;
+        StringBuilder zeroString= new StringBuilder(addZero);
         if (addZero.length()<8){
             for (int i=0;i<8-addZero.length();i++){
-                zeroString="0"+zeroString;
+                zeroString.insert(0, "0");
             }
         }
-       return zeroString ;
+       return zeroString.toString();
     }
     public static void saveDeviceInformationToFormatInformation(ArrayList<Byte> byteArrayList){
         if (byteArrayList!=null&&byteArrayList.size()!=0){
@@ -219,8 +219,7 @@ public class FormatInformationUtil {
         consumption[1]=VariableUtil.byteArray.get(14);
         consumption[2]=VariableUtil.byteArray.get(15);
         consumption[3]=VariableUtil.byteArray.get(16);
-        int amount=ByteUtils.byte4ToInt(consumption);
-        byte[] twobyte=ByteUtils.intToByte2(amount);
+        byte[] twoByte=ByteUtils.intToByte2(ByteUtils.byte4ToInt(consumption));
         byte[] control=new byte[48];
         for (int i=0;i<48;i++){
             if (i==0){
@@ -235,9 +234,9 @@ public class FormatInformationUtil {
             }else if (i==15){
                 control[i]=(byte)0x03;
             }else if (i==16){
-                control[i]=twobyte[0];
+                control[i]=twoByte[0];
             }else if (i==17){
-                control[i]=twobyte[1];
+                control[i]=twoByte[1];
             }else if (i==18){
                 control[i]=(byte)0x01;
             }else if (i==29){
@@ -266,8 +265,7 @@ public class FormatInformationUtil {
         consumption[1]=VariableUtil.byteArray.get(14);
         consumption[2]=VariableUtil.byteArray.get(15);
         consumption[3]=VariableUtil.byteArray.get(16);
-        int amount=ByteUtils.byte4ToInt(consumption);
-        byte[] twobyte=ByteUtils.intToByte2(amount);
+        byte[] twoByte=ByteUtils.intToByte2(ByteUtils.byte4ToInt(consumption));
         byte[] control=new byte[48];
         for (int i=0;i<48;i++){
             if (i==0){
@@ -282,15 +280,15 @@ public class FormatInformationUtil {
             }else if (i==15){
                 control[i]=(byte)0x03;
             }else if (i==16){
-                control[i]=twobyte[0];
+                control[i]=twoByte[0];
             }else if (i==17){
-                control[i]=twobyte[1];
+                control[i]=twoByte[1];
             }else if (i==18){
                 control[i]=(byte)0x01;
             }else if (i==19){
-                control[i]=twobyte[0];
+                control[i]=twoByte[0];
             }else if (i==20){
-                control[i]=twobyte[1];
+                control[i]=twoByte[1];
             }else if (i==29){
                 //单价
                 control[i]=VariableUtil.byteArray.get(25);

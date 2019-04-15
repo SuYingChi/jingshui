@@ -368,6 +368,9 @@ public class AppOutWaterActivity extends BaseActivity implements Observer{
         if (waterVolume==0){
             afterAmount="0.0";
         }
+        if (CachePreferencesUtil.getChargeMode(this,CachePreferencesUtil.CHARGE_MODE,0)==1){
+            afterAmount="0.00";
+        }
         String afterWater=String.valueOf(DataCalculateUtils.getTwoDecimal(waterVolume));
         Intent intent=new Intent(mContext,PaySuccessActivity.class);
         intent.putExtra("afterAmount",afterAmount);

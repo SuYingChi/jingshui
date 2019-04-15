@@ -20,6 +20,7 @@ import com.mcloyal.serialport.utils.FrameUtils;
 import com.mcloyal.serialport.utils.PacketUtils;
 import com.msht.watersystem.base.BaseActivity;
 import com.msht.watersystem.R;
+import com.msht.watersystem.utilpackage.CachePreferencesUtil;
 import com.msht.watersystem.utilpackage.ConstantUtil;
 import com.msht.watersystem.utilpackage.ConsumeInformationUtils;
 import com.msht.watersystem.utilpackage.ByteUtils;
@@ -111,7 +112,11 @@ public class PaySuccessActivity extends BaseActivity implements Observer {
                 tvBalance.setText(String.valueOf(DataCalculateUtils.getTwoDecimal(afterConsumption)));
                 break;
             case ConstantUtil.ONE_VALUE:
-                tvSuccess.setText("付款成功");
+                if (CachePreferencesUtil.getChargeMode(this,CachePreferencesUtil.CHARGE_MODE,0)==1){
+                    tvSuccess.setText("免费打水");
+                }else {
+                    tvSuccess.setText("付款成功");
+                }
                 tvAmount.setVisibility(View.VISIBLE);
                 afterAmountText="成功消费了"+afterAmount+"元";
                 afterWaterText="共购买了"+afterWater+"升的水";
