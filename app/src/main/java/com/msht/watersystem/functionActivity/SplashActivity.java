@@ -26,7 +26,6 @@ import java.util.Observer;
  * @date 2018/7/2  
  */
 public class SplashActivity extends BaseActivity  implements Observer{
-    private final static String TAG = SplashActivity.class.getSimpleName();
     private PortService portService;
     private ComServiceConnection serviceConnection;
     @Override
@@ -68,7 +67,7 @@ public class SplashActivity extends BaseActivity  implements Observer{
     private void onCom1Received105FromControlBoard(ArrayList<Byte> data) {      //接收到主板心跳指令
         if (data!=null&&data.size()>= ConstantUtil.HEARTBEAT_INSTRUCT_MAX_SIZE){
             FormatInformationUtil.saveStatusInformationToFormatInformation(data);
-            if (loadingdialog.isShowing()&&loadingdialog!=null){
+            if (loadingdialog!=null&&loadingdialog.isShowing()){
                 loadingdialog.dismiss();
             }
            startActivity(new Intent(SplashActivity.this,

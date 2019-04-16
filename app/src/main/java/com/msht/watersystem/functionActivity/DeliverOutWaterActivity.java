@@ -33,6 +33,7 @@ import com.msht.watersystem.utilpackage.DataCalculateUtils;
 import com.msht.watersystem.utilpackage.VariableUtil;
 import com.msht.watersystem.widget.BannerM;
 import com.msht.watersystem.widget.LEDView;
+import com.msht.watersystem.widget.ToastUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -227,7 +228,7 @@ public class DeliverOutWaterActivity extends BaseActivity implements Observer{
         }else if (Arrays.equals(frame,mStopFrame)){
             removeBack();
         }else {
-            Toast.makeText(mContext,"无任何操作",Toast.LENGTH_SHORT).show();
+            ToastUtils.onToastLong("无任何操作");
         }
     }
     private void onCom1Received104DataFromControlBoard(ArrayList<Byte> data) {
@@ -253,7 +254,7 @@ public class DeliverOutWaterActivity extends BaseActivity implements Observer{
                 String stringWork= DataCalculateUtils.intToBinary(FormatInformationBean.Updateflag3);
                 if (!DataCalculateUtils.isEvent(stringWork,3)){
                     /*余额不足*/
-                    if (FormatInformationBean.Balance<2){
+                    if (FormatInformationBean.Balance<=1){
                         Intent intent=new Intent(mContext,NotSufficientActivity.class);
                         startActivity(intent);
                         finish();

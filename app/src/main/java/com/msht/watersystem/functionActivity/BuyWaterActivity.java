@@ -167,7 +167,9 @@ public class BuyWaterActivity extends BaseActivity implements Observer{
         tvVersion.setText(name);
     }
     private void initData() {
-        myCountDownTimer.start();
+        if (myCountDownTimer!=null){
+            myCountDownTimer.start();
+        }
         String downloadApp="http://msbapp.cn/download/success.html?QRCodeJson=";
         String result=downloadApp+ createQRCodeMessageJson();
         if (VariableUtil.qrCodeBitmap !=null&&!VariableUtil.qrCodeBitmap.isRecycled()){
@@ -228,7 +230,6 @@ public class BuyWaterActivity extends BaseActivity implements Observer{
             Packet packet2 = myObservable.getCom2Packet();
             if (packet2 != null) {
                 if (Arrays.equals(packet2.getCmd(),new byte[]{0x01,0x07})){
-                   // response207ToServer(packet2.getFrame());
                     VariableUtil.byteArray.clear();
                     VariableUtil.byteArray=packet2.getData();
                     onCom2Received107DataFromServer(packet2.getData());
@@ -268,7 +269,7 @@ public class BuyWaterActivity extends BaseActivity implements Observer{
    private void setEquipmentData(Byte aByte) {
         if (portService != null) {
             try {
-                byte[] frame = FrameUtils.getFrame(mContext);
+                byte[] frame = FrameUtils.getFrame(getApplicationContext());
                 byte[] type = new byte[]{0x01, 0x04};
                 byte[] data= FormatInformationUtil.setEquipmentParameter(aByte);
                 byte[] packet = PacketUtils.makePackage(frame, type, data);
@@ -283,7 +284,7 @@ public class BuyWaterActivity extends BaseActivity implements Observer{
         }
     }
     private void onCom2Received102Data(ArrayList<Byte> data) {
-        if (ConsumeInformationUtils.controlModel(mContext,data)){
+        if (ConsumeInformationUtils.controlModel(getApplicationContext(),data)){
             onShowDTS();
         }
     }
@@ -338,8 +339,8 @@ public class BuyWaterActivity extends BaseActivity implements Observer{
                 int switchStatus=ByteUtils.byteToInt(data.get(31));
                 if (switchStatus==2&&DataCalculateUtils.isEvent(stringWork,0)){
                     Intent intent=new Intent(mContext, CloseSystemActivity.class);
-                    startActivityForResult(intent,2);
                     unbindPortServiceAndRemoveObserver();
+                    startActivityForResult(intent,2);
                 }
                 if (ByteUtils.byteToInt(data.get(37))==2) {
                     VariableUtil.mNoticeText="此卡已挂失，如需取水请重新换卡!!";
@@ -359,21 +360,6 @@ public class BuyWaterActivity extends BaseActivity implements Observer{
             e.printStackTrace();
         }
     }
-    private void response207ToServer(byte[] frame) {
-        if (portService != null) {
-            try {
-                byte[] type = new byte[]{0x02, 0x07};
-                byte[] packet = PacketUtils.makePackage(frame, type, null);
-                portService.sendToServer(packet);
-            } catch (CRCException e) {
-                e.printStackTrace();
-            } catch (FrameException e) {
-                e.printStackTrace();
-            } catch (CmdTypeException e) {
-                e.printStackTrace();
-            }
-        }
-    }
     private void onCom1Received105DataControlBoard(ArrayList<Byte> data) {
         try {
             if (data!=null&&data.size()>= ConstantUtil.HEARTBEAT_INSTRUCT_MAX_SIZE){
@@ -383,9 +369,9 @@ public class BuyWaterActivity extends BaseActivity implements Observer{
                 String stringWork= DataCalculateUtils.intToBinary(FormatInformationBean.WorkState);
                 if (!DataCalculateUtils.isEvent(stringWork,6)){
                     Intent intent=new Intent(mContext, CannotBuyWaterActivity.class);
-                    startActivityForResult(intent,2);
                     unbindPortServiceAndRemoveObserver();
-                    myCountDownTimer.cancel();
+                    startActivityForResult(intent,2);
+                    endTimeCount();
                 }
             }
         }catch (Exception e){
@@ -398,19 +384,19 @@ public class BuyWaterActivity extends BaseActivity implements Observer{
                 buyStatus=false;
                 if (FormatInformationBean.ConsumptionType==1){
                     Intent intent=new Intent(mContext,IcCardOutWaterActivity.class);
-                    startActivity(intent);
                     unbindPortServiceAndRemoveObserver();
-                    myCountDownTimer.cancel();
+                    startActivity(intent);
+                    endTimeCount();
                 }else if (FormatInformationBean.ConsumptionType==3){
                     Intent intent=new Intent(mContext,AppOutWaterActivity.class);
-                    startActivity(intent);
                     unbindPortServiceAndRemoveObserver();
-                    myCountDownTimer.cancel();
+                    startActivity(intent);
+                    endTimeCount();
                 }else if (FormatInformationBean.ConsumptionType==5){
                     Intent intent=new Intent(mContext,DeliverOutWaterActivity.class);
-                    startActivity(intent);
                     unbindPortServiceAndRemoveObserver();
-                    myCountDownTimer.cancel();
+                    startActivity(intent);
+                    endTimeCount();
                 }
             }
         }
@@ -423,9 +409,9 @@ public class BuyWaterActivity extends BaseActivity implements Observer{
             if (FormatInformationBean.BusinessType==1){
                 if (FormatInformationBean.AppBalance<20){
                     Intent intent=new Intent(mContext,AppNotSufficientActivity.class);
+                    unbindPortServiceAndRemoveObserver();
                     startActivity(intent);
-                   // unbindPortServiceAndRemoveObserver();
-                    myCountDownTimer.cancel();
+                    endTimeCount();
                 }else {
                     setBusiness(1);
                 }
@@ -468,23 +454,23 @@ public class BuyWaterActivity extends BaseActivity implements Observer{
                             Intent intent=new Intent(mContext,NotSufficientActivity.class);
                             unbindPortServiceAndRemoveObserver();
                             startActivity(intent);
-                            myCountDownTimer.cancel();
+                            endTimeCount();
                         }else {
                             if (FormatInformationBean.ConsumptionType==1){
                                 Intent intent=new Intent(mContext,IcCardOutWaterActivity.class);
                                 unbindPortServiceAndRemoveObserver();
                                 startActivity(intent);
-                                myCountDownTimer.cancel();
+                                endTimeCount();
                             }else if (FormatInformationBean.ConsumptionType==3){
                                 Intent intent=new Intent(mContext,AppOutWaterActivity.class);
                                 unbindPortServiceAndRemoveObserver();
                                 startActivity(intent);
-                                myCountDownTimer.cancel();
+                                endTimeCount();
                             }else if (FormatInformationBean.ConsumptionType==5){
                                 Intent intent=new Intent(mContext,DeliverOutWaterActivity.class);
                                 unbindPortServiceAndRemoveObserver();
                                 startActivity(intent);
-                                myCountDownTimer.cancel();
+                                endTimeCount();
                             }
                         }
                     }else {
@@ -502,7 +488,7 @@ public class BuyWaterActivity extends BaseActivity implements Observer{
                         intent.putExtra("sign","0");
                         unbindPortServiceAndRemoveObserver();
                         startActivity(intent);
-                        myCountDownTimer.cancel();
+                        endTimeCount();
 
                     }
                 }
@@ -581,7 +567,9 @@ public class BuyWaterActivity extends BaseActivity implements Observer{
         super.onRestart();
         bindAndAddObserverToPortService();
         onShowDTS();
-        myCountDownTimer.start();
+        if (myCountDownTimer!=null){
+            myCountDownTimer.start();
+        }
     }
     @Override
     protected void onDestroy() {

@@ -4,7 +4,6 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.os.StrictMode;
 import android.util.Log;
 
 import com.mcloyal.serialport.AppLibsContext;
@@ -42,7 +41,7 @@ public class AppContext extends AppLibsContext {
         super.onCreate();
         mActivityList=new ArrayList<>();
         initPortBroadcast();
-        CrashReport.initCrashReport(getApplicationContext(), "fd0454d299", false);
+       // CrashReport.initCrashReport(getApplicationContext(), "fd0454d299", false);
         CaughtExceptionTool.getInstance().init(this);  //异常捕获
         instances = this;
        // mContext = getApplicationContext();

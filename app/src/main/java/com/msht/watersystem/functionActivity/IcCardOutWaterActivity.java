@@ -236,7 +236,6 @@ public class IcCardOutWaterActivity extends BaseActivity implements Observer{
                 if (Arrays.equals(packet2.getCmd(),new byte[]{0x02,0x03})){
                     onCom2Received203DataFromServer(packet2.getData());
                 }else if (Arrays.equals(packet2.getCmd(),new byte[]{0x01,0x07})){
-                    response207ToSever(packet2.getFrame());
                     onCom2Received107DataFromServer(packet2.getData());
                 }else if (Arrays.equals(packet2.getCmd(),new byte[]{0x01,0x02})){
                     response102ToServer(packet2.getFrame());
@@ -335,21 +334,6 @@ public class IcCardOutWaterActivity extends BaseActivity implements Observer{
                 }
             }
 
-        }
-    }
-    private void response207ToSever(byte[] frame) {
-        if (portService != null) {
-            try {
-                byte[] type = new byte[]{0x02, 0x07};
-                byte[] packet = PacketUtils.makePackage(frame, type, null);
-                portService.sendToServer(packet);
-            } catch (CRCException e) {
-                e.printStackTrace();
-            } catch (FrameException e) {
-                e.printStackTrace();
-            } catch (CmdTypeException e) {
-                e.printStackTrace();
-            }
         }
     }
     private void onCom2Received107DataFromServer(ArrayList<Byte> data) {
@@ -452,27 +436,12 @@ public class IcCardOutWaterActivity extends BaseActivity implements Observer{
             e.printStackTrace();
         }
     }
-    private void setEquipmentData(Byte aByte) {
-        if (portService != null) {
-            try {
-                byte[] frame = FrameUtils.getFrame(mContext);
-                byte[] type = new byte[]{0x01, 0x04};
-                byte[] data= FormatInformationUtil.setEquipmentParameter(aByte);
-                byte[] packet = PacketUtils.makePackage(frame, type, data);
-                portService.sendToControlBoard(packet);
-            } catch (CRCException e) {
-                e.printStackTrace();
-            } catch (FrameException e) {
-                e.printStackTrace();
-            } catch (CmdTypeException e) {
-                e.printStackTrace();
-            }
-        }
-    }
     private void onCom1Received204DataFromControlBoard(byte[] frame) {
         if (Arrays.equals(frame,mStartFrame)){
             if (startOut){
-                myCountDownTimer.cancel();
+                if (myCountDownTimer!=null){
+                    myCountDownTimer.cancel();
+                }
                 if (portService != null) {
                     calculateData();    //没联网计算取缓存数据
                     portService.sendToServer(CreatePacketTypeUtil.getPacketData103());

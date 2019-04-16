@@ -129,7 +129,6 @@ public class AppNotSufficientActivity extends BaseActivity implements Observer {
                     response102ToServer(packet2.getFrame());
                     onCom2Received102DataFromServer(packet2.getData());
                 }else if (Arrays.equals(packet2.getCmd(),new byte[]{0x01,0x07})){
-                   // response207ToServer(packet2.getFrame());
                     onCom2Received107DataFromServer(packet2.getData());
                 }
             }
@@ -158,21 +157,6 @@ public class AppNotSufficientActivity extends BaseActivity implements Observer {
             }
         }
     }
-    private void response207ToServer(byte[] frame) {
-        if (portService != null) {
-            try {
-                byte[] type = new byte[]{0x02, 0x07};
-                byte[] packet = PacketUtils.makePackage(frame, type, null);
-                portService.sendToServer(packet);
-            } catch (CRCException e) {
-                e.printStackTrace();
-            } catch (FrameException e) {
-                e.printStackTrace();
-            } catch (CmdTypeException e) {
-                e.printStackTrace();
-            }
-        }
-    }
     private void onCom2Received107DataFromServer(ArrayList<Byte> data) {
         if (data!=null&&data.size()>=ConstantUtil.BUSINESS_MAX_SIZE){
             ConsumeInformationUtils.saveConsumptionInformationToFormatInformation(data);
@@ -191,7 +175,7 @@ public class AppNotSufficientActivity extends BaseActivity implements Observer {
                 CachePreferencesUtil.putBoolean(this,CachePreferencesUtil.FIRST_OPEN,false);
                 buyStatus=true;
                 if (FormatInformationBean.BusinessType==1){
-                    if (FormatInformationBean.AppBalance<10){
+                    if (FormatInformationBean.AppBalance<=1){
                         double balance= DataCalculateUtils.getTwoDecimal(FormatInformationBean.Balance/100.0);
                         tvBalance.setText(String.valueOf(balance));
                         tvCustomerNo.setText(FormatInformationBean.StringCardNo);
@@ -298,7 +282,7 @@ public class AppNotSufficientActivity extends BaseActivity implements Observer {
                         intent.putExtra("mAccount",mAccount);
                         intent.putExtra("sign","0");
                         startActivityForResult(intent,1);
-                        myCountDownTimer.cancel();
+                        endTimeCount();
                         finish();
                     }
                 }
@@ -401,7 +385,9 @@ public class AppNotSufficientActivity extends BaseActivity implements Observer {
         double balance= DataCalculateUtils.getTwoDecimal(FormatInformationBean.AppBalance/100.0);
         tvBalance.setText(String.valueOf(balance));
         tvCustomerNo.setText(FormatInformationBean.StringCardNo);
-        myCountDownTimer.start();
+        if (myCountDownTimer!=null){
+            myCountDownTimer.start();
+        }
     }
     private void endTimeCount(){
         if (myCountDownTimer != null) {

@@ -138,7 +138,6 @@ public class NotSufficientActivity extends BaseActivity implements Observer {
                     }
                    onCom2Received104DataFromServer(packet2.getData());
                 } else if (Arrays.equals(packet2.getCmd(),new byte[]{0x01,0x07})){
-                   // response207ToServer(packet2.getFrame());
                    onCom2Received107DataFromServer(packet2.getData());
                 }else if (Arrays.equals(packet2.getCmd(),new byte[]{0x01,0x02})){
                    response102ToServer(packet2.getFrame());
@@ -183,7 +182,7 @@ public class NotSufficientActivity extends BaseActivity implements Observer {
         }
     }
     private void onCom2Received102DataFromServer(ArrayList<Byte> data) {
-        if (ConsumeInformationUtils.controlModel(mContext,data)){
+        if (ConsumeInformationUtils.controlModel(getApplicationContext(),data)){
             if (FormatInformationBean.ShowTDS==0){
                 layoutTDS.setVisibility(View.GONE);
             }else {
@@ -227,7 +226,7 @@ public class NotSufficientActivity extends BaseActivity implements Observer {
     private void setBusiness(int business) {
         if (portService != null) {
             try {
-                byte[] frame = FrameUtils.getFrame(mContext);
+                byte[] frame = FrameUtils.getFrame(getApplicationContext());
                 mAppFrame=frame;
                 byte[] type = new byte[]{0x01, 0x04};
                 if (business==1){
@@ -239,21 +238,6 @@ public class NotSufficientActivity extends BaseActivity implements Observer {
                     byte[] packet = PacketUtils.makePackage(frame, type, data);
                     portService.sendToControlBoard(packet);
                 }
-            } catch (CRCException e) {
-                e.printStackTrace();
-            } catch (FrameException e) {
-                e.printStackTrace();
-            } catch (CmdTypeException e) {
-                e.printStackTrace();
-            }
-        }
-    }
-    private void response207ToServer(byte[] frame) {
-        if (portService != null) {
-            try {
-                byte[] type = new byte[]{0x02, 0x07};
-                byte[] packet = PacketUtils.makePackage(frame, type, null);
-                portService.sendToServer(packet);
             } catch (CRCException e) {
                 e.printStackTrace();
             } catch (FrameException e) {
@@ -281,17 +265,17 @@ public class NotSufficientActivity extends BaseActivity implements Observer {
                         if (FormatInformationBean.ConsumptionType==1){
                             Intent intent=new Intent(mContext,IcCardOutWaterActivity.class);
                             startActivity(intent);
-                            myCountDownTimer.cancel();
+                            endTimeCount();
                             finish();
                         }else if (FormatInformationBean.ConsumptionType==3){
                             Intent intent=new Intent(mContext,AppOutWaterActivity.class);
                             startActivity(intent);
-                            myCountDownTimer.cancel();
+                            endTimeCount();
                             finish();
                         }else if (FormatInformationBean.ConsumptionType==5){
                             Intent intent=new Intent(mContext,DeliverOutWaterActivity.class);
                             startActivity(intent);
-                            myCountDownTimer.cancel();
+                            endTimeCount();
                             finish();
                         }
                     }

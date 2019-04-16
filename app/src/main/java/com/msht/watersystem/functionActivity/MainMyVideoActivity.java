@@ -73,13 +73,13 @@ public class MainMyVideoActivity extends BaseActivity implements Observer/*Surfa
     private ComServiceConnection serviceConnection;
     private View imageLayout;
     private RelativeLayout mVideoViewContainer;
-    private MediaPlayer mMediaPlayer;
+   /* private MediaPlayer mMediaPlayer;
     private NetBroadcastReceiver receiver;
-    //  private SurfaceHolder holder;
-    private boolean mIsVideoSizeKnown = false;
-    // private boolean mIsVideoReadyToBePlayed = false;
+      private SurfaceHolder holder;
+   private boolean mIsVideoSizeKnown = false;
+     private boolean mIsVideoReadyToBePlayed = false;
     private long currentPosition = 0;
-    private boolean changeVideo = false;
+    private boolean changeVideo = false;*/
 
     /**
      * 扫码发送104帧序
@@ -94,7 +94,7 @@ public class MainMyVideoActivity extends BaseActivity implements Observer/*Surfa
      * 夜间标志
      */
     private boolean nightStatus = true;
-    private int videoIndex = 0;
+   // private int videoIndex = 0;
     private List<String> fileList;
     private Context mContext;
     private CustomVideoView mVideoView;
@@ -237,7 +237,7 @@ public class MainMyVideoActivity extends BaseActivity implements Observer/*Surfa
 
     }
 
-    public void initNetBroadcast() {
+    /*public void initNetBroadcast() {
         if (receiver==null){
             IntentFilter filter = new IntentFilter();
             filter.addAction(ConnectivityManager.CONNECTIVITY_ACTION);
@@ -246,7 +246,7 @@ public class MainMyVideoActivity extends BaseActivity implements Observer/*Surfa
                 registerReceiver(receiver, filter);
             }
         }
-    }
+    }*/
     private void bindAndAddObserverToPortService() {
         serviceConnection = new ComServiceConnection(this, new ComServiceConnection.ConnectionCallBack() {
             @Override
@@ -327,7 +327,6 @@ public class MainMyVideoActivity extends BaseActivity implements Observer/*Surfa
                     onCom2Received102DataFromServer(packet2.getData());
                 } else if (Arrays.equals(packet2.getCmd(), new byte[]{0x01, 0x07})) {
                     //扫码取水，后端主动发送107，回复207给后端,发送104给主控板取水
-                   // response207ToServer(packet2.getFrame());
                     VariableUtil.byteArray.clear();
                     VariableUtil.byteArray = packet2.getData();
                     onCom2Received107DataFromServer(packet2.getData());
@@ -336,9 +335,9 @@ public class MainMyVideoActivity extends BaseActivity implements Observer/*Surfa
                     onCom2Received206DataFromServer(packet2.getData());
                 }
             }
-            if(myObservable.getRestart()){
+            /*if(myObservable.getRestart()){
                 RestartAppUtil.restartApp();
-            }
+            }*/
         }
     }
 
@@ -514,25 +513,10 @@ public class MainMyVideoActivity extends BaseActivity implements Observer/*Surfa
         }
     }
     private void onCom2Received102DataFromServer(ArrayList<Byte> data) {
-        if (ConsumeInformationUtils.controlModel(mContext, data)) {
+        if (ConsumeInformationUtils.controlModel(getApplicationContext(), data)) {
             /*  .....
             Log.d("FormatInformationBean=","waterVolume="+String.valueOf(FormatInformationBean.WaterNum)+",time="+String.valueOf(FormatInformationBean.OutWaterTime));
             */
-        }
-    }
-    private void response207ToServer(byte[] frame) {
-        if (portService != null) {
-            try {
-                byte[] type = new byte[]{0x02, 0x07};
-                byte[] packet = PacketUtils.makePackage(frame, type, null);
-                portService.sendToServer(packet);
-            } catch (CRCException e) {
-                e.printStackTrace();
-            } catch (FrameException e) {
-                e.printStackTrace();
-            } catch (CmdTypeException e) {
-                e.printStackTrace();
-            }
         }
     }
     /**
@@ -823,18 +807,18 @@ public class MainMyVideoActivity extends BaseActivity implements Observer/*Surfa
         }
         return false;
     }*/
-    private void setDataPath(String videoPath) {
+    /*private void setDataPath(String videoPath) {
         try {
             mMediaPlayer.setDataSource(videoPath);
         } catch (IOException e) {
             e.printStackTrace();
         }
-    }
+    }*/
 
-    private void doCleanUp() {
-        //mIsVideoReadyToBePlayed = false;
+    /*private void doCleanUp() {
+        mIsVideoReadyToBePlayed = false;
         mIsVideoSizeKnown = false;
-    }
+    }*/
 
   /*  private void startVideoPlayback() {
         if (changeVideo) {
@@ -867,13 +851,13 @@ public class MainMyVideoActivity extends BaseActivity implements Observer/*Surfa
             changeVideo = true;
         }
     }*/
-    private void releaseMediaPlayer() {
+    /*private void releaseMediaPlayer() {
         if (mMediaPlayer != null) {
             currentPosition = mMediaPlayer.getCurrentPosition();
             mMediaPlayer.release();
             mMediaPlayer = null;
         }
-    }
+    }*/
 
     /*    @Override
         public void onPrepared(MediaPlayer mp) {
@@ -898,7 +882,7 @@ public class MainMyVideoActivity extends BaseActivity implements Observer/*Surfa
     @Override
     protected void onStart() {
         super.onStart();
-        initNetBroadcast();
+      //  initNetBroadcast();
     }
 
     @Override
@@ -934,16 +918,16 @@ public class MainMyVideoActivity extends BaseActivity implements Observer/*Surfa
     @Override
     protected void onPause() {
         super.onPause();
-        releaseMediaPlayer();
-        doCleanUp();
+       // releaseMediaPlayer();
+       // doCleanUp();
     }
     @Override
     protected void onDestroy() {
         super.onDestroy();
         unbindPortServiceAndRemoveObserver();
-        releaseMediaPlayer();
-        doCleanUp();
-        ThreadPoolManager.getInstance(mContext).onShutDown();
-        EventBus.getDefault().unregister(mContext);
+      //  releaseMediaPlayer();
+      //  doCleanUp();
+        ThreadPoolManager.getInstance(getApplicationContext()).onShutDown();
+        EventBus.getDefault().unregister(getApplicationContext());
     }
 }

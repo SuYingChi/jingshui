@@ -8,6 +8,7 @@ import android.support.v4.content.ContextCompat;
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 import com.mcloyal.serialport.entity.Packet;
 import com.mcloyal.serialport.exception.CRCException;
@@ -40,6 +41,7 @@ import com.msht.watersystem.entity.OrderInfo;
 import com.msht.watersystem.gen.OrderInfoDao;
 import com.msht.watersystem.service.ResendDataService;
 import com.msht.watersystem.widget.BannerM;
+import com.tencent.bugly.crashreport.CrashReport;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -158,7 +160,6 @@ public class MainWaterImageActivity extends BaseActivity implements Observer{
                     response202ToServer(packet2.getFrame());
                     onCom2Received102DataFromServer(packet2.getData());
                 } else if (Arrays.equals(packet2.getCmd(), new byte[]{0x01, 0x07})) {
-                   // response207ToServer(packet2.getFrame());
                     VariableUtil.byteArray.clear();
                     VariableUtil.byteArray = packet2.getData();
                     onCom2Received107DataFromServer(packet2.getData());
@@ -340,25 +341,10 @@ public class MainWaterImageActivity extends BaseActivity implements Observer{
         }
     }
     private void onCom2Received102DataFromServer(ArrayList<Byte> data) {
-        if (ConsumeInformationUtils.controlModel(mContext, data)) {
+        if (ConsumeInformationUtils.controlModel(getApplicationContext(), data)) {
             /*  .....
             Log.d("FormatInformationBean=","waterVolume="+String.valueOf(FormatInformationBean.WaterNum)+",time="+String.valueOf(FormatInformationBean.OutWaterTime));
             */
-        }
-    }
-    private void response207ToServer(byte[] frame) {
-        if (portService != null) {
-            try {
-                byte[] type = new byte[]{0x02, 0x07};
-                byte[] packet = PacketUtils.makePackage(frame, type, null);
-                portService.sendToServer(packet);
-            } catch (CRCException e) {
-                e.printStackTrace();
-            } catch (FrameException e) {
-                e.printStackTrace();
-            } catch (CmdTypeException e) {
-                e.printStackTrace();
-            }
         }
     }
     /**
@@ -378,7 +364,7 @@ public class MainWaterImageActivity extends BaseActivity implements Observer{
             //民生宝来扫
             if (FormatInformationBean.BusinessType == 1) {
                 //以分为单位
-                if (FormatInformationBean.AppBalance < 20) {
+                if (FormatInformationBean.AppBalance <= 1) {
                     //提示余额不足
                     pageStatus=false;
                     Intent intent = new Intent(mContext, AppNotSufficientActivity.class);
@@ -416,7 +402,7 @@ public class MainWaterImageActivity extends BaseActivity implements Observer{
     private void sendBuyWaterCommand104ToControlBoard(int business) {
         if (portService != null) {
             try {
-                byte[] frame = FrameUtils.getFrame(mContext);
+                byte[] frame = FrameUtils.getFrame(getApplicationContext());
                 mAppFrame=frame;
                 byte[] type = new byte[]{0x01, 0x04};
                 if (business == 1) {
@@ -454,7 +440,7 @@ public class MainWaterImageActivity extends BaseActivity implements Observer{
     private void onControlScreenBackground(int status) {
         if (portService!=null){
             try {
-                byte[] frame = FrameUtils.getFrame(mContext);
+                byte[] frame = FrameUtils.getFrame(getApplicationContext());
                 byte[] type = new byte[]{0x01, 0x04};
                 byte[] data = FormatInformationUtil.setCloseScreenData(status);
                 byte[] packet = PacketUtils.makePackage(frame, type, data);
@@ -509,11 +495,7 @@ public class MainWaterImageActivity extends BaseActivity implements Observer{
             //restartWaterApp();
         }
     }
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onRestartApp(RestartApp event){
-            RestartAppUtil.restartApp();
-            //restartWaterApp();
-    }
+
     private OrderInfoDao getOrderDao() {
         return AppContext.getInstance().getDaoSession().getOrderInfoDao();
     }
@@ -582,7 +564,7 @@ public class MainWaterImageActivity extends BaseActivity implements Observer{
     protected void onDestroy() {
         super.onDestroy();
         unbindPortServiceAndRemoveObserver();
-        ThreadPoolManager.getInstance(context).onShutDown();
-        EventBus.getDefault().unregister(context);
+        ThreadPoolManager.getInstance(getApplicationContext()).onShutDown();
+        EventBus.getDefault().unregister(getApplicationContext());
     }
 }

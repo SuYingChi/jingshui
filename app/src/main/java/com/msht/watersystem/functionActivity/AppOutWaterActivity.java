@@ -336,7 +336,9 @@ public class AppOutWaterActivity extends BaseActivity implements Observer{
                         if (FormatInformationBean.Balance<=1){
                             Intent intent=new Intent(mContext,NotSufficientActivity.class);
                             startActivity(intent);
-                            myCountDownTimer.cancel();
+                            if (myCountDownTimer != null) {
+                                myCountDownTimer.cancel();
+                            }
                             finish();
                         }else {
                             Intent intent=new Intent(mContext,IcCardOutWaterActivity.class);
@@ -409,7 +411,9 @@ public class AppOutWaterActivity extends BaseActivity implements Observer{
         volume=DataCalculateUtils.getWaterVolume(mVolume,mTime);
     }
     private void settleServer(int afterAmount,int amount,byte[] frame) {
-        mTimer.start();//开始计时
+        if (mTimer!=null){
+            mTimer.start();//开始计时
+        }
         if (portService != null) {
             try {
                 byte[] type = new byte[]{0x01, 0x07};
@@ -502,7 +506,9 @@ public class AppOutWaterActivity extends BaseActivity implements Observer{
             if (receiveState ==2){
                 ensureState =2;
                 receiveState =3;
-                mTimer.start();
+                if (mTimer!=null){
+                    mTimer.start();
+                }
                // onSettleAccountEndOutWater();
             }
         }
@@ -536,7 +542,9 @@ public class AppOutWaterActivity extends BaseActivity implements Observer{
                     ensureState =1;
                     receiveState =1;
                     onStartOutWater();
-                    myCountDownTimer.onFinish();//计时停止
+                    if (myCountDownTimer!=null){
+                        myCountDownTimer.onFinish();//计时停止
+                    }
                 }
             }else if (ensureState ==1){
                 if (portService != null) {
@@ -545,7 +553,10 @@ public class AppOutWaterActivity extends BaseActivity implements Observer{
                     receiveState =2;
                     onStopOutWater();
                     layoutNotice.setVisibility(View.VISIBLE);
-                    myCountDownTimer.start();
+                    if (myCountDownTimer!=null){
+                        myCountDownTimer.start();
+                    }
+
                 }
             }
         }else if (keyCode==KeyEvent.KEYCODE_DPAD_UP){
@@ -554,7 +565,9 @@ public class AppOutWaterActivity extends BaseActivity implements Observer{
             //结账打水
             ensureState =2;
             receiveState =3;
-            myCountDownTimer.onFinish();
+            if (myCountDownTimer!=null){
+                myCountDownTimer.onFinish();
+            }
             onSettleAccountEndOutWater();
         }
         return super.onKeyDown(keyCode, event);

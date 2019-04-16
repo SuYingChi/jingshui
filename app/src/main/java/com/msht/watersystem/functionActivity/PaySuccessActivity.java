@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.CountDownTimer;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.ImageView;
@@ -102,42 +103,43 @@ public class PaySuccessActivity extends BaseActivity implements Observer {
         double afterConsumption= FormatInformationBean.AfterAmount/100.0;
         String afterWaterText="共购买了"+afterWater+"升的水";
         String afterAmountText="成功消费了"+afterAmount+"元";
-        switch (sign){
-            case ConstantUtil.ZERO_VALUE:
-                tvSuccess.setText("付款成功");
-                tvAmount.setVisibility(View.VISIBLE);
-                afterAmountText="成功消费了"+afterAmount+"元";
-                afterWaterText="共购买了"+afterWater+"升的水";
-                afterConsumption= FormatInformationBean.AfterAmount/100.0;
-                tvBalance.setText(String.valueOf(DataCalculateUtils.getTwoDecimal(afterConsumption)));
-                break;
-            case ConstantUtil.ONE_VALUE:
-                if (CachePreferencesUtil.getChargeMode(this,CachePreferencesUtil.CHARGE_MODE,0)==1){
-                    tvSuccess.setText("免费打水");
-                }else {
+        if (!TextUtils.isEmpty(sign)){
+            switch (sign){
+                case ConstantUtil.ZERO_VALUE:
                     tvSuccess.setText("付款成功");
-                }
-                tvAmount.setVisibility(View.VISIBLE);
-                afterAmountText="成功消费了"+afterAmount+"元";
-                afterWaterText="共购买了"+afterWater+"升的水";
-                afterConsumption= FormatInformationBean.AppBalance/100.0;
-                tvBalance.setText(String.valueOf(DataCalculateUtils.getTwoDecimal(afterConsumption)));
-                break;
-            case ConstantUtil.TWO_VALUE:
-                tvAmount.setVisibility(View.INVISIBLE);
-                tvSuccess.setText("充值成功");
-                double rechargeAmount= FormatInformationBean.rechargeAmount/100.0;
-                afterAmountText="成功消费了"+afterAmount+"元";
-                afterWaterText="成功充值了"+String.valueOf(DataCalculateUtils.getTwoDecimal(rechargeAmount))+"元";
-                afterConsumption= FormatInformationBean.Balance/100.0;
-                break;
-            case ConstantUtil.THREE_VALUE:
-                tvSuccess.setText("付款成功");
-                tvAmount.setVisibility(View.VISIBLE);
-                afterAmountText="成功消费了"+afterAmount+"元";
-                afterWaterText="共购买了"+afterWater+"升的水";
-                afterConsumption= FormatInformationBean.Balance/100.0;
-                break;
+                    tvAmount.setVisibility(View.VISIBLE);
+                    afterAmountText="成功消费了"+afterAmount+"元";
+                    afterWaterText="共购买了"+afterWater+"升的水";
+                    afterConsumption= FormatInformationBean.AfterAmount/100.0;
+                    tvBalance.setText(String.valueOf(DataCalculateUtils.getTwoDecimal(afterConsumption)));
+                    break;
+                case ConstantUtil.ONE_VALUE:
+                    if (CachePreferencesUtil.getChargeMode(this,CachePreferencesUtil.CHARGE_MODE,0)==1){
+                        tvSuccess.setText("免费打水");
+                    }else {
+                        tvSuccess.setText("付款成功");
+                    }
+                    tvAmount.setVisibility(View.VISIBLE);
+                    afterAmountText="成功消费了"+afterAmount+"元";
+                    afterWaterText="共购买了"+afterWater+"升的水";
+                    afterConsumption= FormatInformationBean.AppBalance/100.0;
+                    tvBalance.setText(String.valueOf(DataCalculateUtils.getTwoDecimal(afterConsumption)));
+                    break;
+                case ConstantUtil.TWO_VALUE:
+                    tvAmount.setVisibility(View.INVISIBLE);
+                    tvSuccess.setText("充值成功");
+                    double rechargeAmount= FormatInformationBean.rechargeAmount/100.0;
+                    afterAmountText="成功消费了"+afterAmount+"元";
+                    afterWaterText="成功充值了"+String.valueOf(DataCalculateUtils.getTwoDecimal(rechargeAmount))+"元";
+                    afterConsumption= FormatInformationBean.Balance/100.0;
+                    break;
+                case ConstantUtil.THREE_VALUE:
+                    tvSuccess.setText("付款成功");
+                    tvAmount.setVisibility(View.VISIBLE);
+                    afterAmountText="成功消费了"+afterAmount+"元";
+                    afterWaterText="共购买了"+afterWater+"升的水";
+                    afterConsumption= FormatInformationBean.Balance/100.0;
+                    break;
                 default:
                     tvSuccess.setText("付款成功");
                     tvAmount.setVisibility(View.VISIBLE);
@@ -145,6 +147,7 @@ public class PaySuccessActivity extends BaseActivity implements Observer {
                     afterWaterText="共购买了"+afterWater+"升的水";
                     afterConsumption= FormatInformationBean.AfterAmount/100.0;
                     break;
+            }
         }
         tvAmount.setText(afterAmountText);
         tvWater.setText(afterWaterText);
@@ -195,7 +198,6 @@ public class PaySuccessActivity extends BaseActivity implements Observer {
                     }
                     onCom2Received104DataFromServer(packet2.getData());
                 }else if (Arrays.equals(packet2.getCmd(),new byte[]{0x01,0x07})){
-                   // response207ToServer(packet2.getFrame());
                     onCom2Received107DataFromServer(packet2.getData());
                 }else if (Arrays.equals(packet2.getCmd(),new byte[]{0x01,0x02})){
                     response102ToServer(packet2.getFrame());
@@ -294,7 +296,7 @@ public class PaySuccessActivity extends BaseActivity implements Observer {
     private void setBusiness(int business) {
         if (portService != null) {
             try {
-                byte[] frame = FrameUtils.getFrame(mContext);
+                byte[] frame = FrameUtils.getFrame(getApplicationContext());
                 mAppFrame=frame;
                 byte[] type = new byte[]{0x01, 0x04};
                 if (business==1){
@@ -306,21 +308,6 @@ public class PaySuccessActivity extends BaseActivity implements Observer {
                     byte[] packet = PacketUtils.makePackage(frame, type, data);
                     portService.sendToControlBoard(packet);
                 }
-            } catch (CRCException e) {
-                e.printStackTrace();
-            } catch (FrameException e) {
-                e.printStackTrace();
-            } catch (CmdTypeException e) {
-                e.printStackTrace();
-            }
-        }
-    }
-    private void response207ToServer(byte[] frame) {
-        if (portService != null) {
-            try {
-                byte[] type = new byte[]{0x02, 0x07};
-                byte[] packet = PacketUtils.makePackage(frame, type, null);
-                portService.sendToServer(packet);
             } catch (CRCException e) {
                 e.printStackTrace();
             } catch (FrameException e) {
