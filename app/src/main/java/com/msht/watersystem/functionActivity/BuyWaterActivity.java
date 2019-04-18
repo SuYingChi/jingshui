@@ -119,23 +119,10 @@ public class BuyWaterActivity extends BaseActivity implements Observer{
   private void initSetData() {
         if (portService != null) {
             if (portService.isConnection()){
-                if (count<3){
+                if (count<2){
                     portService.sendToServer(CreatePacketTypeUtil.getPacketData103());
                     count++;
                 }
-                /*try {
-                    byte[] frame = FrameUtils.getFrame(mContext);
-                    byte[] type = new byte[]{0x01, 0x03};
-                    byte[] packet = PacketUtils.makePackage(frame, type, null);
-                    portService.sendToServer(packet);
-                } catch (CRCException e) {
-                    e.printStackTrace();
-                } catch (FrameException e) {
-                    e.printStackTrace();
-                } catch (CmdTypeException e) {
-                    e.printStackTrace();
-                }*/
-
             }
         }
     }
@@ -192,7 +179,6 @@ public class BuyWaterActivity extends BaseActivity implements Observer{
             @Override
             public void onResultFail(boolean failStatus) {
                 ToastUtils.onToastLong("设备号异常，请稍后25秒");
-                //Toast.makeText(mContext, "系统故障", Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -405,6 +391,7 @@ public class BuyWaterActivity extends BaseActivity implements Observer{
         if (data!=null&&data.size()>=ConstantUtil.BUSINESS_MAX_SIZE){
             ConsumeInformationUtils.saveConsumptionInformationToFormatInformation(data);
             CachePreferencesUtil.putBoolean(this,CachePreferencesUtil.FIRST_OPEN,false);
+            CachePreferencesUtil.putChargeMode(this, CachePreferencesUtil.CHARGE_MODE, FormatInformationBean.ChargeMode);
             buyStatus=true;
             if (FormatInformationBean.BusinessType==1){
                 if (FormatInformationBean.AppBalance<20){

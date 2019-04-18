@@ -34,6 +34,7 @@ public class VariableUtil {
     public static boolean setTimeStatus=false;
     public static boolean setEquipmentStatus=true;
     public static boolean sendStatus=true;
+    public static boolean isOpenBackLight=true;
     public static boolean mFirstOpen=false;
     public static boolean mFirstClear=false;
     public static String mNoticeText="此卡已挂失，如需取水请重新换卡!!";

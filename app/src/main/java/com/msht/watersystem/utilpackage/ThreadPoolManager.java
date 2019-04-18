@@ -89,10 +89,14 @@ public class ThreadPoolManager {
             }
             if (DateTimeUtils.isCheckTime(0,5,5,40)){
                 /*关闭背光*/
-                EventBus.getDefault().post(new DateMassageEvent(2));
+                if (VariableUtil.isOpenBackLight){
+                    EventBus.getDefault().post(new DateMassageEvent(2));
+                }
             }else if (DateTimeUtils.isCheckTime(5,23,45,55)){
                 /*开背光*/
-                EventBus.getDefault().post(new DateMassageEvent(1));
+                if (!VariableUtil.isOpenBackLight){
+                    EventBus.getDefault().post(new DateMassageEvent(1));
+                }
             }
             if (DateTimeUtils.isCheckTime(2,2,10,13)){
                 if (VariableUtil.mFirstOpen){

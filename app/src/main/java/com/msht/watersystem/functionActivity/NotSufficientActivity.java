@@ -20,6 +20,7 @@ import com.mcloyal.serialport.utils.FrameUtils;
 import com.mcloyal.serialport.utils.PacketUtils;
 import com.msht.watersystem.base.BaseActivity;
 import com.msht.watersystem.R;
+import com.msht.watersystem.utilpackage.CachePreferencesUtil;
 import com.msht.watersystem.utilpackage.ConstantUtil;
 import com.msht.watersystem.utilpackage.ConsumeInformationUtils;
 import com.msht.watersystem.utilpackage.ByteUtils;
@@ -193,6 +194,7 @@ public class NotSufficientActivity extends BaseActivity implements Observer {
     private void onCom2Received107DataFromServer(ArrayList<Byte> data) {
         if (data!=null&&data.size()>=ConstantUtil.BUSINESS_MAX_SIZE){
             ConsumeInformationUtils.saveConsumptionInformationToFormatInformation(data);
+            CachePreferencesUtil.putChargeMode(this, CachePreferencesUtil.CHARGE_MODE, FormatInformationBean.ChargeMode);
             if (FormatInformationBean.BusinessType==3){
                 FormatInformationBean.Balance= FormatInformationBean.Balance+ FormatInformationBean.rechargeAmount;
                 double balance= DataCalculateUtils.getTwoDecimal(FormatInformationBean.Balance/100.0);

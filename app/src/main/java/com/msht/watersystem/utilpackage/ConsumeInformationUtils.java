@@ -75,6 +75,7 @@ public class ConsumeInformationUtils {
             orderNo[6]=byteArrayList.get(36);
             orderNo[7]=byteArrayList.get(37);
             FormatInformationBean.orderType=orderNo;
+            FormatInformationBean.ChargeMode=ByteUtils.byteToInt(byteArrayList.get(38));
             try {
                 FormatInformationBean.OrderNoString= getBigNumber(orderNo);
             } catch (Exception e) {

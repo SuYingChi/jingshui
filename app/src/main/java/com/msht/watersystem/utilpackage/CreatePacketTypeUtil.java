@@ -1,5 +1,7 @@
 package com.msht.watersystem.utilpackage;
 
+import android.util.Log;
+
 import com.mcloyal.serialport.constant.Cmd;
 import com.mcloyal.serialport.entity.Packet;
 import com.mcloyal.serialport.exception.CRCException;
@@ -89,11 +91,8 @@ public class CreatePacketTypeUtil {
         try {
             byte[] frame = FrameUtils.getFrame(AppContext.getWaterApplicationContext());
             byte[] type = new byte[]{0x01, 0x03};
-            byte[] packet = PacketUtils.makePackage(frame, type, null);
             byte[] version=ByteUtils.intTo2Byte(AppPackageUtil.getPackageVersionCode());
-            packet[9]=version[0];
-            packet[10]=version[1];
-            return packet;
+            return PacketUtils.makePackage(frame, type, version);
         } catch (CRCException e) {
             e.printStackTrace();
         } catch (FrameException e) {

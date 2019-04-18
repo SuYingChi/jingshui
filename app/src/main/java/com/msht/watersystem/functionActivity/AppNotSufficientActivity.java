@@ -160,6 +160,7 @@ public class AppNotSufficientActivity extends BaseActivity implements Observer {
     private void onCom2Received107DataFromServer(ArrayList<Byte> data) {
         if (data!=null&&data.size()>=ConstantUtil.BUSINESS_MAX_SIZE){
             ConsumeInformationUtils.saveConsumptionInformationToFormatInformation(data);
+            CachePreferencesUtil.putChargeMode(this, CachePreferencesUtil.CHARGE_MODE, FormatInformationBean.ChargeMode);
             if (FormatInformationBean.BusinessType==3){
                 FormatInformationBean.Balance= FormatInformationBean.Balance+ FormatInformationBean.rechargeAmount;
                 Intent intent=new Intent(AppNotSufficientActivity.this,PaySuccessActivity.class);
@@ -192,7 +193,7 @@ public class AppNotSufficientActivity extends BaseActivity implements Observer {
     private void setBusiness(int business) {
         if (portService != null) {
             try {
-                byte[] frame = FrameUtils.getFrame(mContext);
+                byte[] frame = FrameUtils.getFrame(getApplicationContext());
                 mAppFrame=frame;
                 byte[] type = new byte[]{0x01, 0x04};
                 if (business==1){

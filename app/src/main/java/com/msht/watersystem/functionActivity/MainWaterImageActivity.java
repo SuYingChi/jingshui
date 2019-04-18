@@ -355,6 +355,7 @@ public class MainWaterImageActivity extends BaseActivity implements Observer{
         if (data != null && data.size()>= ConstantUtil.BUSINESS_MAX_SIZE) {
             ConsumeInformationUtils.saveConsumptionInformationToFormatInformation(data);
             CachePreferencesUtil.putBoolean(this, CachePreferencesUtil.FIRST_OPEN, false);
+            CachePreferencesUtil.putChargeMode(this, CachePreferencesUtil.CHARGE_MODE, FormatInformationBean.ChargeMode);
             buyStatus = true;
             /*打开屏幕背光*/
             if (nightStatus){
@@ -453,6 +454,8 @@ public class MainWaterImageActivity extends BaseActivity implements Observer{
                 e.printStackTrace();
             }
         }
+        VariableUtil.isOpenBackLight = status == 1;
+
     }
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onMessageData(MessageEvent messageEvent) {

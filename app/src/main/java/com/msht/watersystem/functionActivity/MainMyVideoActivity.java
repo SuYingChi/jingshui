@@ -528,6 +528,7 @@ public class MainMyVideoActivity extends BaseActivity implements Observer/*Surfa
         if (data != null && data.size()>= ConstantUtil.BUSINESS_MAX_SIZE) {
             ConsumeInformationUtils.saveConsumptionInformationToFormatInformation(data);
             CachePreferencesUtil.putBoolean(this, CachePreferencesUtil.FIRST_OPEN, false);
+            CachePreferencesUtil.putChargeMode(this, CachePreferencesUtil.CHARGE_MODE, FormatInformationBean.ChargeMode);
             buyStatus = true;
             /*打开屏幕背光*/
             if (nightStatus) {
@@ -537,7 +538,7 @@ public class MainMyVideoActivity extends BaseActivity implements Observer/*Surfa
             //民生宝来扫
             if (FormatInformationBean.BusinessType == 1) {
                 //以分为单位
-                if (FormatInformationBean.AppBalance < 20) {
+                if (FormatInformationBean.AppBalance <=1) {
                     //提示余额不足
                     pageStatus = false;
                     Intent intent = new Intent(mContext, AppNotSufficientActivity.class);
