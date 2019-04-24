@@ -29,8 +29,8 @@ public class Cmd {
     }
 
     public static final int PORT=16080;
-   // public static final String IP_ADDRESS="120.25.195.173";
-    public static final String IP_ADDRESS="192.168.0.115";
+    public static final String IP_ADDRESS="120.25.195.173";
+   // public static final String IP_ADDRESS="192.168.0.111";
    // public static final String IP_ADDRESS="sb-server.msbapp.cn";
 
     public static class ComCmd {

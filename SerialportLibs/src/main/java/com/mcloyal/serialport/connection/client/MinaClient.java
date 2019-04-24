@@ -80,11 +80,14 @@ public class MinaClient {
     
     public MinaClient(ClientConfig mConfig) {
         this.mConfig = mConfig;
-        mConnectRunnale = new ConnectRunnale();
-        mThreadPool = Executors.newFixedThreadPool(1);
+        if (mConnectRunnale==null){
+            mConnectRunnale = new ConnectRunnale();
+        }
+        if (mThreadPool==null){
+            mThreadPool = Executors.newFixedThreadPool(1);
+        }
         /*mThreadPool=new ThreadPoolExecutor(1, 1,
                 5, TimeUnit.SECONDS, new LinkedBlockingDeque<Runnable>(128));*/
-
         mThreadPool.execute(mConnectRunnale);
     }
 

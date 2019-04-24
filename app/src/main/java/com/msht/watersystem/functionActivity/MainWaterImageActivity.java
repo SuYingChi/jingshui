@@ -41,7 +41,7 @@ import com.msht.watersystem.entity.OrderInfo;
 import com.msht.watersystem.gen.OrderInfoDao;
 import com.msht.watersystem.service.ResendDataService;
 import com.msht.watersystem.widget.BannerM;
-import com.tencent.bugly.crashreport.CrashReport;
+
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
