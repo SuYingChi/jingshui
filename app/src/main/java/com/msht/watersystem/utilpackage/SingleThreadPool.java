@@ -3,6 +3,7 @@ package com.msht.watersystem.utilpackage;
 import android.content.Context;
 import android.support.annotation.NonNull;
 
+import com.bumptech.glide.load.engine.executor.FifoPriorityThreadPoolExecutor;
 import com.msht.watersystem.AppContext;
 import com.msht.watersystem.entity.OrderInfo;
 import com.msht.watersystem.eventmanager.DateMassageEvent;
@@ -29,9 +30,16 @@ import java.util.concurrent.TimeUnit;
  */
 public class SingleThreadPool {
     private static volatile SingleThreadPool mInstance;
+    private ThreadFactory namedThreadFactory;
     private ExecutorService executorService;
     private SingleThreadPool(Context context){
-        executorService=  Executors.newFixedThreadPool(1);
+        if (namedThreadFactory==null){
+            namedThreadFactory = new FifoPriorityThreadPoolExecutor.DefaultThreadFactory();
+        }
+        executorService= new ThreadPoolExecutor(1, 1,
+                0L, TimeUnit.MILLISECONDS,
+                new LinkedBlockingQueue<Runnable>(),
+                namedThreadFactory, new ThreadPoolExecutor.AbortPolicy());
     }
     /**
      * 获取单例引用
@@ -40,10 +48,10 @@ public class SingleThreadPool {
     public static SingleThreadPool getInstance(Context context){
         SingleThreadPool inst = mInstance;
         if (inst == null) {
-            synchronized (ThreadPoolManager.class) {
+            synchronized (SingleThreadPool.class) {
                 inst = mInstance;
                 if (inst == null) {
-                    inst = new SingleThreadPool(context.getApplicationContext());
+                    inst = new SingleThreadPool(context);
                     mInstance = inst;
                 }
             }

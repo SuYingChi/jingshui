@@ -18,9 +18,11 @@ import android.text.TextUtils;
 import android.util.Log;
 
 import com.mcloyal.serialport.AppLibsContext;
+import com.mcloyal.serialport.ConnectThreadPool;
 import com.mcloyal.serialport.R;
 import com.mcloyal.serialport.connection.ReConnectEvent;
 import com.mcloyal.serialport.connection.client.ClientConfig;
+import com.mcloyal.serialport.connection.client.ClientStateListener;
 import com.mcloyal.serialport.connection.client.MinaClient;
 import com.mcloyal.serialport.constant.Cmd;
 import com.mcloyal.serialport.constant.ConstantUtil;
@@ -70,6 +72,7 @@ public class PortService extends Service {
     private final static String TAG = PortService.class.getSimpleName();
     private AppLibsContext appLibsContext = null;
     private MinaClient minaClient;
+
     /**
      * 主控制板为COM1，参数
      */
@@ -244,7 +247,43 @@ public class PortService extends Service {
         //客户端初始化
         ClientConfig clientConfig = new ClientConfig.Builder().setIp(Cmd.IP_ADDRESS).setPort(Cmd.PORT).build();
         //创建minaclient的时候已经启动一个常驻每隔5S的自动重连子线程
-        minaClient = new MinaClient(clientConfig);
+        ConnectThreadPool.getInstance(getApplicationContext()).onThreadConnect(new ClientStateListener() {
+            @Override
+            public void sessionCreated() {
+                Log.d(TAG, "client sessionCreated ");
+            }
+
+            @Override
+            public void sessionOpened() {
+
+                Log.d(TAG, "client sessionOpened ");
+                count.set(0);
+                pgkTime.set(0);
+                isConnection = true;
+            }
+
+            @Override
+            public void sessionClosed() {
+
+                Log.d(TAG, "client sessionClosed ");
+                isConnection = false;
+
+            }
+
+            @Override
+            public void messageReceived(byte[] message) {
+
+                logByte("接收到后台数据",message);
+                onMinaClientReceived(message);
+            }
+
+            @Override
+            public void messageSent(byte[] message) {
+
+                logByte("发送给后台数据",message);
+            }
+        });
+       /* minaClient = new MinaClient(clientConfig);
         minaClient.setClientStateListener(new MinaClient.ClientStateListener() {
             @Override
             public void sessionCreated() {
@@ -273,7 +312,7 @@ public class PortService extends Service {
             public void messageSent(byte[] message) {
                 logByte("发送给后台数据",message);
             }
-        });
+        });*/
     }
     private void logByte(String logDesc, byte[] message) {
         StringBuilder sb = new StringBuilder();
@@ -713,8 +752,9 @@ public class PortService extends Service {
         //重置计数
         pgkTime.set(0);
         count.set(0);
-        minaClient.disConnect();
-        minaClient.onShutDown();
+        ConnectThreadPool.getInstance(getApplicationContext()).disConnect();
+       // minaClient.disConnect();
+       // minaClient.onShutDown();
         initMinaClient();
         //restartTime++;
         /*if(restartTime<=5) {
@@ -892,16 +932,8 @@ public class PortService extends Service {
      * @param cmd 操作指令
      */
     public void sendToServer(byte[] cmd) {
-       /* if (mOutputStream2 != null && cmd != null) {
-            try {
-                // LogUtils.d(TAG, "向COM2口发送：" + ByteUtils.byte2hex(cmd));
-                mOutputStream2.write(cmd);
-                mOutputStream2.flush();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }*/
-       minaClient.sendMessage(cmd);
+        ConnectThreadPool.getInstance(getApplicationContext()).sendMessage(cmd);
+      // minaClient.sendMessage(cmd);
     }
 
     /*************************************通信模块COM2数据接收发（结束）***********************************/

@@ -539,10 +539,10 @@ public class AppOutWaterActivity extends BaseActivity implements Observer{
         }else if (keyCode==KeyEvent.KEYCODE_MENU){
             if (ensureState ==0){
                 if (portService != null) {
-                    //正在打水
-                    ensureState =1;
+                    //开始打水
                     receiveState =1;
                     onStartOutWater();
+                    ensureState =1;
                     if (myCountDownTimer!=null){
                         myCountDownTimer.onFinish();//计时停止
                     }
@@ -550,14 +550,13 @@ public class AppOutWaterActivity extends BaseActivity implements Observer{
             }else if (ensureState ==1){
                 if (portService != null) {
                     //停止打水
-                    ensureState =0;
-                    receiveState =2;
                     onStopOutWater();
+                    receiveState =2;
+                    ensureState =0;
                     layoutNotice.setVisibility(View.VISIBLE);
                     if (myCountDownTimer!=null){
                         myCountDownTimer.start();
                     }
-
                 }
             }
         }else if (keyCode==KeyEvent.KEYCODE_DPAD_UP){

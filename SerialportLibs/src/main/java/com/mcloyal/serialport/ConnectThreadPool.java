@@ -1,4 +1,4 @@
-package com.mcloyal.serialport.connection.client;
+package com.mcloyal.serialport;
 
 import android.content.Context;
 import android.os.Bundle;
@@ -6,7 +6,12 @@ import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
 
+
+import com.mcloyal.serialport.connection.client.ClientConfig;
+import com.mcloyal.serialport.connection.client.ClientStateListener;
+import com.mcloyal.serialport.connection.client.MinaClient;
 import com.mcloyal.serialport.connection.codeFactory.TestCodecFactory;
+import com.mcloyal.serialport.constant.Cmd;
 
 import org.apache.mina.core.future.ConnectFuture;
 import org.apache.mina.core.service.IoHandlerAdapter;
@@ -16,12 +21,9 @@ import org.apache.mina.filter.codec.ProtocolCodecFilter;
 import org.apache.mina.filter.logging.LoggingFilter;
 import org.apache.mina.transport.socket.nio.NioSocketConnector;
 
-
 import java.lang.ref.WeakReference;
 import java.net.InetSocketAddress;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -31,73 +33,26 @@ import java.util.concurrent.atomic.AtomicInteger;
 import static android.content.ContentValues.TAG;
 
 /**
- *
- * @author cuihp
- * @date 2017/4/15
+ * Demo class
+ * 〈一句话功能简述〉
+ * 〈功能详细描述〉
+ * @author hong
+ * @date 2018/7/2  
  */
-
-public class MinaClient {
+public class ConnectThreadPool {
     private final static String MESSAGE = "message";
-    private static volatile MinaClient mInstance;
+    private static volatile ConnectThreadPool mInstance;
     private ThreadFactory namedThreadFactory;
     private ExecutorService executorService;
-    private  ExecutorService mThreadPool;
+    private ConnectRunnable mConnectRunnable;
     private ClientConfig mConfig;
     private NioSocketConnector mConnection;
     private IoSession mSession;
     private InetSocketAddress mAddress;
-    private ConnectRunnale mConnectRunnale;
     private ClientStateListener clientStateListener;
     private Handler mHandler = new MinaClientHandler(this);
-
-
-    private static class MinaClientHandler extends Handler{
-        private WeakReference<MinaClient> weakMinaClient;
-        MinaClientHandler(MinaClient minaClient){
-            weakMinaClient= new WeakReference<MinaClient>(minaClient);
-        }
-       @Override
-       public void handleMessage(Message msg) {
-           switch (msg.arg1) {
-               case 1:
-                   weakMinaClient.get().clientStateListener.sessionCreated();
-                   break;
-               case 2:
-                   weakMinaClient.get().clientStateListener.sessionOpened();
-                   break;
-               case 3:
-                   weakMinaClient.get().clientStateListener.sessionClosed();
-                   break;
-               case 4:
-                   weakMinaClient.get().clientStateListener.messageReceived(msg.getData().getByteArray(MESSAGE));
-                   break;
-               case 5:
-                   weakMinaClient.get().clientStateListener.messageSent(msg.getData().getByteArray(MESSAGE));
-                   break;
-                   default:break;
-
-           }
-       }
-   }
-    public void setClientStateListener(ClientStateListener clientStateListener) {
-        this.clientStateListener = clientStateListener;
-    }
-
-    
-    public MinaClient(ClientConfig mConfig) {
-        this.mConfig = mConfig;
-        if (mConnectRunnale==null){
-            mConnectRunnale = new ConnectRunnale();
-        }
-        if (mThreadPool==null){
-            mThreadPool = Executors.newFixedThreadPool(1);
-        }
-
-        mThreadPool.execute(mConnectRunnale);
-    }
-
-    public MinaClient(ClientConfig mConfig,Context context) {
-        this.mConfig = mConfig;
+    private ConnectThreadPool(Context context){
+        this.mConfig=new ClientConfig.Builder().setIp(Cmd.IP_ADDRESS).setPort(Cmd.PORT).build();;
         if (namedThreadFactory==null){
             namedThreadFactory = new DefaultThreadFactory();
         }
@@ -110,31 +65,52 @@ public class MinaClient {
      * 获取单例引用
      * @return
      */
-    public static MinaClient getInstance(ClientConfig mConfig,Context context){
-        MinaClient inst = mInstance;
+    public static ConnectThreadPool getInstance(Context context){
+        ConnectThreadPool inst = mInstance;
         if (inst == null) {
-            synchronized (MinaClient.class) {
+            synchronized (ConnectThreadPool.class) {
                 inst = mInstance;
                 if (inst == null) {
-                    inst = new MinaClient(mConfig,context);
+                    inst = new ConnectThreadPool(context);
                     mInstance = inst;
                 }
             }
         }
         return inst;
     }
-
-    /**
-     * 发送消息
-     * @param data
-     */
-
-    public void sendMessage(byte[] data) {
-        mConnectRunnale.sendMsg(data);
+    public void onThreadConnect(final ClientStateListener listener){
+        if (clientStateListener==null){
+            this.clientStateListener=listener;
+        }
+        if (mConnectRunnable==null){
+            mConnectRunnable=new ConnectRunnable(listener);
+        }
+        executorService.execute(mConnectRunnable);
+    }
+    public  void onShutDown(){
+        if (executorService!=null){
+            executorService.shutdownNow();
+        }
     }
 
-    private class ConnectRunnale implements Runnable {
+    /**
+     * 断开连接
+     */
+    public void disConnect() {
+        if (mConnection!=null){
+            mConnection.dispose();
+            mConnection.getFilterChain().clear();
 
+        }
+        mConnection = null;
+        mAddress = null;
+        mSession = null;
+    }
+    private class ConnectRunnable implements Runnable {
+
+        public ConnectRunnable(ClientStateListener listener) {
+
+        }
 
         @Override
         public void run() {
@@ -143,45 +119,12 @@ public class MinaClient {
             mConnection.getSessionConfig().setReadBufferSize(mConfig.getReadBufferSize());
             mConnection.getFilterChain().addLast("logger", new LoggingFilter());
             mConnection.getFilterChain().addLast(
-                    "codec",new ProtocolCodecFilter(new TestCodecFactory())); // 设置编码过滤器*/
+                    "codec", new ProtocolCodecFilter(new TestCodecFactory())); // 设置编码过滤器*/
             mConnection.setConnectTimeoutMillis(mConfig.getConnectionTimeout());
             mConnection.setHandler(new ClientHandler());
             mConnection.setDefaultRemoteAddress(mAddress);
             reConnect();
         }
-
-        /**
-         * 5秒重连 死循环加上sleep实现定时启动子线程任务 ，并可以在满足条件后终止执行
-         *
-         */
-        private void reConnect() {
-                boolean bool = false;
-                int num = 0;
-                while (!bool) {
-                    bool = connect();
-                    if(bool){
-                        num=0;
-                    }else {
-                        num++;
-                        if(num%5==0){
-                            bool = true;
-                        }else{
-                            try {
-                                Thread.sleep(5000);
-                            } catch (InterruptedException e) {
-                                e.printStackTrace();
-                            }
-                        }
-                    }
-
-                }
-        }
-        /**
-         * 发送消息
-         *
-         * @param data
-         */
-
         public void sendMsg(byte[] data) {
             if (mSession != null && mSession.isConnected()) {
                 mSession.write(data);
@@ -210,6 +153,31 @@ public class MinaClient {
             return mSession == null ? false : true;
         }
 
+        /**
+     * 5秒重连 死循环加上sleep实现定时启动子线程任务 ，并可以在满足条件后终止执行
+     */
+        private void reConnect() {
+            boolean bool = false;
+            int num = 0;
+            while (!bool) {
+                bool = connect();
+                if (bool) {
+                    num = 0;
+                } else {
+                    num++;
+                    if (num % 5 == 0) {
+                        bool = true;
+                    } else {
+                        try {
+                            Thread.sleep(5000);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+
+            }
+        }
         private class ClientHandler extends IoHandlerAdapter {
             @Override
             public void sessionCreated(IoSession session) throws Exception {
@@ -258,7 +226,7 @@ public class MinaClient {
                 Message msg = new Message();
                 msg.arg1 = 5;
                 Bundle bundle = new Bundle();
-              //  bundle.putString(MESSAGE, message.toString());
+                //  bundle.putString(MESSAGE, message.toString());
                 if(message instanceof byte[]) {
                     bundle.putByteArray(MESSAGE, (byte[]) message);
                 }
@@ -273,26 +241,42 @@ public class MinaClient {
                 Log.d(TAG,"client  messageSent");
             }
         }
+}
 
+    public void sendMessage(byte[] data) {
+        mConnectRunnable.sendMsg(data);
     }
-    public void onThreadConnect(){
-        if (mConnectRunnale==null){
-            mConnectRunnale = new ConnectRunnale();
+    private static class MinaClientHandler extends Handler{
+        private WeakReference<ConnectThreadPool> weakMinaClient;
+        MinaClientHandler(ConnectThreadPool minaClient){
+            weakMinaClient= new WeakReference<ConnectThreadPool>(minaClient);
         }
-        executorService.execute(mConnectRunnale);
-    }
-    /**
-     * 断开连接
-     */
-    public void disConnect() {
-        if (mConnection!=null){
-            mConnection.dispose();
-            mConnection.getFilterChain().clear();
+        @Override
+        public void handleMessage(Message msg) {
+            switch (msg.arg1) {
 
+                case 1:
+                    weakMinaClient.get().clientStateListener.sessionCreated();
+                    break;
+                case 2:
+                    weakMinaClient.get().clientStateListener.sessionOpened();
+                    break;
+                case 3:
+                    weakMinaClient.get().clientStateListener.sessionClosed();
+                    break;
+                case 4:
+                    weakMinaClient.get().clientStateListener.messageReceived(msg.getData().getByteArray(MESSAGE));
+                    break;
+                case 5:
+                    weakMinaClient.get().clientStateListener.messageSent(msg.getData().getByteArray(MESSAGE));
+                    break;
+                default:break;
+
+            }
         }
-        mConnection = null;
-        mAddress = null;
-        mSession = null;
+    }
+    /*public void setClientStateListener(ClientStateListener clientStateListener) {
+        this.clientStateListener = clientStateListener;
     }
 
     public interface ClientStateListener {
@@ -305,13 +289,7 @@ public class MinaClient {
         void messageReceived(byte[] message);
 
         void messageSent(byte[] message);
-    }
-    public  void onShutDown(){
-        if (mThreadPool!=null){
-            mThreadPool.shutdownNow();
-        }
-    }
-
+    }*/
     /**
      * The default thread factory.
      */
@@ -342,5 +320,4 @@ public class MinaClient {
             return t;
         }
     }
-
 }
