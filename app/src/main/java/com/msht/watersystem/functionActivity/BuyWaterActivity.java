@@ -394,7 +394,7 @@ public class BuyWaterActivity extends BaseActivity implements Observer{
             CachePreferencesUtil.putChargeMode(this, CachePreferencesUtil.CHARGE_MODE, FormatInformationBean.ChargeMode);
             buyStatus=true;
             if (FormatInformationBean.BusinessType==1){
-                if (FormatInformationBean.AppBalance<20){
+                if (FormatInformationBean.AppBalance<1){
                     Intent intent=new Intent(mContext,AppNotSufficientActivity.class);
                     unbindPortServiceAndRemoveObserver();
                     startActivity(intent);
@@ -437,7 +437,7 @@ public class BuyWaterActivity extends BaseActivity implements Observer{
                     FormatInformationUtil.saveCom1ReceivedDataToFormatInformation(data);
                     String stringWork= DataCalculateUtils.intToBinary(FormatInformationBean.Updateflag3);
                     if (!DataCalculateUtils.isEvent(stringWork,3)){
-                        if (FormatInformationBean.Balance<1){
+                        if (FormatInformationBean.Balance<=1){
                             Intent intent=new Intent(mContext,NotSufficientActivity.class);
                             unbindPortServiceAndRemoveObserver();
                             startActivity(intent);

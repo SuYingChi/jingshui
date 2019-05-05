@@ -1,7 +1,9 @@
 package com.mcloyal.serialport.connection.client;
 
 /**
- * Created by cuihp on 2017/4/15.
+ *
+ * @author cuihp
+ * @date 2017/4/15
  */
 
 public class ClientConfig {

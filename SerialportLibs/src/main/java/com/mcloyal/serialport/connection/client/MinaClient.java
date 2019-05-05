@@ -96,33 +96,6 @@ public class MinaClient {
         mThreadPool.execute(mConnectRunnale);
     }
 
-    public MinaClient(ClientConfig mConfig,Context context) {
-        this.mConfig = mConfig;
-        if (namedThreadFactory==null){
-            namedThreadFactory = new DefaultThreadFactory();
-        }
-        executorService= new ThreadPoolExecutor(1, 1,
-                0L, TimeUnit.MILLISECONDS,
-                new LinkedBlockingQueue<Runnable>(),
-                namedThreadFactory, new ThreadPoolExecutor.AbortPolicy());
-    }
-    /**
-     * 获取单例引用
-     * @return
-     */
-    public static MinaClient getInstance(ClientConfig mConfig,Context context){
-        MinaClient inst = mInstance;
-        if (inst == null) {
-            synchronized (MinaClient.class) {
-                inst = mInstance;
-                if (inst == null) {
-                    inst = new MinaClient(mConfig,context);
-                    mInstance = inst;
-                }
-            }
-        }
-        return inst;
-    }
 
     /**
      * 发送消息

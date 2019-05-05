@@ -75,7 +75,7 @@ public class ThreadPoolManager {
     public void onThreadPoolDateStart(){
         if (regularlyCheckTimeTask==null){
             regularlyCheckTimeTask=new RegularlyCheckTimeTask();
-            scheduledThreadPoolExecutor.scheduleAtFixedRate( regularlyCheckTimeTask, 0, 3,
+            scheduledThreadPoolExecutor.scheduleAtFixedRate(regularlyCheckTimeTask, 0, 3,
                     TimeUnit.MINUTES);
         }
     }
