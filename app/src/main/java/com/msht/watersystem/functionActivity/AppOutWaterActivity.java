@@ -537,7 +537,15 @@ public class AppOutWaterActivity extends BaseActivity implements Observer{
             showTips();
             return false;
         }else if (keyCode==KeyEvent.KEYCODE_MENU){
-            if (ensureState ==0){
+            if (portService != null) {
+                //开始打水
+                receiveState =1;
+                onStartOutWater();
+                if (myCountDownTimer!=null){
+                    myCountDownTimer.onFinish();//计时停止
+                }
+            }
+            /*if (ensureState ==0){
                 if (portService != null) {
                     //开始打水
                     receiveState =1;
@@ -558,7 +566,7 @@ public class AppOutWaterActivity extends BaseActivity implements Observer{
                         myCountDownTimer.start();
                     }
                 }
-            }
+            }*/
         }else if (keyCode==KeyEvent.KEYCODE_DPAD_UP){
         }else if (keyCode==KeyEvent.KEYCODE_DPAD_DOWN){
         }else if (keyCode==KeyEvent.KEYCODE_F1){

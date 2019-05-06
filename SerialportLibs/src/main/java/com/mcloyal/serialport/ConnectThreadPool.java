@@ -52,7 +52,9 @@ public class ConnectThreadPool {
     private ClientStateListener clientStateListener;
     private Handler mHandler = new MinaClientHandler(this);
     private ConnectThreadPool(Context context){
-        this.mConfig=new ClientConfig.Builder().setIp(Cmd.IP_ADDRESS).setPort(Cmd.PORT).build();;
+        if (this.mConfig==null){
+            this.mConfig=new ClientConfig.Builder().setIp(Cmd.IP_ADDRESS).setPort(Cmd.PORT).build();
+        }
         if (namedThreadFactory==null){
             namedThreadFactory = new DefaultThreadFactory();
         }
@@ -83,7 +85,7 @@ public class ConnectThreadPool {
             this.clientStateListener=listener;
         }
         if (mConnectRunnable==null){
-            mConnectRunnable=new ConnectRunnable(listener);
+            mConnectRunnable=new ConnectRunnable();
         }
         executorService.execute(mConnectRunnable);
     }
@@ -108,10 +110,6 @@ public class ConnectThreadPool {
     }
     private class ConnectRunnable implements Runnable {
 
-        public ConnectRunnable(ClientStateListener listener) {
-
-        }
-
         @Override
         public void run() {
             mAddress = new InetSocketAddress(mConfig.getIp(), mConfig.getPort());
@@ -123,7 +121,8 @@ public class ConnectThreadPool {
             mConnection.setConnectTimeoutMillis(mConfig.getConnectionTimeout());
             mConnection.setHandler(new ClientHandler());
             mConnection.setDefaultRemoteAddress(mAddress);
-            reConnect();
+            connect();
+           // reConnect();
         }
         public void sendMsg(byte[] data) {
             if (mSession != null && mSession.isConnected()) {
@@ -145,14 +144,13 @@ public class ConnectThreadPool {
                 ConnectFuture future = mConnection.connect();
                 future.awaitUninterruptibly();
                 mSession = future.getSession();
-                Log.d(TAG, "是否链接: "+mSession == null ?"否":"是");
+                Log.d(TAG, "是否链接: "+mSession != null && mSession.isConnected()?"是":"否");
             } catch (Exception e) {
                 Log.d(TAG, "连接异常");
                 return false;
             }
-            return mSession == null ? false : true;
+            return mSession != null && mSession.isConnected();
         }
-
         /**
      * 5秒重连 死循环加上sleep实现定时启动子线程任务 ，并可以在满足条件后终止执行
      */
@@ -242,7 +240,6 @@ public class ConnectThreadPool {
             }
         }
 }
-
     public void sendMessage(byte[] data) {
         mConnectRunnable.sendMsg(data);
     }

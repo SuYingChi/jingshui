@@ -136,8 +136,8 @@ public class CannotBuyWaterActivity extends BaseActivity implements Observer {
         int mSwitch=ByteUtils.byteToInt(data.get(31));
         if (mSwitch==2&&DataCalculateUtils.isEvent(stringWork,0)){
             Intent intent=new Intent(mContext, CloseSystemActivity.class);
-            unbindPortServiceAndRemoveObserver();
             startActivityForResult(intent,2);
+            unbindPortServiceAndRemoveObserver();
         }
     }
     private void response102ToServer(byte[] frame) {
