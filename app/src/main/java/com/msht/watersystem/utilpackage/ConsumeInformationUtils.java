@@ -49,6 +49,7 @@ public class ConsumeInformationUtils {
             recharge[1]=byteArrayList.get(14);
             recharge[2]=byteArrayList.get(15);
             recharge[3]=byteArrayList.get(16);
+            FormatInformationBean.outWaterAmount=ByteUtils.byte4ToInt(recharge);
             FormatInformationBean.rechargeAmount=ByteUtils.byte4ToInt(recharge);
 
             byte[] byteDeviceId=new byte[4];

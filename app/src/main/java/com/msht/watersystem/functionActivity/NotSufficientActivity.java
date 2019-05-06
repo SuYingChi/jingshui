@@ -213,7 +213,7 @@ public class NotSufficientActivity extends BaseActivity implements Observer {
                 VariableUtil.byteArray=data;
                 buyStatus=true;
                 if (FormatInformationBean.BusinessType==1){
-                    if (FormatInformationBean.AppBalance<1){
+                    if (FormatInformationBean.outWaterAmount<1){
                         double balance= DataCalculateUtils.getTwoDecimal(FormatInformationBean.AppBalance/100.0);
                         tvBalance.setText(String.valueOf(balance));
                     }else {

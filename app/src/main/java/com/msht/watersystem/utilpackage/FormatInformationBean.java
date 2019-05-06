@@ -70,6 +70,7 @@ public class FormatInformationBean {
 
     /**预扣金额 **/
     public static int DeductAmount;
+    public static  int outWaterAmount;
     public static int rechargeAmount;
     public static byte[] phoneType;
     public static byte[] orderType;

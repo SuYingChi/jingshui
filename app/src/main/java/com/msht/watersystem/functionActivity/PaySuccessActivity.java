@@ -281,7 +281,7 @@ public class PaySuccessActivity extends BaseActivity implements Observer {
                 VariableUtil.byteArray=data;
                 buyStatus=true;
                 if (FormatInformationBean.BusinessType==1){
-                    if (FormatInformationBean.AppBalance<10){
+                    if (FormatInformationBean.outWaterAmount<=1){
                         Intent intent=new Intent(mContext,AppNotSufficientActivity.class);
                         startActivity(intent);
                         finish();

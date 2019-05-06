@@ -71,7 +71,7 @@ import android_serialport_api.SerialPort;
 public class PortService extends Service {
     private final static String TAG = PortService.class.getSimpleName();
     private AppLibsContext appLibsContext = null;
-    private MinaClient minaClient;
+  //  private MinaClient minaClient;
 
     /**
      * 主控制板为COM1，参数
@@ -245,7 +245,7 @@ public class PortService extends Service {
 
     private void initMinaClient() {
         //客户端初始化
-        ClientConfig clientConfig = new ClientConfig.Builder().setIp(Cmd.IP_ADDRESS).setPort(Cmd.PORT).build();
+      //  ClientConfig clientConfig = new ClientConfig.Builder().setIp(Cmd.IP_ADDRESS).setPort(Cmd.PORT).build();
         //创建minaclient的时候已经启动一个常驻每隔5S的自动重连子线程
         ConnectThreadPool.getInstance(getApplicationContext()).onThreadConnect(new ClientStateListener() {
             @Override
@@ -953,9 +953,10 @@ public class PortService extends Service {
         if (scheduledThreadPool != null && !scheduledThreadPool.isShutdown()) {
             scheduledThreadPool.shutdown();
         }
-        if (minaClient!=null){
+        ConnectThreadPool.getInstance(getApplicationContext()).disConnect();
+        /*if (minaClient!=null){
             minaClient.disConnect();
-        }
+        }*/
         LogUtils.d(TAG,"onDestroy()");
        // EventBus.getDefault().unregister(this);
       /*  unregisterReceiver(mReceiver);*/

@@ -538,7 +538,7 @@ public class MainMyVideoActivity extends BaseActivity implements Observer/*Surfa
             //民生宝来扫
             if (FormatInformationBean.BusinessType == 1) {
                 //以分为单位
-                if (FormatInformationBean.AppBalance <=1) {
+                if (FormatInformationBean.outWaterAmount <=1) {
                     //提示余额不足
                     pageStatus = false;
                     Intent intent = new Intent(mContext, AppNotSufficientActivity.class);

@@ -176,7 +176,7 @@ public class AppNotSufficientActivity extends BaseActivity implements Observer {
                 CachePreferencesUtil.putBoolean(this,CachePreferencesUtil.FIRST_OPEN,false);
                 buyStatus=true;
                 if (FormatInformationBean.BusinessType==1){
-                    if (FormatInformationBean.AppBalance<=1){
+                    if (FormatInformationBean.outWaterAmount<=1){
                         double balance= DataCalculateUtils.getTwoDecimal(FormatInformationBean.Balance/100.0);
                         tvBalance.setText(String.valueOf(balance));
                         tvCustomerNo.setText(FormatInformationBean.StringCardNo);
