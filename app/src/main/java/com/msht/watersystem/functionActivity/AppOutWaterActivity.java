@@ -27,9 +27,11 @@ import com.msht.watersystem.utilpackage.ConstantUtil;
 import com.msht.watersystem.utilpackage.ConsumeInformationUtils;
 import com.msht.watersystem.utilpackage.ByteUtils;
 import com.msht.watersystem.utilpackage.CachePreferencesUtil;
+import com.msht.watersystem.utilpackage.CreatePacketTypeUtil;
 import com.msht.watersystem.utilpackage.FormatInformationBean;
 import com.msht.watersystem.utilpackage.FormatInformationUtil;
 import com.msht.watersystem.utilpackage.DataCalculateUtils;
+import com.msht.watersystem.utilpackage.MyLogUtil;
 import com.msht.watersystem.utilpackage.VariableUtil;
 import com.msht.watersystem.widget.BannerM;
 import com.msht.watersystem.widget.LEDView;
@@ -191,6 +193,7 @@ public class AppOutWaterActivity extends BaseActivity implements Observer{
             Packet packet1 = myObservable.getCom1Packet();
             if (packet1 != null) {
                 if (Arrays.equals(packet1.getCmd(),new byte[]{0x02,0x04})){
+                    MyLogUtil.d("receiveCom1_204:",CreatePacketTypeUtil.getPacketString(packet1));
                     onCom1Received204DataFromControlBoard(packet1.getFrame());
                 }else if (Arrays.equals(packet1.getCmd(),new byte[]{0x01,0x04})){
                     onCom1Received104DataFromControlBoard(packet1.getData(),packet1.getFrame());
@@ -483,6 +486,7 @@ public class AppOutWaterActivity extends BaseActivity implements Observer{
                 byte[] type = new byte[]{0x01, 0x04};
                 byte[] packet = PacketUtils.makePackage(frame, type, ConstantUtil.END_BYTE);
                 portService.sendToControlBoard(packet);
+                MyLogUtil.d("sendCom1endWater_104:",ByteUtils.byteArrayToHexString(packet));
             } catch (CRCException e) {
                 e.printStackTrace();
             } catch (FrameException e) {
@@ -605,6 +609,7 @@ public class AppOutWaterActivity extends BaseActivity implements Observer{
                 byte[] type = new byte[]{0x01, 0x04};
                 byte[] packet = PacketUtils.makePackage(frame, type, ConstantUtil.START_BYTE);
                 portService.sendToControlBoard(packet);
+                MyLogUtil.d("sendCom1outWater_104:",ByteUtils.byteArrayToHexString(packet));
             } catch (CRCException e) {
                 e.printStackTrace();
             } catch (FrameException e) {

@@ -198,7 +198,8 @@ public class ConnectThreadPool {
             public void sessionClosed(IoSession session) throws Exception {
                 Log.d(TAG," client sessionClosed");
                 //除非调用disconnect而关闭的链接，其他原因引起的关闭的都会自动重连
-                reConnect();
+              //  reConnect();
+                connect();
                 Message message = new Message();
                 message.arg1 = 3;
                 mHandler.sendMessage(message);
@@ -272,21 +273,6 @@ public class ConnectThreadPool {
             }
         }
     }
-    /*public void setClientStateListener(ClientStateListener clientStateListener) {
-        this.clientStateListener = clientStateListener;
-    }
-
-    public interface ClientStateListener {
-        void sessionCreated();
-
-        void sessionOpened();
-
-        void sessionClosed();
-
-        void messageReceived(byte[] message);
-
-        void messageSent(byte[] message);
-    }*/
     /**
      * The default thread factory.
      */

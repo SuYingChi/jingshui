@@ -4,8 +4,12 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Locale;
 
 import android.annotation.SuppressLint;
+/**
+ * @author hong
+ */
 @SuppressLint("SimpleDateFormat")
 public final class DateUtil {
 
@@ -62,6 +66,10 @@ public final class DateUtil {
     }
 
 
+    public static String getStringFormat(Date date, String format){
+        SimpleDateFormat myLogSdf = new SimpleDateFormat(format,Locale.CHINA);
+        return myLogSdf.format(date);
+    }
     public static String getDateTimeFormat(Date date) {
         return dateSimpleFormat(date, defaultDateTimeFormat.get());
     }

@@ -10,19 +10,37 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Locale;
 
 /**
- * Created by hong on 2018/3/12.
+ *
+ * @author hong
+ * @date 2018/3/12
  */
 public class MyLogUtil {
-    private static Boolean MYLOG_SWITCH = true; // 日志文件总开关
-    private static Boolean MYLOG_WRITE_TO_FILE = true;// 日志写入文件开关
-    private static char MYLOG_TYPE = 'v';// 输入日志类型，w代表只输出告警信息等，v代表输出所有信息
+    /**
+     * 日志文件总开关
+     */
+    private static final Boolean MYLOG_SWITCH = true;
+    /**
+     * 日志写入文件开关
+      */
+    private static final Boolean MYLOG_WRITE_TO_FILE = true;
+    /**
+     * 输入日志类型，w代表只输出告警信息等，v代表输出所有信息
+     */
+    private static final char MYLOG_TYPE = 'v';
     private static String MYLOG_PATH_SDCARD_DIR= Environment.getExternalStorageDirectory().getPath() +"/WaterSystem/Mylog/" ;// 日志文件在sdcard中的路径
-    private static int SDCARD_LOG_FILE_SAVE_DAYS =2;// sd卡中日志文件的最多保存天数
-    private static String MYLOGFILEName = "Log.txt";// 本类输出的日志文件名称
-    private static SimpleDateFormat myLogSdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");// 日志的输出格式
-    private static SimpleDateFormat logfile = new SimpleDateFormat("yyyy-MM-dd");// 日志文件格式
+    /**
+     * sd卡中日志文件的最多保存天数
+     */
+    private static final int SDCARD_LOG_FILE_SAVE_DAYS =5;
+    /**
+     *  本类输出的日志文件名称
+     */
+    private static String MYLOGFILEName = "Log.txt";
+    private static final String MY_LOG_SDF="yyyy-MM-dd HH:mm:ss";
+    private static final String LOG_FILE_SDF="yyyy-MM-dd";
     public static void w(String tag, Object msg) { // 警告信息
         log(tag, msg.toString(), 'w');
     }
@@ -56,15 +74,31 @@ public class MyLogUtil {
     /**
      * 根据tag, msg和等级，输出日志
      *
-     * @param tag
-     * @param msg
-     * @param level
-     * @return void
+     * @param tag 根据tag
+     * @param msg msg和等级
+     * @param level 等级
      * @since v 1.0
+     *
      */
     private static void log(String tag, String msg, char level) {
         if (MYLOG_SWITCH) {
-            if ('e' == level && ('e' == MYLOG_TYPE || 'v' == MYLOG_TYPE)) { // 输出错误信息
+            // 输出错误信息
+            if ('e' == level) {
+                Log.e(tag, msg);
+            } else if ('w' == level) {
+                Log.w(tag, msg);
+            } else if ('d' == level ) {
+                Log.d(tag, msg);
+            } else if ('i' == level) {
+                Log.i(tag, msg);
+            } else {
+                Log.v(tag, msg);
+            }
+            if (MYLOG_WRITE_TO_FILE){
+                writeLogtoFile(String.valueOf(level), tag, msg);
+            }
+            /*// 输出错误信息
+            if ('e' == level && ('e' == MYLOG_TYPE || 'v' == MYLOG_TYPE)) {
                 Log.e(tag, msg);
             } else if ('w' == level && ('w' == MYLOG_TYPE || 'v' == MYLOG_TYPE)) {
                 Log.w(tag, msg);
@@ -77,7 +111,7 @@ public class MyLogUtil {
             }
             if (MYLOG_WRITE_TO_FILE){
                 writeLogtoFile(String.valueOf(level), tag, msg);
-            }
+            }*/
         }
     }
     /**
@@ -90,13 +124,14 @@ public class MyLogUtil {
         if (!cacheF.exists()) {
             cacheF.mkdirs();
         }
-        Date nowtime = new Date();
-        String needWriteFiel = logfile.format(nowtime);
-        String needWriteMessage = myLogSdf.format(nowtime) + "_" + mylogtype + "_" + tag
+        Date nowTime = new Date();
+        String needWriteFiel = DateUtil.getStringFormat(nowTime,LOG_FILE_SDF);
+        String needWriteMessage = DateUtil.getStringFormat(nowTime,MY_LOG_SDF) + "_" + mylogtype + "_" + tag
                 + "    " + text;
         File file = new File(MYLOG_PATH_SDCARD_DIR, needWriteFiel + MYLOGFILEName);
         try {
-            FileWriter filerWriter = new FileWriter(file, true);// 后面这个参数代表是不是要接上文件中原来的数据，不进行覆盖
+            // 后面这个参数代表是不是要接上文件中原来的数据，不进行覆盖
+            FileWriter filerWriter = new FileWriter(file, true);
             BufferedWriter bufWriter = new BufferedWriter(filerWriter);
             bufWriter.write(needWriteMessage);
             bufWriter.newLine();
@@ -111,7 +146,8 @@ public class MyLogUtil {
      * 删除制定的日志文件
      * */
     public static void delFile() {// 删除日志文件
-        String needDelFiel = logfile.format(getDateBefore());
+
+        String needDelFiel = DateUtil.getStringFormat(getDateBefore(),LOG_FILE_SDF);
         File file = new File(MYLOG_PATH_SDCARD_DIR, needDelFiel + MYLOGFILEName);
         if (file.exists()) {
             file.delete();

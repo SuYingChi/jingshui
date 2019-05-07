@@ -30,10 +30,12 @@ import com.msht.watersystem.utilpackage.ByteUtils;
 import com.msht.watersystem.utilpackage.CachePreferencesUtil;
 import com.msht.watersystem.utilpackage.ConstantUtil;
 import com.msht.watersystem.utilpackage.ConsumeInformationUtils;
+import com.msht.watersystem.utilpackage.CreatePacketTypeUtil;
 import com.msht.watersystem.utilpackage.DataCalculateUtils;
 import com.msht.watersystem.utilpackage.DateTimeUtils;
 import com.msht.watersystem.utilpackage.FormatInformationBean;
 import com.msht.watersystem.utilpackage.FormatInformationUtil;
+import com.msht.watersystem.utilpackage.MyLogUtil;
 import com.msht.watersystem.utilpackage.RestartAppUtil;
 import com.msht.watersystem.utilpackage.ThreadPoolManager;
 import com.msht.watersystem.utilpackage.VariableUtil;
@@ -138,6 +140,7 @@ public class MainWaterImageActivity extends BaseActivity implements Observer{
                     onCom1Received105DataFromControlBoard(packet1.getData());
                 } else if (Arrays.equals(packet1.getCmd(), new byte[]{0x02, 0x04})) {
                     //android端主动发送104之后，主控板回复204，跳转到IC卡买水或APP买水或现金出水界面
+                    MyLogUtil.d("receiveCom1_204:",CreatePacketTypeUtil.getPacketString(packet1));
                     onCom1Received204DataFromControlBoard(packet1.getFrame());
                 }
             }
@@ -162,6 +165,7 @@ public class MainWaterImageActivity extends BaseActivity implements Observer{
                 } else if (Arrays.equals(packet2.getCmd(), new byte[]{0x01, 0x07})) {
                     VariableUtil.byteArray.clear();
                     VariableUtil.byteArray = packet2.getData();
+                    MyLogUtil.d("receiveCom2_107:",CreatePacketTypeUtil.getPacketString(packet2));
                     onCom2Received107DataFromServer(packet2.getData());
                 } else if (Arrays.equals(packet2.getCmd(), new byte[]{0x02, 0x06})) {
                     //后端主动发送206，设置显示屏的系统时间
@@ -410,10 +414,12 @@ public class MainWaterImageActivity extends BaseActivity implements Observer{
                     byte[] data = FormatInformationUtil.setConsumeType01();
                     byte[] packet = PacketUtils.makePackage(frame, type, data);
                     portService.sendToControlBoard(packet);
+                    MyLogUtil.d("sendCom1_104:",ByteUtils.byteArrayToHexString(packet));
                 } else if (business == 2) {
                     byte[] data = FormatInformationUtil.setConsumeType02();
                     byte[] packet = PacketUtils.makePackage(frame, type, data);
                     portService.sendToControlBoard(packet);
+                    MyLogUtil.d("sendCom1_104:",ByteUtils.byteArrayToHexString(packet));
                 }
             } catch (CRCException e) {
                 e.printStackTrace();

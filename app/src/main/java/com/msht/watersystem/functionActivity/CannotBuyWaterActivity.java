@@ -180,7 +180,9 @@ public class CannotBuyWaterActivity extends BaseActivity implements Observer {
             e.printStackTrace();
         }
     }
-    private void onCom2Received205dataFromServer() {}
+    private void onCom2Received205dataFromServer() {
+
+    }
     private void unbindPortServiceAndRemoveObserver(){
         if (serviceConnection != null && portService != null) {
             if (bindStatus){
