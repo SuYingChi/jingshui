@@ -367,7 +367,9 @@ public class MainWaterImageActivity extends BaseActivity implements Observer{
             buyStatus = true;
             /*打开屏幕背光*/
             if (nightStatus){
-                onControlScreenBackground(1);
+                if (!VariableUtil.isOpenBackLight){
+                    onControlScreenBackground(1);
+                }
                 timeCount=0;
             }
             //民生宝来扫
