@@ -134,6 +134,7 @@ public class MainWaterImageActivity extends BaseActivity implements Observer{
             if (packet1 != null) {
                 if (Arrays.equals(packet1.getCmd(), new byte[]{0x01, 0x04})) {
                     //满5升，刷卡，刷卡结账时发过来的指令
+                    MyLogUtil.d("receiveCom1_104:",CreatePacketTypeUtil.getPacketString(packet1));
                     onCom1Received104DataFromControlBoard(packet1.getData());
                 } else if (Arrays.equals(packet1.getCmd(), new byte[]{0x01, 0x05})) {
                     //重置倒计时 跳转到无法买水界面
@@ -151,6 +152,7 @@ public class MainWaterImageActivity extends BaseActivity implements Observer{
                     //前端主动发103给后端，后端回复203过来，保存出水时间和计费模式，出水量等信息的到SP里
                     onCom2Received203DataFromServer(packet2.getData());
                 } else if (Arrays.equals(packet2.getCmd(), new byte[]{0x01, 0x04})) {
+                    MyLogUtil.d("receiveCom2_104:",CreatePacketTypeUtil.getPacketString(packet2));
                     String stringWork = DataCalculateUtils.intToBinary(ByteUtils.byteToInt(packet2.getData().get(45)));
                     //充值
                     if (DataCalculateUtils.isRechargeData(stringWork, 5, 6)) {
@@ -182,7 +184,9 @@ public class MainWaterImageActivity extends BaseActivity implements Observer{
                 if (!DataCalculateUtils.isEvent(stringWork, 3)) {
                     /*打开屏幕背光*/
                     if (nightStatus){
-                        onControlScreenBackground(1);
+                        if (!VariableUtil.isOpenBackLight){
+                            onControlScreenBackground(1);
+                        }
                         timeCount=0;
                     }
                     if (FormatInformationBean.Balance <= 1){
@@ -452,6 +456,7 @@ public class MainWaterImageActivity extends BaseActivity implements Observer{
                 byte[] data = FormatInformationUtil.setCloseScreenData(status);
                 byte[] packet = PacketUtils.makePackage(frame, type, data);
                 portService.sendToControlBoard(packet);
+                MyLogUtil.d("sendCom1backLight_104:",ByteUtils.byteArrayToHexString(packet));
             } catch (CRCException e) {
                 e.printStackTrace();
             } catch (FrameException e) {
@@ -527,12 +532,16 @@ public class MainWaterImageActivity extends BaseActivity implements Observer{
             startBuyWater();
             return true;
         } else if (keyCode == KeyEvent.KEYCODE_DPAD_DOWN) {
-            onControlScreenBackground(1);
+            if (!VariableUtil.isOpenBackLight){
+                onControlScreenBackground(1);
+            }
             timeCount=0;
             startBuyWater();
             return true;
         } else if (keyCode == KeyEvent.KEYCODE_F1) {
-            onControlScreenBackground(1);
+            if (!VariableUtil.isOpenBackLight){
+                onControlScreenBackground(1);
+            }
             timeCount=0;
             startBuyWater();
             return true;

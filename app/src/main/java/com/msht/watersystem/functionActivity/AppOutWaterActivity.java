@@ -196,6 +196,7 @@ public class AppOutWaterActivity extends BaseActivity implements Observer{
                     MyLogUtil.d("receiveCom1_204:",CreatePacketTypeUtil.getPacketString(packet1));
                     onCom1Received204DataFromControlBoard(packet1.getFrame());
                 }else if (Arrays.equals(packet1.getCmd(),new byte[]{0x01,0x04})){
+                    MyLogUtil.d("receiveCom1_104:",CreatePacketTypeUtil.getPacketString(packet1));
                     onCom1Received104DataFromControlBoard(packet1.getData(),packet1.getFrame());
                 }else if (Arrays.equals(packet1.getCmd(),new byte[]{0x01,0x05})){
                     onCom1Received105DataFromControlBoard(packet1.getData());
@@ -212,6 +213,7 @@ public class AppOutWaterActivity extends BaseActivity implements Observer{
                     response102ToServer(packet2.getFrame());
                     onCom2Received102DataFromServer(packet2.getData());
                 }else if (Arrays.equals(packet2.getCmd(),new byte[]{0x01,0x04})){
+                    MyLogUtil.d("receiveCom2_104:",CreatePacketTypeUtil.getPacketString(packet2));
                     String stringWork= DataCalculateUtils.intToBinary(ByteUtils.byteToInt(packet2.getData().get(45)));
                     if (DataCalculateUtils.isRechargeData(stringWork,5,6)){
                         response204ToServer(packet2.getFrame());

@@ -207,6 +207,7 @@ public class BuyWaterActivity extends BaseActivity implements Observer{
             Packet packet1 = myObservable.getCom1Packet();
             if (packet1 != null) {
                 if (Arrays.equals(packet1.getCmd(),new byte[]{0x01,0x04})){
+                    MyLogUtil.d("receiveCom1_104:",CreatePacketTypeUtil.getPacketString(packet1));
                     onCom1Received104dataFromControlBoard(packet1.getData());
                 }else if (Arrays.equals(packet1.getCmd(),new byte[]{0x02,0x04})){
                     MyLogUtil.d("receiveCom1_204:",CreatePacketTypeUtil.getPacketString(packet1));
@@ -223,6 +224,7 @@ public class BuyWaterActivity extends BaseActivity implements Observer{
                     MyLogUtil.d("receiveCom2_107:",CreatePacketTypeUtil.getPacketString(packet2));
                     onCom2Received107DataFromServer(packet2.getData());
                 }else if (Arrays.equals(packet2.getCmd(),new byte[]{0x01,0x04})){
+                    MyLogUtil.d("receiveCom2_104:",CreatePacketTypeUtil.getPacketString(packet2));
                     String stringWork= DataCalculateUtils.intToBinary(ByteUtils.byteToInt(packet2.getData().get(45)));
                     if (DataCalculateUtils.isRechargeData(stringWork,5,6)){
                         response204ToServer(packet2.getFrame());

@@ -24,9 +24,11 @@ import com.msht.watersystem.utilpackage.ConstantUtil;
 import com.msht.watersystem.utilpackage.ConsumeInformationUtils;
 import com.msht.watersystem.utilpackage.ByteUtils;
 import com.msht.watersystem.utilpackage.CachePreferencesUtil;
+import com.msht.watersystem.utilpackage.CreatePacketTypeUtil;
 import com.msht.watersystem.utilpackage.FormatInformationBean;
 import com.msht.watersystem.utilpackage.FormatInformationUtil;
 import com.msht.watersystem.utilpackage.DataCalculateUtils;
+import com.msht.watersystem.utilpackage.MyLogUtil;
 import com.msht.watersystem.utilpackage.VariableUtil;
 import com.msht.watersystem.widget.BannerM;
 
@@ -108,10 +110,12 @@ public class AppNotSufficientActivity extends BaseActivity implements Observer {
             Packet packet1 = myObservable.getCom1Packet();
             if (packet1 != null) {
                 if (Arrays.equals(packet1.getCmd(),new byte[]{0x01,0x04})){
+                    MyLogUtil.d("receiveCom1_104:",CreatePacketTypeUtil.getPacketString(packet1));
                     onCom1Received104DataFromControlBoard(packet1.getData());
                 }else if (Arrays.equals(packet1.getCmd(),new byte[]{0x01,0x05})){
                     onCom1Received105DataFromControlBoard(packet1.getData());
                 }else if (Arrays.equals(packet1.getCmd(),new byte[]{0x02,0x04})){
+                    MyLogUtil.d("receiveCom1_204:",CreatePacketTypeUtil.getPacketString(packet1));
                     onCom1Received204DataFromControlBoard(packet1.getFrame());
                 }
             }
@@ -120,6 +124,7 @@ public class AppNotSufficientActivity extends BaseActivity implements Observer {
                 if (Arrays.equals(packet2.getCmd(),new byte[]{0x02,0x05})){
                     onCom2Received205DataFromServer();
                 }else  if (Arrays.equals(packet2.getCmd(),new byte[]{0x01,0x04})){
+                    MyLogUtil.d("receiveCom2_104:",CreatePacketTypeUtil.getPacketString(packet2));
                     String stringWork= DataCalculateUtils.intToBinary(ByteUtils.byteToInt(packet2.getData().get(45)));
                     if (DataCalculateUtils.isRechargeData(stringWork,5,6)){
                         response204ToServer(packet2.getFrame());
@@ -129,6 +134,7 @@ public class AppNotSufficientActivity extends BaseActivity implements Observer {
                     response102ToServer(packet2.getFrame());
                     onCom2Received102DataFromServer(packet2.getData());
                 }else if (Arrays.equals(packet2.getCmd(),new byte[]{0x01,0x07})){
+                    MyLogUtil.d("receiveCom2_107:",CreatePacketTypeUtil.getPacketString(packet2));
                     onCom2Received107DataFromServer(packet2.getData());
                 }
             }
@@ -200,10 +206,12 @@ public class AppNotSufficientActivity extends BaseActivity implements Observer {
                     byte[] data= FormatInformationUtil.setConsumeType01();
                     byte[] packet = PacketUtils.makePackage(frame, type, data);
                     portService.sendToControlBoard(packet);
+                    MyLogUtil.d("sendCom1_104:",ByteUtils.byteArrayToHexString(packet));
                 }else if (business==2){
                     byte[] data= FormatInformationUtil.setConsumeType02();
                     byte[] packet = PacketUtils.makePackage(frame, type, data);
                     portService.sendToControlBoard(packet);
+                    MyLogUtil.d("sendCom1_104:",ByteUtils.byteArrayToHexString(packet));
                 }
             } catch (CRCException e) {
                 e.printStackTrace();
