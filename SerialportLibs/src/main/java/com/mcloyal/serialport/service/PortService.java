@@ -39,7 +39,7 @@ import com.mcloyal.serialport.utils.ServicesUtils;
 import com.mcloyal.serialport.utils.SpecialUtils;
 import com.mcloyal.serialport.utils.StringUtils;
 import com.mcloyal.serialport.utils.logs.LogUtils;
-
+import com.mcloyal.serialport.utils.logs.MyLogUtil;
 
 
 import java.io.IOException;
@@ -153,6 +153,7 @@ public class PortService extends Service {
                     Packet packet1 = (Packet) msg.obj;
                     if (weakPortService.get().mObservable != null && packet1 != null) {
                         weakPortService.get().mObservable.setCom1ReceivedPacket(packet1);
+                        MyLogUtil.d("observerCom1","com1 parser task end ,data com1 to observer  =="+packet1.toString());
                     }
                     break;
                 case COM2_SERIAL:
@@ -329,7 +330,36 @@ public class PortService extends Service {
         }
         Log.d(TAG, logDesc + sb.toString());
     }
-
+    private void logByte(String tag,String logDesc, Vector<Byte> message) {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < message.size(); i++) {
+            if (i == 0 && i != message.size() - 1) {
+                sb.append("[").append("0x").append(String.format("%02x", message.get(i) & 0xff)).append(",");
+            } else if (i == 0 && i == message.size() - 1) {
+                sb.append("[").append("0x").append(String.format("%02x", message.get(i) & 0xff)).append("]");
+            } else if (0 < i && i < message.size() - 1) {
+                sb.append("0x").append(String.format("%02x", message.get(i) & 0xff)).append(",");
+            } else if (0 < i && i == message.size() - 1) {
+                sb.append("0x").append(String.format("%02x", message.get(i) & 0xff)).append("]");
+            }
+        }
+        MyLogUtil.d(tag, logDesc + sb.toString());
+    }
+    private void logByte(String tag,String logDesc, byte[] message) {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < message.length; i++) {
+            if (i == 0 && i != message.length - 1) {
+                sb.append("[").append("0x").append(String.format("%02x", message[i] & 0xff)).append(",");
+            } else if (i == 0 && i == message.length - 1) {
+                sb.append("[").append("0x").append(String.format("%02x",message[i] & 0xff)).append("]");
+            } else if (0 < i && i < message.length - 1) {
+                sb.append("0x").append(String.format("%02x", message[i] & 0xff)).append(",");
+            } else if (0 < i && i == message.length - 1) {
+                sb.append("0x").append(String.format("%02x",message[i] & 0xff)).append("]");
+            }
+        }
+        MyLogUtil.d(tag, logDesc + sb.toString());
+    }
     private class CountdownTask implements Runnable {
         @Override
         public void run() {
@@ -351,12 +381,18 @@ public class PortService extends Service {
         public void run() {
             // LogUtils.d(TAG, "ParseReadCom1Task线程");
             if (data1 != null && data1.size() >= PACKET_LEN1.get()) {
+                MyLogUtil.d("ParserCom1","parser task start");
                 Byte[] data = data1.subList(0, PACKET_LEN1.get()).toArray(new Byte[PACKET_LEN1.get()]);
                 if (data[0] != ConstantUtil.START_) {
                     data1.clear();
+                    MyLogUtil.d("ParserCom1","com1 received package is not start with 0x51,parser task end");
                 } else {
                     parserCom1DataTask(data);
                 }
+            }else if(data1 == null){
+                MyLogUtil.d("ParserCom1","parser task does not start because data1 == null");
+            }else if(data1.size() < PACKET_LEN1.get()){
+                MyLogUtil.d("ParserCom1","parser task does not start because data1.size() < PACKET_LEN1.get()");
             }
         }
     }
@@ -391,8 +427,10 @@ public class PortService extends Service {
                 size = mInputStream1.read(buffer);
                 if (size > 0) {
                     byte[] data = Arrays.copyOfRange(buffer, 0, size);
+                    logByte("ReadCom1DataTask","read com1 task start ,received com1 data===",data);
                     //有新的数据包
                     if (data[0] == ConstantUtil.START_) {
+                        MyLogUtil.d("ReadCom1DataTask","com1 received new package");
                         data1.clear();
                         //data1 = new ArrayList<>();
                         //包头+2字节长度
@@ -405,6 +443,9 @@ public class PortService extends Service {
                     for (byte aData : data) {
                         data1.add(aData);
                     }
+                    logByte("ReadCom1DataTask","read com1 task end ,now com1 data===",data1);
+                }else {
+                    MyLogUtil.d("ReadCom1DataTask","read com1 task end because of readed size is 0");
                 }
 
             } catch (Exception e) {
@@ -527,6 +568,7 @@ public class PortService extends Service {
         }
         data1.clear();
         if (size >= PACKET_LEN1.get()) {
+            logByte("ParserCom1","data com1 to parse  is correct  ==",Arrays.copyOfRange(buffer,0,PACKET_LEN1.get()));
             try {
                 Packet packet = AnalysisUtils.analysisFrame(buffer, PACKET_LEN1.get());
                 if (packet != null) {
@@ -583,6 +625,8 @@ public class PortService extends Service {
             } catch (AnalysisException e) {
                 e.printStackTrace();
             }
+        }else {
+            logByte("ParserCom1","data com1 to parse  is uncorrect,size less than PACKET_LENGTH,parser task end",buffer);
         }
     }
 
