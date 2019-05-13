@@ -37,7 +37,7 @@ public class VariableUtil {
     public static boolean isOpenBackLight=true;
     public static boolean mFirstOpen=false;
     public static boolean mFirstClear=false;
-    public static String mNoticeText="此卡已挂失，如需取水请重新换卡!!";
+    public static String mNoticeText="此卡已挂失，如需取水请重新换卡!";
     public static ArrayList<Byte> byteArray=new ArrayList<Byte>();
     private static final String SAVE_DATA_FAIL ="订单保存失败";
     private static final String SAVE_DATA_SUCCESS ="订单保存成功";

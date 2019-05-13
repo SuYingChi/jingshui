@@ -36,6 +36,7 @@ import com.msht.watersystem.utilpackage.DateTimeUtils;
 import com.msht.watersystem.utilpackage.FormatInformationBean;
 import com.msht.watersystem.utilpackage.FormatInformationUtil;
 import com.msht.watersystem.utilpackage.MyLogUtil;
+import com.msht.watersystem.utilpackage.MyServiceUtil;
 import com.msht.watersystem.utilpackage.RestartAppUtil;
 import com.msht.watersystem.utilpackage.ThreadPoolManager;
 import com.msht.watersystem.utilpackage.VariableUtil;
@@ -74,7 +75,7 @@ public class MainWaterImageActivity extends BaseActivity implements Observer{
     private int timeCount=0;
     private ComServiceConnection serviceConnection;
     /**夜间标志*/
-    private boolean nightStatus=true;
+    private boolean nightStatus=false;
     private Context context;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -458,16 +459,21 @@ public class MainWaterImageActivity extends BaseActivity implements Observer{
                 byte[] data = FormatInformationUtil.setCloseScreenData(status);
                 byte[] packet = PacketUtils.makePackage(frame, type, data);
                 portService.sendToControlBoard(packet);
+                VariableUtil.isOpenBackLight = status == 1;
+               // MyLogUtil.d("");
                 MyLogUtil.d("sendCom1backLight_104:",ByteUtils.byteArrayToHexString(packet));
-            } catch (CRCException e) {
+            /*} catch (CRCException e) {
                 e.printStackTrace();
             } catch (FrameException e) {
                 e.printStackTrace();
             } catch (CmdTypeException e) {
+                e.printStackTrace();*/
+            }catch (Exception e) {
                 e.printStackTrace();
+              //  VariableUtil.isOpenBackLight = status == 1;
             }
+            VariableUtil.isOpenBackLight = status == 1;
         }
-        VariableUtil.isOpenBackLight = status == 1;
 
     }
     @Subscribe(threadMode = ThreadMode.MAIN)
@@ -508,7 +514,6 @@ public class MainWaterImageActivity extends BaseActivity implements Observer{
     public void onRestartApp(RestartAppEvent event){
         if (event.getMessage()){
             RestartAppUtil.restartApp();
-            //restartWaterApp();
         }
     }
 
@@ -524,12 +529,16 @@ public class MainWaterImageActivity extends BaseActivity implements Observer{
             exitApp();
             return false;
         } else if (keyCode == KeyEvent.KEYCODE_MENU) {
-            onControlScreenBackground(1);
+            if (!VariableUtil.isOpenBackLight){
+                onControlScreenBackground(1);
+            }
             timeCount=0;
             startBuyWater();
             return true;
         } else if (keyCode == KeyEvent.KEYCODE_DPAD_UP) {
-            onControlScreenBackground(1);
+            if (!VariableUtil.isOpenBackLight){
+                onControlScreenBackground(1);
+            }
             timeCount=0;
             startBuyWater();
             return true;
