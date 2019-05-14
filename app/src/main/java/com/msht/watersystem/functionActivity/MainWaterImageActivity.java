@@ -460,19 +460,17 @@ public class MainWaterImageActivity extends BaseActivity implements Observer{
                 byte[] packet = PacketUtils.makePackage(frame, type, data);
                 portService.sendToControlBoard(packet);
                 VariableUtil.isOpenBackLight = status == 1;
-               // MyLogUtil.d("");
                 MyLogUtil.d("sendCom1backLight_104:",ByteUtils.byteArrayToHexString(packet));
-            /*} catch (CRCException e) {
+            } catch (CRCException e) {
                 e.printStackTrace();
             } catch (FrameException e) {
                 e.printStackTrace();
             } catch (CmdTypeException e) {
-                e.printStackTrace();*/
+                e.printStackTrace();
             }catch (Exception e) {
                 e.printStackTrace();
-              //  VariableUtil.isOpenBackLight = status == 1;
             }
-            VariableUtil.isOpenBackLight = status == 1;
+
         }
 
     }
