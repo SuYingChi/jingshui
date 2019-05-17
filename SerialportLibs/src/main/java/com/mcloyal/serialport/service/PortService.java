@@ -153,8 +153,8 @@ public class PortService extends Service {
                     Packet packet1 = (Packet) msg.obj;
                     if (weakPortService.get().mObservable != null && packet1 != null) {
                         weakPortService.get().mObservable.setCom1ReceivedPacket(packet1);
-                        MyLogUtil.d("observerCom1","com1 parser task end ,data com1 to observer  =="+packet1.toString());
-                    }
+                        MyLogUtil.d("observerCom1==",packet1.toString());
+                     }
                     break;
                 case COM2_SERIAL:
                     Packet packet2 = (Packet) msg.obj;
@@ -207,7 +207,6 @@ public class PortService extends Service {
         super.onCreate();
         mObservable = new MyObservable();
         appLibsContext = (AppLibsContext) getApplication();
-       // EventBus.getDefault().register(this);
         /*
          * 定时接收Com1数据常驻子线程
          * 定时接收Com2数据常驻子线程
@@ -381,18 +380,14 @@ public class PortService extends Service {
         public void run() {
             // LogUtils.d(TAG, "ParseReadCom1Task线程");
             if (data1 != null && data1.size() >= PACKET_LEN1.get()) {
-                MyLogUtil.d("ParserCom1","parser task start");
+                MyLogUtil.d("ParserCom1Start:","parser task start");
                 Byte[] data = data1.subList(0, PACKET_LEN1.get()).toArray(new Byte[PACKET_LEN1.get()]);
                 if (data[0] != ConstantUtil.START_) {
                     data1.clear();
-                    MyLogUtil.d("ParserCom1","com1 received package is not start with 0x51,parser task end");
+                    MyLogUtil.d("ParserCom1End:","package is not start with 0x51");
                 } else {
                     parserCom1DataTask(data);
                 }
-            }else if(data1 == null){
-                MyLogUtil.d("ParserCom1","parser task does not start because data1 == null");
-            }else if(data1.size() < PACKET_LEN1.get()){
-                MyLogUtil.d("ParserCom1","parser task does not start because data1.size() < PACKET_LEN1.get()");
             }
         }
     }
@@ -427,10 +422,10 @@ public class PortService extends Service {
                 size = mInputStream1.read(buffer);
                 if (size > 0) {
                     byte[] data = Arrays.copyOfRange(buffer, 0, size);
-                    logByte("ReadCom1DataTask","read com1 task start ,received com1 data===",data);
+                    logByte("ReadCom1DataStart:","read com1Data==",data);
                     //有新的数据包
                     if (data[0] == ConstantUtil.START_) {
-                        MyLogUtil.d("ReadCom1DataTask","com1 received new package");
+                        MyLogUtil.d("ReadCom1NewData:","com1 received new package");
                         data1.clear();
                         //data1 = new ArrayList<>();
                         //包头+2字节长度
@@ -443,9 +438,7 @@ public class PortService extends Service {
                     for (byte aData : data) {
                         data1.add(aData);
                     }
-                    logByte("ReadCom1DataTask","read com1 task end ,now com1 data===",data1);
-                }else {
-                    MyLogUtil.d("ReadCom1DataTask","read com1 task end because of readed size is 0");
+                    logByte("ReadCom1DataEnd:","read com1Data1==",data1);
                 }
 
             } catch (Exception e) {
@@ -568,7 +561,7 @@ public class PortService extends Service {
         }
         data1.clear();
         if (size >= PACKET_LEN1.get()) {
-            logByte("ParserCom1","data com1 to parse  is correct  ==",Arrays.copyOfRange(buffer,0,PACKET_LEN1.get()));
+            logByte("ParserCom1Correct:","correctData==",Arrays.copyOfRange(buffer,0,PACKET_LEN1.get()));
             try {
                 Packet packet = AnalysisUtils.analysisFrame(buffer, PACKET_LEN1.get());
                 if (packet != null) {
@@ -625,8 +618,6 @@ public class PortService extends Service {
             } catch (AnalysisException e) {
                 e.printStackTrace();
             }
-        }else {
-            logByte("ParserCom1","data com1 to parse  is uncorrect,size less than PACKET_LENGTH,parser task end",buffer);
         }
     }
 

@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v4.content.ContextCompat;
 import android.view.KeyEvent;
 import android.view.View;
@@ -551,8 +552,21 @@ public class MainWaterImageActivity extends BaseActivity implements Observer{
             if (!VariableUtil.isOpenBackLight){
                 onControlScreenBackground(1);
             }
+            onControlScreenBackground(1);
+            new Handler().postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    onControlScreenBackground(1);
+                }
+            }, 2000);
+            new Handler().postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    onControlScreenBackground(1);
+                }
+            }, 4000);
             timeCount=0;
-            startBuyWater();
+           // startBuyWater();
             return true;
         }else {
             return super.onKeyDown(keyCode, event);
