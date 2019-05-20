@@ -32,6 +32,7 @@ public class FormatInformationBean {
 
     public static int CardNo;
     public static String StringCardNo;
+    public static String StringCustomerNo;
     public static int TriggerTime;
     public static int ConsumptionType;
     public static int Balance;

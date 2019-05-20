@@ -48,7 +48,7 @@ public class AppContext extends AppLibsContext {
         /*初始化视频播放*/
        // Vitamio.initialize(getApplicationContext());
        // LogUtils.initLogs(this,true,true,true,true,true,true);
-        LogUtils.initLogs(this,false,false,false,false,false,true);
+      //  LogUtils.initLogs(this,false,false,false,false,false,true);
        // GreenDaoManager.getInstance();    //数据库存储订单数据
         setDatabase();
        /* ArrayList<byte[]> types = new ArrayList<>();

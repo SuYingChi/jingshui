@@ -31,6 +31,7 @@ import com.msht.watersystem.utilpackage.DataCalculateUtils;
 import com.msht.watersystem.utilpackage.MyLogUtil;
 import com.msht.watersystem.utilpackage.VariableUtil;
 import com.msht.watersystem.widget.BannerM;
+import com.msht.watersystem.widget.ToastUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -56,6 +57,7 @@ public class AppNotSufficientActivity extends BaseActivity implements Observer {
      */
     private byte[]  mAppFrame;
     private Context mContext;
+    private MyScanCodeDownTimer myScanCodeDownTimer;
     private MyCountDownTimer myCountDownTimer;
     private PortService portService;
     private ComServiceConnection serviceConnection;
@@ -65,6 +67,7 @@ public class AppNotSufficientActivity extends BaseActivity implements Observer {
         setContentView(R.layout.activity_app_not_sufficient);
         mContext=this;
         myCountDownTimer=new MyCountDownTimer(30000,1000);
+        myScanCodeDownTimer=new MyScanCodeDownTimer(3000,1000);
         initView();
        // initBannerView();
         initWaterQuality();
@@ -110,12 +113,12 @@ public class AppNotSufficientActivity extends BaseActivity implements Observer {
             Packet packet1 = myObservable.getCom1Packet();
             if (packet1 != null) {
                 if (Arrays.equals(packet1.getCmd(),new byte[]{0x01,0x04})){
-                    MyLogUtil.d("receiveCom1_104:",CreatePacketTypeUtil.getPacketString(packet1));
+                   // MyLogUtil.d("receiveCom1_104:",CreatePacketTypeUtil.getPacketString(packet1));
                     onCom1Received104DataFromControlBoard(packet1.getData());
                 }else if (Arrays.equals(packet1.getCmd(),new byte[]{0x01,0x05})){
                     onCom1Received105DataFromControlBoard(packet1.getData());
                 }else if (Arrays.equals(packet1.getCmd(),new byte[]{0x02,0x04})){
-                    MyLogUtil.d("receiveCom1_204:",CreatePacketTypeUtil.getPacketString(packet1));
+                   // MyLogUtil.d("receiveCom1_204:",CreatePacketTypeUtil.getPacketString(packet1));
                     onCom1Received204DataFromControlBoard(packet1.getFrame());
                 }
             }
@@ -124,7 +127,7 @@ public class AppNotSufficientActivity extends BaseActivity implements Observer {
                 if (Arrays.equals(packet2.getCmd(),new byte[]{0x02,0x05})){
                     onCom2Received205DataFromServer();
                 }else  if (Arrays.equals(packet2.getCmd(),new byte[]{0x01,0x04})){
-                    MyLogUtil.d("receiveCom2_104:",CreatePacketTypeUtil.getPacketString(packet2));
+                   // MyLogUtil.d("receiveCom2_104:",CreatePacketTypeUtil.getPacketString(packet2));
                     String stringWork= DataCalculateUtils.intToBinary(ByteUtils.byteToInt(packet2.getData().get(45)));
                     if (DataCalculateUtils.isRechargeData(stringWork,5,6)){
                         response204ToServer(packet2.getFrame());
@@ -134,7 +137,7 @@ public class AppNotSufficientActivity extends BaseActivity implements Observer {
                     response102ToServer(packet2.getFrame());
                     onCom2Received102DataFromServer(packet2.getData());
                 }else if (Arrays.equals(packet2.getCmd(),new byte[]{0x01,0x07})){
-                    MyLogUtil.d("receiveCom2_107:",CreatePacketTypeUtil.getPacketString(packet2));
+                    //MyLogUtil.d("receiveCom2_107:",CreatePacketTypeUtil.getPacketString(packet2));
                     onCom2Received107DataFromServer(packet2.getData());
                 }
             }
@@ -142,6 +145,7 @@ public class AppNotSufficientActivity extends BaseActivity implements Observer {
     }
     private void onCom1Received204DataFromControlBoard(byte[] frame) {
         if (Arrays.equals(frame,mAppFrame)){
+            cancelCountDownTimer();
             if (buyStatus){
                 buyStatus=false;
                 if (FormatInformationBean.ConsumptionType==1){
@@ -206,12 +210,15 @@ public class AppNotSufficientActivity extends BaseActivity implements Observer {
                     byte[] data= FormatInformationUtil.setConsumeType01();
                     byte[] packet = PacketUtils.makePackage(frame, type, data);
                     portService.sendToControlBoard(packet);
-                    MyLogUtil.d("sendCom1_104:",ByteUtils.byteArrayToHexString(packet));
+                    if (myScanCodeDownTimer!=null){
+                        myScanCodeDownTimer.start();
+                    }
+                   // MyLogUtil.d("sendCom1_104:",ByteUtils.byteArrayToHexString(packet));
                 }else if (business==2){
                     byte[] data= FormatInformationUtil.setConsumeType02();
                     byte[] packet = PacketUtils.makePackage(frame, type, data);
                     portService.sendToControlBoard(packet);
-                    MyLogUtil.d("sendCom1_104:",ByteUtils.byteArrayToHexString(packet));
+                   // MyLogUtil.d("sendCom1_104:",ByteUtils.byteArrayToHexString(packet));
                 }
             } catch (CRCException e) {
                 e.printStackTrace();
@@ -277,28 +284,35 @@ public class AppNotSufficientActivity extends BaseActivity implements Observer {
                         }
                     }
                 }else {
-                    if (FormatInformationBean.ConsumptionType==1){
-                        //刷卡结账
-                        calculateData();    //没联网计算取缓存数据
-                        double consumption= FormatInformationBean.ConsumptionAmount/100.0;
-                        double waterVolume= FormatInformationBean.WaterYield*volume;
-                        String afterAmount=String.valueOf(DataCalculateUtils.getTwoDecimal(consumption));
-                        String afterWater=String.valueOf(DataCalculateUtils.getTwoDecimal(waterVolume));
-                        String mAccount=String.valueOf(FormatInformationBean.StringCardNo);
-                        Intent intent=new Intent(mContext,PaySuccessActivity.class);
-                        intent.putExtra("afterAmount",afterAmount) ;
-                        intent.putExtra("afterWater",afterWater);
-                        intent.putExtra("mAccount",mAccount);
-                        intent.putExtra("sign","0");
-                        startActivityForResult(intent,1);
-                        endTimeCount();
-                        finish();
+                    if (FormatInformationBean.ConsumptionType == 1){
+                        onFinishOrder("0",FormatInformationBean.StringCardNo);
+                    }else if (FormatInformationBean.ConsumptionType == 3){
+                        onFinishOrder("1",FormatInformationBean.StringCustomerNo);
+                    }else if (FormatInformationBean.ConsumptionType == 5){
+                        onFinishOrder("1",FormatInformationBean.StringCustomerNo);
+                    }else {
+                        onFinishOrder("0",FormatInformationBean.StringCardNo);
                     }
                 }
             }
         }catch (Exception e){
             e.printStackTrace();
         }
+    }
+    private void onFinishOrder(String sign,String account){
+        calculateData();    //没联网计算取缓存数据
+        double consumption= FormatInformationBean.ConsumptionAmount/100.0;
+        double waterVolume= FormatInformationBean.WaterYield*volume;
+        String afterAmount=String.valueOf(DataCalculateUtils.getTwoDecimal(consumption));
+        String afterWater=String.valueOf(DataCalculateUtils.getTwoDecimal(waterVolume));
+        Intent intent=new Intent(mContext,PaySuccessActivity.class);
+        intent.putExtra("afterAmount",afterAmount) ;
+        intent.putExtra("afterWater",afterWater);
+        intent.putExtra("mAccount",account);
+        intent.putExtra("sign",sign);
+        startActivityForResult(intent,1);
+        endTimeCount();
+        finish();
     }
     private void calculateData() {
         int mVolume=CachePreferencesUtil.getIntData(this,CachePreferencesUtil.WATER_NUM,5);
@@ -311,6 +325,25 @@ public class AppNotSufficientActivity extends BaseActivity implements Observer {
                 byte[] type = new byte[]{0x02, 0x04};
                 byte[] packet = PacketUtils.makePackage(frame, type, null);
                 portService.sendToServer(packet);
+            } catch (CRCException e) {
+                e.printStackTrace();
+            } catch (FrameException e) {
+                e.printStackTrace();
+            } catch (CmdTypeException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+    /**
+     * 自动发结账
+     */
+    private void onSettleAccountEndOutWater() {
+        if (portService != null) {
+            try {
+                byte[] frame = FrameUtils.getFrame(mContext);
+                byte[] type = new byte[]{0x01, 0x04};
+                byte[] packet = PacketUtils.makePackage(frame, type, ConstantUtil.END_BYTE);
+                portService.sendToControlBoard(packet);
             } catch (CRCException e) {
                 e.printStackTrace();
             } catch (FrameException e) {
@@ -375,7 +408,7 @@ public class AppNotSufficientActivity extends BaseActivity implements Observer {
         }
     }
     class MyCountDownTimer extends CountDownTimer {
-        public MyCountDownTimer(long millisInFuture, long countDownInterval) {
+         MyCountDownTimer(long millisInFuture, long countDownInterval) {
             super(millisInFuture, countDownInterval);
         }
         @Override
@@ -387,13 +420,27 @@ public class AppNotSufficientActivity extends BaseActivity implements Observer {
             finish();
         }
     }
+    class MyScanCodeDownTimer extends CountDownTimer {
+        private MyScanCodeDownTimer(long millisInFuture, long countDownInterval) {
+            super(millisInFuture, countDownInterval);
+        }
+        @Override
+        public void onTick(long millisUntilFinished) {  //计时过程
+        }
+        @Override
+        public void onFinish() {
+            onSettleAccountEndOutWater();
+            ToastUtils.onToastLong("本次扫码无效，请重新扫描二维码");
+            ToastUtils.onToastLong("本次扫码无效，请重新扫描二维码");
+        }
+    }
     private void initView() {
         tvTime =(TextView)findViewById(R.id.id_time) ;
         tvBalance =(TextView)findViewById(R.id.id_balance_amount);
         tvCustomerNo =(TextView)findViewById(R.id.id_tv_customerNo);
         double balance= DataCalculateUtils.getTwoDecimal(FormatInformationBean.AppBalance/100.0);
         tvBalance.setText(String.valueOf(balance));
-        tvCustomerNo.setText(FormatInformationBean.StringCardNo);
+        tvCustomerNo.setText(FormatInformationBean.StringCustomerNo);
         if (myCountDownTimer!=null){
             myCountDownTimer.start();
         }
@@ -401,6 +448,11 @@ public class AppNotSufficientActivity extends BaseActivity implements Observer {
     private void endTimeCount(){
         if (myCountDownTimer != null) {
             myCountDownTimer.cancel();
+        }
+    }
+    private void cancelCountDownTimer(){
+        if (myScanCodeDownTimer!=null){
+            myScanCodeDownTimer.cancel();
         }
     }
     @Override
@@ -427,5 +479,6 @@ public class AppNotSufficientActivity extends BaseActivity implements Observer {
         super.onDestroy();
         unbindPortServiceAndRemoveObserver();
         endTimeCount();
+        cancelCountDownTimer();
     }
 }

@@ -163,8 +163,8 @@ public class AppOutWaterActivity extends BaseActivity implements Observer{
         double balance= DataCalculateUtils.getTwoDecimal(FormatInformationBean.AppBalance/100.0);
         String balanceText=String.valueOf(balance)+"元";
         tvBalance.setText(balanceText);
-        mAccount=String.valueOf(FormatInformationBean.StringCardNo);
-        tvCardNo.setText(mAccount);
+        mAccount=FormatInformationBean.StringCustomerNo;
+        tvCardNo.setText(FormatInformationBean.StringCustomerNo);
     }
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -193,10 +193,10 @@ public class AppOutWaterActivity extends BaseActivity implements Observer{
             Packet packet1 = myObservable.getCom1Packet();
             if (packet1 != null) {
                 if (Arrays.equals(packet1.getCmd(),new byte[]{0x02,0x04})){
-                    MyLogUtil.d("receiveCom1_204:",CreatePacketTypeUtil.getPacketString(packet1));
+                   // MyLogUtil.d("receiveCom1_204:",CreatePacketTypeUtil.getPacketString(packet1));
                     onCom1Received204DataFromControlBoard(packet1.getFrame());
                 }else if (Arrays.equals(packet1.getCmd(),new byte[]{0x01,0x04})){
-                    MyLogUtil.d("receiveCom1_104:",CreatePacketTypeUtil.getPacketString(packet1));
+                   // MyLogUtil.d("receiveCom1_104:",CreatePacketTypeUtil.getPacketString(packet1));
                     onCom1Received104DataFromControlBoard(packet1.getData(),packet1.getFrame());
                 }else if (Arrays.equals(packet1.getCmd(),new byte[]{0x01,0x05})){
                     onCom1Received105DataFromControlBoard(packet1.getData());
@@ -213,7 +213,7 @@ public class AppOutWaterActivity extends BaseActivity implements Observer{
                     response102ToServer(packet2.getFrame());
                     onCom2Received102DataFromServer(packet2.getData());
                 }else if (Arrays.equals(packet2.getCmd(),new byte[]{0x01,0x04})){
-                    MyLogUtil.d("receiveCom2_104:",CreatePacketTypeUtil.getPacketString(packet2));
+                   // MyLogUtil.d("receiveCom2_104:",CreatePacketTypeUtil.getPacketString(packet2));
                     String stringWork= DataCalculateUtils.intToBinary(ByteUtils.byteToInt(packet2.getData().get(45)));
                     if (DataCalculateUtils.isRechargeData(stringWork,5,6)){
                         response204ToServer(packet2.getFrame());
@@ -477,9 +477,6 @@ public class AppOutWaterActivity extends BaseActivity implements Observer{
         }
     }
 
-    private void onSaveData(byte[] packet) {
-        VariableUtil.requestLongTimeSaveData(packet);
-    }
     private void onSettleAccountEndOutWater() {
         if (portService != null) {
             try {
@@ -488,7 +485,7 @@ public class AppOutWaterActivity extends BaseActivity implements Observer{
                 byte[] type = new byte[]{0x01, 0x04};
                 byte[] packet = PacketUtils.makePackage(frame, type, ConstantUtil.END_BYTE);
                 portService.sendToControlBoard(packet);
-                MyLogUtil.d("sendCom1endWater_104:",ByteUtils.byteArrayToHexString(packet));
+               // MyLogUtil.d("sendCom1endWater_104:",ByteUtils.byteArrayToHexString(packet));
             } catch (CRCException e) {
                 e.printStackTrace();
             } catch (FrameException e) {
@@ -499,7 +496,7 @@ public class AppOutWaterActivity extends BaseActivity implements Observer{
         }
     }
     class MyCountDownTimer extends CountDownTimer {
-        public MyCountDownTimer(long millisInFuture, long countDownInterval) {
+         MyCountDownTimer(long millisInFuture, long countDownInterval) {
             super(millisInFuture, countDownInterval);
         }
         @Override
@@ -543,15 +540,7 @@ public class AppOutWaterActivity extends BaseActivity implements Observer{
             showTips();
             return false;
         }else if (keyCode==KeyEvent.KEYCODE_MENU){
-            if (portService != null) {
-                //开始打水
-                receiveState =1;
-                onStartOutWater();
-                if (myCountDownTimer!=null){
-                    myCountDownTimer.onFinish();//计时停止
-                }
-            }
-            /*if (ensureState ==0){
+            if (ensureState ==0){
                 if (portService != null) {
                     //开始打水
                     receiveState =1;
@@ -564,15 +553,15 @@ public class AppOutWaterActivity extends BaseActivity implements Observer{
             }else if (ensureState ==1){
                 if (portService != null) {
                     //停止打水
-                    onStopOutWater();
                     receiveState =2;
+                    onStopOutWater();
                     ensureState =0;
                     layoutNotice.setVisibility(View.VISIBLE);
                     if (myCountDownTimer!=null){
                         myCountDownTimer.start();
                     }
                 }
-            }*/
+            }
         }else if (keyCode==KeyEvent.KEYCODE_DPAD_UP){
         }else if (keyCode==KeyEvent.KEYCODE_DPAD_DOWN){
         }else if (keyCode==KeyEvent.KEYCODE_F1){
@@ -611,7 +600,7 @@ public class AppOutWaterActivity extends BaseActivity implements Observer{
                 byte[] type = new byte[]{0x01, 0x04};
                 byte[] packet = PacketUtils.makePackage(frame, type, ConstantUtil.START_BYTE);
                 portService.sendToControlBoard(packet);
-                MyLogUtil.d("sendCom1outWater_104:",ByteUtils.byteArrayToHexString(packet));
+               // MyLogUtil.d("sendCom1outWater_104:",ByteUtils.byteArrayToHexString(packet));
             } catch (CRCException e) {
                 e.printStackTrace();
             } catch (FrameException e) {

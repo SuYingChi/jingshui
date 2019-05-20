@@ -71,6 +71,7 @@ public class BuyWaterActivity extends BaseActivity implements Observer{
     private PortService portService;
     private ComServiceConnection serviceConnection;
     private MyCountDownTimer myCountDownTimer;
+    private MyScanCodeDownTimer myScanCodeDownTimer;
     private double volume=0.00;
     private void setNetWorkConnectionUI(){
         if(portService!=null){
@@ -93,6 +94,7 @@ public class BuyWaterActivity extends BaseActivity implements Observer{
         mContext=this;
         VariableUtil.mPos=0;
         myCountDownTimer=new MyCountDownTimer(120000,1000);
+        myScanCodeDownTimer=new MyScanCodeDownTimer(3000,1000);
         initView();
        // initViewImages();
         initWaterQuality();
@@ -207,10 +209,10 @@ public class BuyWaterActivity extends BaseActivity implements Observer{
             Packet packet1 = myObservable.getCom1Packet();
             if (packet1 != null) {
                 if (Arrays.equals(packet1.getCmd(),new byte[]{0x01,0x04})){
-                    MyLogUtil.d("receiveCom1_104:",CreatePacketTypeUtil.getPacketString(packet1));
+                   // MyLogUtil.d("receiveCom1_104:",CreatePacketTypeUtil.getPacketString(packet1));
                     onCom1Received104dataFromControlBoard(packet1.getData());
                 }else if (Arrays.equals(packet1.getCmd(),new byte[]{0x02,0x04})){
-                    MyLogUtil.d("receiveCom1_204:",CreatePacketTypeUtil.getPacketString(packet1));
+                   // MyLogUtil.d("receiveCom1_204:",CreatePacketTypeUtil.getPacketString(packet1));
                     onCom1Received204DataControlBoard(packet1.getFrame());
                 }else if (Arrays.equals(packet1.getCmd(),new byte[]{0x01,0x05})){
                     onCom1Received105DataControlBoard(packet1.getData());
@@ -221,10 +223,10 @@ public class BuyWaterActivity extends BaseActivity implements Observer{
                 if (Arrays.equals(packet2.getCmd(),new byte[]{0x01,0x07})){
                     VariableUtil.byteArray.clear();
                     VariableUtil.byteArray=packet2.getData();
-                    MyLogUtil.d("receiveCom2_107:",CreatePacketTypeUtil.getPacketString(packet2));
+                   // MyLogUtil.d("receiveCom2_107:",CreatePacketTypeUtil.getPacketString(packet2));
                     onCom2Received107DataFromServer(packet2.getData());
                 }else if (Arrays.equals(packet2.getCmd(),new byte[]{0x01,0x04})){
-                    MyLogUtil.d("receiveCom2_104:",CreatePacketTypeUtil.getPacketString(packet2));
+                   // MyLogUtil.d("receiveCom2_104:",CreatePacketTypeUtil.getPacketString(packet2));
                     String stringWork= DataCalculateUtils.intToBinary(ByteUtils.byteToInt(packet2.getData().get(45)));
                     if (DataCalculateUtils.isRechargeData(stringWork,5,6)){
                         response204ToServer(packet2.getFrame());
@@ -371,6 +373,7 @@ public class BuyWaterActivity extends BaseActivity implements Observer{
     }
     private void onCom1Received204DataControlBoard(byte[] frame) {
         if (Arrays.equals(frame,mAppFrame)){
+            cancelCountDownTimer();
             if (buyStatus){
                 buyStatus=false;
                 if (FormatInformationBean.ConsumptionType==1){
@@ -422,12 +425,15 @@ public class BuyWaterActivity extends BaseActivity implements Observer{
                     byte[] data= FormatInformationUtil.setConsumeType01();
                     byte[] packet = PacketUtils.makePackage(frame, type, data);
                     portService.sendToControlBoard(packet);
-                    MyLogUtil.d("sendCom1_104:",ByteUtils.byteArrayToHexString(packet));
+                    if (myScanCodeDownTimer!=null){
+                        myScanCodeDownTimer.start();
+                    }
+                   // MyLogUtil.d("sendCom1_104:",ByteUtils.byteArrayToHexString(packet));
                 }else if (business==2){
                     byte[] data= FormatInformationUtil.setConsumeType02();
                     byte[] packet = PacketUtils.makePackage(frame, type, data);
                     portService.sendToControlBoard(packet);
-                    MyLogUtil.d("sendCom1_104:",ByteUtils.byteArrayToHexString(packet));
+                   // MyLogUtil.d("sendCom1_104:",ByteUtils.byteArrayToHexString(packet));
                 }
             } catch (CRCException e) {
                 e.printStackTrace();
@@ -468,40 +474,52 @@ public class BuyWaterActivity extends BaseActivity implements Observer{
                             }
                         }
                     }else {
+                        if (FormatInformationBean.ConsumptionType == 1){
+                            onFinishOrder("0",FormatInformationBean.StringCardNo);
+                        }else if (FormatInformationBean.ConsumptionType == 3){
+                            onFinishOrder("1",FormatInformationBean.StringCustomerNo);
+                        }else if (FormatInformationBean.ConsumptionType == 5){
+                            onFinishOrder("1",FormatInformationBean.StringCustomerNo);
+                        }else {
+                            onFinishOrder("0",FormatInformationBean.StringCardNo);
+                        }
                         //刷卡结账
-                        calculateData();    //没联网计算取缓存数据
-                        double consumption= FormatInformationBean.ConsumptionAmount/100.0;
-                        double waterVolume= FormatInformationBean.WaterYield*volume;
-                        String afterAmount=String.valueOf(DataCalculateUtils.getTwoDecimal(consumption));
-                        String afterWater=String.valueOf(DataCalculateUtils.getTwoDecimal(waterVolume));
-                        String mAccount=String.valueOf(FormatInformationBean.StringCardNo);
-                        Intent intent=new Intent(mContext,PaySuccessActivity.class);
-                        intent.putExtra("afterAmount",afterAmount) ;
-                        intent.putExtra("afterWater",afterWater);
-                        intent.putExtra("mAccount",mAccount);
-                        intent.putExtra("sign","0");
-                        unbindPortServiceAndRemoveObserver();
-                        startActivity(intent);
-                        endTimeCount();
-
                     }
                 }
         }catch (Exception e){
             e.printStackTrace();
         }
     }
+    private void onFinishOrder(String sign,String account){
+        calculateData();    //没联网计算取缓存数据
+        double consumption= FormatInformationBean.ConsumptionAmount/100.0;
+        double waterVolume= FormatInformationBean.WaterYield*volume;
+        String afterAmount=String.valueOf(DataCalculateUtils.getTwoDecimal(consumption));
+        String afterWater=String.valueOf(DataCalculateUtils.getTwoDecimal(waterVolume));
+        Intent intent=new Intent(mContext,PaySuccessActivity.class);
+        intent.putExtra("afterAmount",afterAmount) ;
+        intent.putExtra("afterWater",afterWater);
+        intent.putExtra("mAccount",account);
+        intent.putExtra("sign",sign);
+        unbindPortServiceAndRemoveObserver();
+        startActivity(intent);
+        endTimeCount();
+    }
     private void calculateData() {
         int mVolume=CachePreferencesUtil.getIntData(this,CachePreferencesUtil.WATER_NUM,5);
         int mTime=CachePreferencesUtil.getIntData(this,CachePreferencesUtil.WATER_OUT_TIME,30);
         volume=DataCalculateUtils.getWaterVolume(mVolume,mTime);
     }
-    private void onControlScreenBackground(int status){
-        if (portService!=null){
+
+    /**
+     * 自动发结账
+     */
+    private void onSettleAccountEndOutWater() {
+        if (portService != null) {
             try {
                 byte[] frame = FrameUtils.getFrame(mContext);
                 byte[] type = new byte[]{0x01, 0x04};
-                byte[] data = FormatInformationUtil.setCloseScreenData(status);
-                byte[] packet = PacketUtils.makePackage(frame, type, data);
+                byte[] packet = PacketUtils.makePackage(frame, type, ConstantUtil.END_BYTE);
                 portService.sendToControlBoard(packet);
             } catch (CRCException e) {
                 e.printStackTrace();
@@ -527,6 +545,20 @@ public class BuyWaterActivity extends BaseActivity implements Observer{
            finish();
         }
     }
+    class MyScanCodeDownTimer extends CountDownTimer {
+        private MyScanCodeDownTimer(long millisInFuture, long countDownInterval) {
+            super(millisInFuture, countDownInterval);
+        }
+        @Override
+        public void onTick(long millisUntilFinished) {  //计时过程
+        }
+        @Override
+        public void onFinish() {
+            onSettleAccountEndOutWater();
+            ToastUtils.onToastLong("本次扫码无效，请重新扫描二维码");
+            ToastUtils.onToastLong("本次扫码无效，请重新扫描二维码");
+        }
+    }
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         if(keyCode== KeyEvent.KEYCODE_BACK&& event.getRepeatCount()==0){
@@ -544,6 +576,11 @@ public class BuyWaterActivity extends BaseActivity implements Observer{
     private void endTimeCount(){
         if (myCountDownTimer != null) {
             myCountDownTimer.cancel();
+        }
+    }
+    private void cancelCountDownTimer(){
+        if (myScanCodeDownTimer!=null){
+            myScanCodeDownTimer.cancel();
         }
     }
     private void unbindPortServiceAndRemoveObserver(){
@@ -570,5 +607,6 @@ public class BuyWaterActivity extends BaseActivity implements Observer{
         super.onDestroy();
         unbindPortServiceAndRemoveObserver();
         endTimeCount();
+        cancelCountDownTimer();
     }
 }

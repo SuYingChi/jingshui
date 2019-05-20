@@ -145,8 +145,8 @@ public class IcCardOutWaterActivity extends BaseActivity implements Observer{
         ledWater =(LEDView)findViewById(R.id.id_waster_yield);
         double balance= DataCalculateUtils.getTwoDecimal(FormatInformationBean.Balance/100.0);
         tvBalance.setText(String.valueOf(balance));
-        tvCardNo.setText(String.valueOf(FormatInformationBean.StringCardNo));
-        mAccount=String.valueOf(FormatInformationBean.StringCardNo);
+        tvCardNo.setText(FormatInformationBean.StringCardNo);
+        mAccount=FormatInformationBean.StringCardNo;
         checkCardStatus();
         VariableUtil.cardStatus=0;
         myCountDownTimer.start();
@@ -445,18 +445,6 @@ public class IcCardOutWaterActivity extends BaseActivity implements Observer{
                 if (portService != null) {
                     calculateData();    //没联网计算取缓存数据
                     portService.sendToServer(CreatePacketTypeUtil.getPacketData103());
-                    /*try {
-                        byte[] mFrame = FrameUtils.getFrame(mContext);
-                        byte[] type = new byte[]{0x01, 0x03};
-                        byte[] packet = PacketUtils.makePackage(mFrame, type, null);
-                        portService.sendToServer(packet);
-                    } catch (CRCException e) {
-                        e.printStackTrace();
-                    } catch (FrameException e) {
-                        e.printStackTrace();
-                    } catch (CmdTypeException e) {
-                        e.printStackTrace();
-                    }*/
                     startOut=false;
                     handler.post(runnable);
                 }
@@ -479,7 +467,7 @@ public class IcCardOutWaterActivity extends BaseActivity implements Observer{
             }}, DELAY_TIME);
     }
     class MyCountDownTimer extends CountDownTimer {
-        public MyCountDownTimer(long millisInFuture, long countDownInterval) {
+         MyCountDownTimer(long millisInFuture, long countDownInterval) {
             super(millisInFuture, countDownInterval);
         }
         @Override

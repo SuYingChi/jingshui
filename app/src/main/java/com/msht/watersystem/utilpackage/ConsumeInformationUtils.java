@@ -32,7 +32,7 @@ public class ConsumeInformationUtils {
             account[7]=byteArrayList.get(8);
             FormatInformationBean.phoneType=account;
             try {
-                FormatInformationBean.StringCardNo= getBigNumber(account);
+                FormatInformationBean.StringCustomerNo= getBigNumber(account);
             } catch (Exception e) {
                 e.printStackTrace();
             }

@@ -114,7 +114,7 @@ public class DeliverOutWaterActivity extends BaseActivity implements Observer{
         tvFinishOrder =findViewById(R.id.id_finish_order);
         tvTime =findViewById(R.id.id_time);
         double weight= DataCalculateUtils.getTwoDecimal(FormatInformationBean.Waterweight/100.0);
-        tvCardNo.setText(String.valueOf(FormatInformationBean.StringCardNo));
+        tvCardNo.setText(FormatInformationBean.StringCustomerNo);
         String weightText=String.valueOf(weight)+"升";
         tvVolume.setText(weightText);
         tvOrderNo.setText(FormatInformationBean.OrderNoString);
@@ -381,7 +381,7 @@ public class DeliverOutWaterActivity extends BaseActivity implements Observer{
         mTimer.start();
     }
     class MyCountDownTimer extends CountDownTimer {
-        public MyCountDownTimer(long millisInFuture, long countDownInterval) {
+         MyCountDownTimer(long millisInFuture, long countDownInterval) {
             super(millisInFuture, countDownInterval);
         }
         @Override

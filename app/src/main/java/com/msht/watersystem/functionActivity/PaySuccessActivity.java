@@ -32,6 +32,7 @@ import com.msht.watersystem.utilpackage.DataCalculateUtils;
 import com.msht.watersystem.utilpackage.MyLogUtil;
 import com.msht.watersystem.utilpackage.VariableUtil;
 import com.msht.watersystem.widget.BannerM;
+import com.msht.watersystem.widget.ToastUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -51,8 +52,13 @@ public class PaySuccessActivity extends BaseActivity implements Observer {
     private boolean     bindStatus=false;
     private Context     mContext;
     private MyCountDownTimer myCountDownTimer;
+    private MyScanCodeDownTimer myScanCodeDownTimer;
     private TextView tvTime;
     private TextView tvBalance;
+    private TextView tvSuccess;
+    private TextView tvAmount;
+    private TextView tvWater;
+    private TextView tvCustomerNo;
     private String   mAccount;
     private String   sign;
     private String   afterAmount;
@@ -77,6 +83,7 @@ public class PaySuccessActivity extends BaseActivity implements Observer {
         initView();
        // initBannerView();
         initWaterQuality();
+        myScanCodeDownTimer=new MyScanCodeDownTimer(3000,1000);
         bindPortService();
         myCountDownTimer=new MyCountDownTimer(30000,1000);
         myCountDownTimer.start();
@@ -95,10 +102,10 @@ public class PaySuccessActivity extends BaseActivity implements Observer {
         bindStatus=true;
     }
     private void initView() {
-        TextView tvSuccess =(TextView)findViewById(R.id.id_success) ;
-        TextView tvAmount =(TextView)findViewById(R.id.id_consumption) ;
-        TextView tvWater =(TextView)findViewById(R.id.id_water_num);
-        TextView tvCustomerNo =(TextView)findViewById(R.id.id_tv_customerNo);
+        tvSuccess =(TextView)findViewById(R.id.id_success) ;
+        tvAmount =(TextView)findViewById(R.id.id_consumption) ;
+        tvWater =(TextView)findViewById(R.id.id_water_num);
+        tvCustomerNo =(TextView)findViewById(R.id.id_tv_customerNo);
         tvBalance =(TextView)findViewById(R.id.id_amount) ;
         tvTime =(TextView)findViewById(R.id.id_time);
         tvCustomerNo.setText(mAccount);
@@ -182,12 +189,12 @@ public class PaySuccessActivity extends BaseActivity implements Observer {
             Packet packet1 = myObservable.getCom1Packet();
             if (packet1 != null) {
                 if (Arrays.equals(packet1.getCmd(),new byte[]{0x01,0x04})){
-                    MyLogUtil.d("receiveCom1_104:",CreatePacketTypeUtil.getPacketString(packet1));
+                  //  MyLogUtil.d("receiveCom1_104:",CreatePacketTypeUtil.getPacketString(packet1));
                     onCom1Received104DataFromControlBoard(packet1.getData());
                 }else if (Arrays.equals(packet1.getCmd(),new byte[]{0x01,0x05})){
                     onCom1Received105DataFromControlBoard(packet1.getData());
                 }else if (Arrays.equals(packet1.getCmd(),new byte[]{0x02,0x04})){
-                    MyLogUtil.d("receiveCom1_204:",CreatePacketTypeUtil.getPacketString(packet1));
+                  //  MyLogUtil.d("receiveCom1_204:",CreatePacketTypeUtil.getPacketString(packet1));
                     onCom1Received204DataFromControlBoard(packet1.getFrame());
 
                 }
@@ -197,14 +204,14 @@ public class PaySuccessActivity extends BaseActivity implements Observer {
                 if (Arrays.equals(packet2.getCmd(),new byte[]{0x02,0x05})){
                     onCom2Received205DataFromServer();
                 }else  if (Arrays.equals(packet2.getCmd(),new byte[]{0x01,0x04})){
-                    MyLogUtil.d("receiveCom2_104:",CreatePacketTypeUtil.getPacketString(packet2));
+                  //  MyLogUtil.d("receiveCom2_104:",CreatePacketTypeUtil.getPacketString(packet2));
                     String stringWork= DataCalculateUtils.intToBinary(ByteUtils.byteToInt(packet2.getData().get(45)));
                     if (DataCalculateUtils.isRechargeData(stringWork,5,6)){
                         response204ToServer(packet2.getFrame());
                     }
                     onCom2Received104DataFromServer(packet2.getData());
                 }else if (Arrays.equals(packet2.getCmd(),new byte[]{0x01,0x07})){
-                    MyLogUtil.d("receiveCom2_107:",CreatePacketTypeUtil.getPacketString(packet2));
+                  //  MyLogUtil.d("receiveCom2_107:",CreatePacketTypeUtil.getPacketString(packet2));
                     onCom2Received107DataFromServer(packet2.getData());
                 }else if (Arrays.equals(packet2.getCmd(),new byte[]{0x01,0x02})){
                     response102ToServer(packet2.getFrame());
@@ -216,6 +223,7 @@ public class PaySuccessActivity extends BaseActivity implements Observer {
     }
     private void onCom1Received204DataFromControlBoard(byte[] frame) {
         if (Arrays.equals(frame,mAppFrame)){
+            cancelCountDownTimer();
             if (buyStatus){
                 buyStatus=false;
                 if (FormatInformationBean.ConsumptionType==1){
@@ -311,13 +319,35 @@ public class PaySuccessActivity extends BaseActivity implements Observer {
                     byte[] data= FormatInformationUtil.setConsumeType01();
                     byte[] packet = PacketUtils.makePackage(frame, type, data);
                     portService.sendToControlBoard(packet);
-                    MyLogUtil.d("sendCom1_104:",ByteUtils.byteArrayToHexString(packet));
+                    if (myScanCodeDownTimer!=null){
+                        myScanCodeDownTimer.start();
+                    }
+                  //  MyLogUtil.d("sendCom1_104:",ByteUtils.byteArrayToHexString(packet));
                 }else if (business==2){
                     byte[] data= FormatInformationUtil.setConsumeType02();
                     byte[] packet = PacketUtils.makePackage(frame, type, data);
                     portService.sendToControlBoard(packet);
-                    MyLogUtil.d("sendCom1_104:",ByteUtils.byteArrayToHexString(packet));
+                  //  MyLogUtil.d("sendCom1_104:",ByteUtils.byteArrayToHexString(packet));
                 }
+            } catch (CRCException e) {
+                e.printStackTrace();
+            } catch (FrameException e) {
+                e.printStackTrace();
+            } catch (CmdTypeException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+    /**
+     * 自动发结账
+     */
+    private void onSettleAccountEndOutWater() {
+        if (portService != null) {
+            try {
+                byte[] frame = FrameUtils.getFrame(mContext);
+                byte[] type = new byte[]{0x01, 0x04};
+                byte[] packet = PacketUtils.makePackage(frame, type, ConstantUtil.END_BYTE);
+                portService.sendToControlBoard(packet);
             } catch (CRCException e) {
                 e.printStackTrace();
             } catch (FrameException e) {
@@ -375,8 +405,13 @@ public class PaySuccessActivity extends BaseActivity implements Observer {
                     String stringWork= DataCalculateUtils.intToBinary(FormatInformationBean.Updateflag3);
                     if (DataCalculateUtils.isEvent(stringWork,3)){
                         if (FormatInformationBean.ConsumptionType==1){
-                            double afterConsumption= FormatInformationBean.AfterAmount/100.0;
-                            tvBalance.setText(String.valueOf(DataCalculateUtils.getTwoDecimal(afterConsumption)));
+                            onFinishOrder(FormatInformationBean.AfterAmount/100.0,FormatInformationBean.StringCardNo,"异常操作,请重新刷卡");
+                        }else if (FormatInformationBean.ConsumptionType==3){
+                            onFinishOrder(FormatInformationBean.AppBalance/100.0,FormatInformationBean.StringCustomerNo,"异常操作,请重新扫码");
+                        }else if (FormatInformationBean.ConsumptionType==5){
+                            onFinishOrder(FormatInformationBean.AppBalance/100.0,FormatInformationBean.StringCustomerNo,"异常操作,请重新扫码");
+                        }else {
+                            onFinishOrder(FormatInformationBean.AfterAmount/100.0,FormatInformationBean.StringCardNo,"异常操作");
                         }
                     }else {
                         if (FormatInformationBean.Balance<1){
@@ -404,8 +439,27 @@ public class PaySuccessActivity extends BaseActivity implements Observer {
             e.printStackTrace();
         }
     }
+    private void onFinishOrder(double afterConsumption,String account,String payText){
+        //没联网计算取缓存数据
+        int mVolume=CachePreferencesUtil.getIntData(this,CachePreferencesUtil.WATER_NUM,5);
+        int mTime=CachePreferencesUtil.getIntData(this,CachePreferencesUtil.WATER_OUT_TIME,30);
+        double volume=DataCalculateUtils.getWaterVolume(mVolume,mTime);
+        double consumption= FormatInformationBean.ConsumptionAmount/100.0;
+        double waterVolume= FormatInformationBean.WaterYield*volume;
+        String afterAmount=String.valueOf(DataCalculateUtils.getTwoDecimal(consumption));
+        String afterWater=String.valueOf(DataCalculateUtils.getTwoDecimal(waterVolume));
+        String mAccount=String.valueOf(FormatInformationBean.StringCardNo);
+        tvSuccess.setText(payText);
+        tvAmount.setVisibility(View.VISIBLE);
+        tvCustomerNo.setText(account);
+        String afterAmountText="成功消费了"+afterAmount+"元";
+        String afterWaterText="共购买了"+afterWater+"升的水";
+        tvAmount.setText(afterAmountText);
+        tvWater.setText(afterWaterText);
+        tvBalance.setText(String.valueOf(DataCalculateUtils.getTwoDecimal(afterConsumption)));
+    }
     class MyCountDownTimer extends CountDownTimer {
-        public MyCountDownTimer(long millisInFuture, long countDownInterval) {
+         MyCountDownTimer(long millisInFuture, long countDownInterval) {
             super(millisInFuture, countDownInterval);
         }
         @Override
@@ -419,9 +473,28 @@ public class PaySuccessActivity extends BaseActivity implements Observer {
             finish();
         }
     }
+    private void cancelCountDownTimer(){
+        if (myScanCodeDownTimer!=null){
+            myScanCodeDownTimer.cancel();
+        }
+    }
     private void endTime() {
         if (myCountDownTimer != null) {
             myCountDownTimer.cancel();
+        }
+    }
+    class MyScanCodeDownTimer extends CountDownTimer {
+        private MyScanCodeDownTimer(long millisInFuture, long countDownInterval) {
+            super(millisInFuture, countDownInterval);
+        }
+        @Override
+        public void onTick(long millisUntilFinished) {  //计时过程
+        }
+        @Override
+        public void onFinish() {
+            onSettleAccountEndOutWater();
+            ToastUtils.onToastLong("本次扫码无效，请重新扫描二维码");
+            ToastUtils.onToastLong("本次扫码无效，请重新扫描二维码");
         }
     }
     @Override
@@ -457,5 +530,6 @@ public class PaySuccessActivity extends BaseActivity implements Observer {
         super.onDestroy();
         unbindPortServiceAndRemoveObserver();
         endTime();
+        cancelCountDownTimer();
     }
 }

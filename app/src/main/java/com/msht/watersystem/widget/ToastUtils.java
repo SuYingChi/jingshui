@@ -19,6 +19,7 @@ import com.msht.watersystem.utilpackage.SizeTools;
  */
 public class ToastUtils {
     private final static int BOTTOMSIZE = 40;
+    private final static int BOTTOM_SIZE =200;
     private final static int RIGHT_SIZE = 225;
 
     /**
@@ -107,7 +108,26 @@ public class ToastUtils {
         toast.setView(layout);
         toast.show();
     }
+    /**
+     * 创建Toast并显示
+     *
+     * @param msg
+     */
+    public static void onCustomToastLong( String msg) {
+        Context context = AppContext.getWaterApplicationContext();
+        View layout = View.inflate(context, R.layout.widget_toast_layout, null);
+        TextView toastTxt = (TextView) layout.findViewById(R.id.toast_txt);
+        ImageView icon=(ImageView)layout.findViewById(R.id.id_icon);
+        icon.setVisibility(View.VISIBLE);
+        toastTxt.setText(msg);
+        Toast toast = new Toast(context);
+        toast.setGravity(Gravity.BOTTOM|Gravity.END ,  SizeTools.dip2px(context, RIGHT_SIZE), SizeTools.dip2px(context, BOTTOM_SIZE));
+        toast.setDuration(Toast.LENGTH_LONG);
+        toast.setView(layout);
+        toast.show();
+    }
     public static void onToastLong(String msg){
         createToastLong(msg);
     }
+
 }

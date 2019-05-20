@@ -29,6 +29,7 @@ import com.msht.watersystem.utilpackage.FormatInformationUtil;
 import com.msht.watersystem.utilpackage.DataCalculateUtils;
 import com.msht.watersystem.utilpackage.VariableUtil;
 import com.msht.watersystem.widget.BannerM;
+import com.msht.watersystem.widget.ToastUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -56,8 +57,10 @@ public class NotSufficientActivity extends BaseActivity implements Observer {
     private TextView tvNotBalance;
     private ImageView imageView;
     private boolean   bindStatus=false;
+    private double   volume=0.00;
     private Context   mContext;
     private MyCountDownTimer myCountDownTimer;
+    private MyScanCodeDownTimer myScanCodeDownTimer;
     private PortService      portService;
     private ComServiceConnection serviceConnection;
     @Override
@@ -66,6 +69,7 @@ public class NotSufficientActivity extends BaseActivity implements Observer {
         setContentView(R.layout.activity_not_sufficient);
         mContext=this;
         myCountDownTimer=new MyCountDownTimer(30000,1000);
+        myScanCodeDownTimer=new MyScanCodeDownTimer(3000,1000);
         initView();
        // initBannerView();
         initWaterQuality();
@@ -93,7 +97,7 @@ public class NotSufficientActivity extends BaseActivity implements Observer {
         tvTime =(TextView)findViewById(R.id.id_time) ;
         double balance= DataCalculateUtils.getTwoDecimal(FormatInformationBean.Balance/100.0);
         tvBalance.setText(String.valueOf(balance));
-        tvCardNo.setText(String.valueOf(FormatInformationBean.StringCardNo));
+        tvCardNo.setText(FormatInformationBean.StringCardNo);
         myCountDownTimer.start();
     }
     private void initBannerView() {
@@ -122,7 +126,6 @@ public class NotSufficientActivity extends BaseActivity implements Observer {
             Packet packet1 = myObservable.getCom1Packet();
             if (packet1 != null) {
                 if (Arrays.equals(packet1.getCmd(),new byte[]{0x01,0x04})){
-                   // MyLogUtil.d("主板控制指令104：", CreateOrderType.getPacketString(packet1));
                     onCom1Received104DataFromControlBoard(packet1.getData());
                 }else if (Arrays.equals(packet1.getCmd(),new byte[]{0x01,0x05})){
                     onCom1Received105DataFromControlBoard(packet1.getData());
@@ -149,6 +152,7 @@ public class NotSufficientActivity extends BaseActivity implements Observer {
     }
     private void onCom1Received204DataFromControlBoard(byte[] frame) {
         if (Arrays.equals(frame,mAppFrame)){
+            cancelCountDownTimer();
             if (buyStatus){
                 buyStatus=false;
                 if (FormatInformationBean.ConsumptionType==1){
@@ -199,7 +203,7 @@ public class NotSufficientActivity extends BaseActivity implements Observer {
                 FormatInformationBean.Balance= FormatInformationBean.Balance+ FormatInformationBean.rechargeAmount;
                 double balance= DataCalculateUtils.getTwoDecimal(FormatInformationBean.Balance/100.0);
                 tvBalance.setText(String.valueOf(balance));
-                if (FormatInformationBean.Balance<1){
+                if (FormatInformationBean.Balance<=1){
                     imageView.setVisibility(View.VISIBLE);
                     tvNotBalance.setVisibility(View.VISIBLE);
                     tvSuccess.setVisibility(View.GONE);
@@ -235,6 +239,9 @@ public class NotSufficientActivity extends BaseActivity implements Observer {
                     byte[] data= FormatInformationUtil.setConsumeType01();
                     byte[] packet = PacketUtils.makePackage(frame, type, data);
                     portService.sendToControlBoard(packet);
+                    if (myScanCodeDownTimer!=null){
+                        myScanCodeDownTimer.start();
+                    }
                 }else if (business==2){
                     byte[] data= FormatInformationUtil.setConsumeType02();
                     byte[] packet = PacketUtils.makePackage(frame, type, data);
@@ -258,6 +265,15 @@ public class NotSufficientActivity extends BaseActivity implements Observer {
                     double balance= DataCalculateUtils.getTwoDecimal(FormatInformationBean.Balance/100.0);
                     tvBalance.setText(String.valueOf(balance));
                     tvCardNo.setText(String.valueOf(FormatInformationBean.StringCardNo));
+                    if (FormatInformationBean.ConsumptionType == 1){
+                        onFinishOrder("0",FormatInformationBean.StringCardNo);
+                    }else if (FormatInformationBean.ConsumptionType == 3){
+                        onFinishOrder("1",FormatInformationBean.StringCustomerNo);
+                    }else if (FormatInformationBean.ConsumptionType == 5){
+                        onFinishOrder("1",FormatInformationBean.StringCustomerNo);
+                    }else {
+                        onFinishOrder("0",FormatInformationBean.StringCardNo);
+                    }
                 }else {
                     if (FormatInformationBean.Balance<1){
                         double balance= DataCalculateUtils.getTwoDecimal(FormatInformationBean.Balance/100.0);
@@ -287,12 +303,51 @@ public class NotSufficientActivity extends BaseActivity implements Observer {
             e.printStackTrace();
         }
     }
+    private void onFinishOrder(String sign,String account){
+        calculateData();    //没联网计算取缓存数据
+        double consumption= FormatInformationBean.ConsumptionAmount/100.0;
+        double waterVolume= FormatInformationBean.WaterYield*volume;
+        String afterAmount=String.valueOf(DataCalculateUtils.getTwoDecimal(consumption));
+        String afterWater=String.valueOf(DataCalculateUtils.getTwoDecimal(waterVolume));
+        Intent intent=new Intent(mContext,PaySuccessActivity.class);
+        intent.putExtra("afterAmount",afterAmount) ;
+        intent.putExtra("afterWater",afterWater);
+        intent.putExtra("mAccount",account);
+        intent.putExtra("sign",sign);
+        startActivityForResult(intent,1);
+        endTimeCount();
+        finish();
+    }
     private void response204ToServer(byte[] frame) {
         if (portService != null) {
             try {
                 byte[] type = new byte[]{0x02, 0x04};
                 byte[] packet = PacketUtils.makePackage(frame, type, null);
                 portService.sendToServer(packet);
+            } catch (CRCException e) {
+                e.printStackTrace();
+            } catch (FrameException e) {
+                e.printStackTrace();
+            } catch (CmdTypeException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+    private void calculateData() {
+        int mVolume=CachePreferencesUtil.getIntData(this,CachePreferencesUtil.WATER_NUM,5);
+        int mTime=CachePreferencesUtil.getIntData(this,CachePreferencesUtil.WATER_OUT_TIME,30);
+        volume=DataCalculateUtils.getWaterVolume(mVolume,mTime);
+    }
+    /**
+     * 自动发结账
+     */
+    private void onSettleAccountEndOutWater() {
+        if (portService != null) {
+            try {
+                byte[] frame = FrameUtils.getFrame(mContext);
+                byte[] type = new byte[]{0x01, 0x04};
+                byte[] packet = PacketUtils.makePackage(frame, type, ConstantUtil.END_BYTE);
+                portService.sendToControlBoard(packet);
             } catch (CRCException e) {
                 e.printStackTrace();
             } catch (FrameException e) {
@@ -355,8 +410,22 @@ public class NotSufficientActivity extends BaseActivity implements Observer {
             }
         }
     }
+    class MyScanCodeDownTimer extends CountDownTimer {
+        private MyScanCodeDownTimer(long millisInFuture, long countDownInterval) {
+            super(millisInFuture, countDownInterval);
+        }
+        @Override
+        public void onTick(long millisUntilFinished) {  //计时过程
+        }
+        @Override
+        public void onFinish() {
+            onSettleAccountEndOutWater();
+            ToastUtils.onToastLong("本次扫码无效，请重新扫描二维码");
+            ToastUtils.onToastLong("本次扫码无效，请重新扫描二维码");
+        }
+    }
     class MyCountDownTimer extends CountDownTimer {
-        public MyCountDownTimer(long millisInFuture, long countDownInterval) {
+         MyCountDownTimer(long millisInFuture, long countDownInterval) {
             super(millisInFuture, countDownInterval);
         }
         @Override
@@ -367,6 +436,11 @@ public class NotSufficientActivity extends BaseActivity implements Observer {
         @Override
         public void onFinish() {
             finish();
+        }
+    }
+    private void cancelCountDownTimer(){
+        if (myScanCodeDownTimer!=null){
+            myScanCodeDownTimer.cancel();
         }
     }
     private void endTimeCount() {
@@ -397,5 +471,6 @@ public class NotSufficientActivity extends BaseActivity implements Observer {
         super.onDestroy();
         unbindPortServiceAndRemoveObserver();
         endTimeCount();
+        cancelCountDownTimer();
     }
 }

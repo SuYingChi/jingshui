@@ -93,7 +93,6 @@ public class CannotBuyWaterActivity extends BaseActivity implements Observer {
             Packet packet1 = myObservable.getCom1Packet();
             if (packet1 != null) {
                 if (Arrays.equals(packet1.getCmd(),new byte[]{0x01,0x04})){
-                   // MyLogUtil.d("主板回复指令104：", CreateOrderType.getPacketString(packet1));
                     onCom1Received104dataFromControlBoard();
                 }else if (Arrays.equals(packet1.getCmd(),new byte[]{0x01,0x05})){
                     onCom1Received105dataFromControlBoard(packet1.getData());
