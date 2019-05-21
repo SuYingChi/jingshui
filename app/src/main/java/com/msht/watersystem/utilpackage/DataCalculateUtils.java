@@ -12,6 +12,14 @@ import java.util.Locale;
  */
 
 public class DataCalculateUtils {
+    /**
+     * 出水时间默认28.0秒
+     */
+    private static final double OUT_WATER_TIME=28.0;
+    /**
+     * 出水价格默认20.0秒，1 元人民币打水 20S 到 99S 可调，如 20S
+     */
+    private static final double OUT_PRICE=20.0;
     public static double getTwoDecimal(double amount) {   //保留两位小数
         BigDecimal bg=new BigDecimal(amount);
         return bg.setScale(2,BigDecimal.ROUND_HALF_UP).doubleValue();
@@ -19,13 +27,20 @@ public class DataCalculateUtils {
     public static double getWaterVolume(int volume,int time){
         double outWaterNum=volume*1.0;
         double outWaterTime=time*1.0;
-        double perSecond=outWaterNum/outWaterTime;
-        double perdouble=DataCalculateUtils.getTwoDecimal(perSecond);
-        return perSecond;
+        if (outWaterTime!=0){
+            return outWaterNum/outWaterTime;
+        }else {
+            return outWaterNum/OUT_WATER_TIME;
+        }
+
     }
     public static double getWaterPrice(int price){
         double priceNum=price*1.0;
-        return 1.0/priceNum;
+        if (priceNum!=0){
+            return 1.0/priceNum;
+        }else {
+            return 1.0/OUT_PRICE;
+        }
     }
     public static int getOutWaterTime(int deductAmount,int price){
         double time=deductAmount*price/100.0;
