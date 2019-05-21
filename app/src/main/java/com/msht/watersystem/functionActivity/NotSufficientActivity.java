@@ -262,9 +262,6 @@ public class NotSufficientActivity extends BaseActivity implements Observer {
                 FormatInformationUtil.saveCom1ReceivedDataToFormatInformation(data);
                 String stringWork= DataCalculateUtils.intToBinary(FormatInformationBean.Updateflag3);
                 if (DataCalculateUtils.isEvent(stringWork,3)){
-                    double balance= DataCalculateUtils.getTwoDecimal(FormatInformationBean.Balance/100.0);
-                    tvBalance.setText(String.valueOf(balance));
-                    tvCardNo.setText(String.valueOf(FormatInformationBean.StringCardNo));
                     if (FormatInformationBean.ConsumptionType == 1){
                         onFinishOrder("0",FormatInformationBean.StringCardNo);
                     }else if (FormatInformationBean.ConsumptionType == 3){
