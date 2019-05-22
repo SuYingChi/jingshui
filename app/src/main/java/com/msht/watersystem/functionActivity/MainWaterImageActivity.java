@@ -406,12 +406,12 @@ public class MainWaterImageActivity extends BaseActivity implements Observer{
                     startActivity(intent);
                 } else {
                     //给主控板发指令，取水
-                    sendBuyWaterCommand104ToControlBoard(1);
+                    sendBuyWaterCommand104ToControlBoard(1,data);
                 }
             }//配送端APP来扫
             else if (FormatInformationBean.BusinessType == 2) {
                 //给主控板发指令，取水
-                sendBuyWaterCommand104ToControlBoard(2);
+                sendBuyWaterCommand104ToControlBoard(2,data);
             }
         }
     }
@@ -433,14 +433,14 @@ public class MainWaterImageActivity extends BaseActivity implements Observer{
             }
         }
     }
-    private void sendBuyWaterCommand104ToControlBoard(int business) {
+    private void sendBuyWaterCommand104ToControlBoard(int business,ArrayList<Byte> dataList) {
         if (portService != null) {
             try {
                 byte[] frame = FrameUtils.getFrame(getApplicationContext());
                 mAppFrame=frame;
                 byte[] type = new byte[]{0x01, 0x04};
                 if (business == 1) {
-                    byte[] data = FormatInformationUtil.setConsumeType01();
+                    byte[] data = FormatInformationUtil.setBuyWaterCommand104ConsumeType1(dataList);
                     byte[] packet = PacketUtils.makePackage(frame, type, data);
                     portService.sendToControlBoard(packet);
                     if (myCountDownTimer!=null){
@@ -448,7 +448,7 @@ public class MainWaterImageActivity extends BaseActivity implements Observer{
                     }
                     //MyLogUtil.d("sendCom1_104:",ByteUtils.byteArrayToHexString(packet));
                 } else if (business == 2) {
-                    byte[] data = FormatInformationUtil.setConsumeType02();
+                    byte[] data = FormatInformationUtil.setBuyWaterCommand104ConsumeType2(dataList);
                     byte[] packet = PacketUtils.makePackage(frame, type, data);
                     portService.sendToControlBoard(packet);
                    // MyLogUtil.d("sendCom1_104:",ByteUtils.byteArrayToHexString(packet));

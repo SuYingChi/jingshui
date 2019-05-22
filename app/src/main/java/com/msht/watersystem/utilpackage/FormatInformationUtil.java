@@ -213,6 +213,102 @@ public class FormatInformationUtil {
         return parameter;
     }
 
+    public static byte[] setBuyWaterCommand104ConsumeType1(ArrayList<Byte> dataList){
+        byte[] consumption=new byte[4];
+        consumption[0]=dataList.get(13);
+        consumption[1]=dataList.get(14);
+        consumption[2]=dataList.get(15);
+        consumption[3]=dataList.get(16);
+        byte[] twoByte=ByteUtils.intToByte2(ByteUtils.byte4ToInt(consumption));
+        byte[] control=new byte[48];
+        for (int i=0;i<48;i++){
+            if (i==0){
+                //设备号
+                control[i]=dataList.get(21);
+            }else if (i==1){
+                control[i]=dataList.get(22);
+            }else if (i==2){
+                control[i]=dataList.get(23);
+            }else if (i==3){
+                control[i]=dataList.get(24);
+            }else if (i==15){
+                control[i]=(byte)0x03;
+            }else if (i==16){
+                control[i]=twoByte[0];
+            }else if (i==17){
+                control[i]=twoByte[1];
+            }else if (i==18){
+                control[i]=(byte)0x01;
+            }else if (i==29){
+                //单价
+                control[i]=dataList.get(25);
+                //flag,设备号变化
+            }else if (i==42){
+                control[i]=(byte)0x0f;
+            } else if (i==43){
+                //消费类型
+                control[i]=(byte)0x80;
+            }else if (i==44){
+                control[i]=(byte)0x03;
+            }else if (i==45){
+                //单价，
+                control[i]=(byte)0x20;
+            }else {
+                control[i]=(byte)0x00;
+            }
+        }
+        return control;
+    }
+    public static byte[] setBuyWaterCommand104ConsumeType2(ArrayList<Byte> dataList){
+        byte[] consumption=new byte[4];
+        consumption[0]=dataList.get(13);
+        consumption[1]=dataList.get(14);
+        consumption[2]=dataList.get(15);
+        consumption[3]=dataList.get(16);
+        byte[] twoByte=ByteUtils.intToByte2(ByteUtils.byte4ToInt(consumption));
+        byte[] control=new byte[48];
+        for (int i=0;i<48;i++){
+            if (i==0){
+                //设备号
+                control[i]=dataList.get(21);
+            }else if (i==1){
+                control[i]=dataList.get(22);
+            }else if (i==2){
+                control[i]=dataList.get(23);
+            }else if (i==3){
+                control[i]=dataList.get(24);
+            }else if (i==15){
+                control[i]=(byte)0x03;
+            }else if (i==16){
+                control[i]=twoByte[0];
+            }else if (i==17){
+                control[i]=twoByte[1];
+            }else if (i==18){
+                control[i]=(byte)0x01;
+            }else if (i==19){
+                control[i]=twoByte[0];
+            }else if (i==20){
+                control[i]=twoByte[1];
+            }else if (i==29){
+                //单价
+                control[i]=dataList.get(25);
+                //flag,设备号变化
+            }else if (i==42){
+                control[i]=(byte)0x0f;
+            } else if (i==43){
+                control[i]=(byte)0x80;
+            }else if (i==44){
+                control[i]=(byte)0x03;
+                // Control[i]=(byte)0x1c;     ，
+            } else if (i==45){
+                //单价，
+                control[i]=(byte)0x20;
+            } else {
+                control[i]=(byte)0x00;
+            }
+        }
+        return control;
+    }
     public static byte[] setConsumeType01(){
         byte[] consumption=new byte[4];
         consumption[0]=VariableUtil.byteArray.get(13);

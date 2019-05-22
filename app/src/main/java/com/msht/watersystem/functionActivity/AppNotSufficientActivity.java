@@ -191,34 +191,34 @@ public class AppNotSufficientActivity extends BaseActivity implements Observer {
                         tvBalance.setText(String.valueOf(balance));
                         tvCustomerNo.setText(FormatInformationBean.StringCardNo);
                     }else {
-                        setBusiness(1);
+                        sendBuyWaterCommand104ToControlBoard(1,data);
                     }
                 }else if (FormatInformationBean.BusinessType==2){
-                    setBusiness(2);
+                    sendBuyWaterCommand104ToControlBoard(2,data);
                 }
             }
 
         }
     }
-    private void setBusiness(int business) {
+    private void sendBuyWaterCommand104ToControlBoard(int business,ArrayList<Byte> dataList) {
         if (portService != null) {
             try {
                 byte[] frame = FrameUtils.getFrame(getApplicationContext());
                 mAppFrame=frame;
                 byte[] type = new byte[]{0x01, 0x04};
-                if (business==1){
-                    byte[] data= FormatInformationUtil.setConsumeType01();
+                if (business == 1) {
+                    byte[] data = FormatInformationUtil.setBuyWaterCommand104ConsumeType1(dataList);
                     byte[] packet = PacketUtils.makePackage(frame, type, data);
                     portService.sendToControlBoard(packet);
-                    if (myScanCodeDownTimer!=null){
-                        myScanCodeDownTimer.start();
+                    if (myCountDownTimer!=null){
+                        myCountDownTimer.start();
                     }
-                   // MyLogUtil.d("sendCom1_104:",ByteUtils.byteArrayToHexString(packet));
-                }else if (business==2){
-                    byte[] data= FormatInformationUtil.setConsumeType02();
+                    //MyLogUtil.d("sendCom1_104:",ByteUtils.byteArrayToHexString(packet));
+                } else if (business == 2) {
+                    byte[] data = FormatInformationUtil.setBuyWaterCommand104ConsumeType2(dataList);
                     byte[] packet = PacketUtils.makePackage(frame, type, data);
                     portService.sendToControlBoard(packet);
-                   // MyLogUtil.d("sendCom1_104:",ByteUtils.byteArrayToHexString(packet));
+                    // MyLogUtil.d("sendCom1_104:",ByteUtils.byteArrayToHexString(packet));
                 }
             } catch (CRCException e) {
                 e.printStackTrace();
