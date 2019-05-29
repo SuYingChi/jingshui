@@ -493,8 +493,8 @@ public class PaySuccessActivity extends BaseActivity implements Observer {
         @Override
         public void onFinish() {
             onSettleAccountEndOutWater();
-            ToastUtils.onToastLong("本次扫码无效，请重新扫描二维码");
-            ToastUtils.onToastLong("本次扫码无效，请重新扫描二维码");
+            ToastUtils.onToastLong("本次扫码无效，请稍后10秒重新扫描二维码");
+            ToastUtils.onToastLong("本次扫码无效，请稍后10秒重新扫描二维码");
         }
     }
     @Override

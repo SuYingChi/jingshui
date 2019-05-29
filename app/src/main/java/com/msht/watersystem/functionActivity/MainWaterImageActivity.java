@@ -528,8 +528,8 @@ public class MainWaterImageActivity extends BaseActivity implements Observer{
         @Override
         public void onFinish() {
             onSettleAccountEndOutWater();
-            ToastUtils.onCustomToastLong("本次扫码无效，请重新扫描二维码");
-            ToastUtils.onCustomToastLong("本次扫码无效，请重新扫描二维码");
+            ToastUtils.onCustomToastLong("本次扫码无效，请稍后10秒重新扫描二维码");
+            ToastUtils.onCustomToastLong("本次扫码无效，请稍后10秒重新扫描二维码");
         }
     }
     private void cancelCountDownTimer(){
