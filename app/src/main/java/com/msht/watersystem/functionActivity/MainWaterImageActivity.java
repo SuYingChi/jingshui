@@ -77,7 +77,7 @@ public class MainWaterImageActivity extends BaseActivity implements Observer{
     private boolean pageStatus = true;
     private int timeCount=0;
     private ComServiceConnection serviceConnection;
-    private MyCountDownTimer myCountDownTimer;
+    private MyScanCodeDownTimer myScanCodeDownTimer;
     /**夜间标志*/
     private boolean nightStatus=false;
     private Context context;
@@ -88,7 +88,7 @@ public class MainWaterImageActivity extends BaseActivity implements Observer{
         context=this;
         bindAndAddObserverToPortService();
         EventBus.getDefault().register(context);
-        myCountDownTimer=new MyCountDownTimer(3000,1000);
+        myScanCodeDownTimer=new MyScanCodeDownTimer(3000,1000);
         initService();
 
         //initBannerView();
@@ -443,8 +443,8 @@ public class MainWaterImageActivity extends BaseActivity implements Observer{
                     byte[] data = FormatInformationUtil.setBuyWaterCommand104ConsumeType1(dataList);
                     byte[] packet = PacketUtils.makePackage(frame, type, data);
                     portService.sendToControlBoard(packet);
-                    if (myCountDownTimer!=null){
-                        myCountDownTimer.start();
+                    if (myScanCodeDownTimer!=null){
+                        myScanCodeDownTimer.start();
                     }
                     //MyLogUtil.d("sendCom1_104:",ByteUtils.byteArrayToHexString(packet));
                 } else if (business == 2) {
@@ -518,8 +518,8 @@ public class MainWaterImageActivity extends BaseActivity implements Observer{
 
         }
     }
-    class MyCountDownTimer extends CountDownTimer {
-        private MyCountDownTimer(long millisInFuture, long countDownInterval) {
+    class MyScanCodeDownTimer extends CountDownTimer {
+        private MyScanCodeDownTimer(long millisInFuture, long countDownInterval) {
             super(millisInFuture, countDownInterval);
         }
         @Override
@@ -528,13 +528,13 @@ public class MainWaterImageActivity extends BaseActivity implements Observer{
         @Override
         public void onFinish() {
             onSettleAccountEndOutWater();
-            ToastUtils.onCustomToastLong("本次扫码无效，请稍后10秒重新扫描二维码");
-            ToastUtils.onCustomToastLong("本次扫码无效，请稍后10秒重新扫描二维码");
+            ToastUtils.onCustomToastLong("本次扫码无效，请稍候10秒重新扫描二维码");
+            ToastUtils.onCustomToastLong("本次扫码无效，请稍候10秒重新扫描二维码");
         }
     }
     private void cancelCountDownTimer(){
-        if (myCountDownTimer!=null){
-            myCountDownTimer.cancel();
+        if (myScanCodeDownTimer!=null){
+            myScanCodeDownTimer.cancel();
         }
     }
     @Subscribe(threadMode = ThreadMode.MAIN)

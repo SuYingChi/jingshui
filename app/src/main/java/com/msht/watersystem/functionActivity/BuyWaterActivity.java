@@ -425,8 +425,8 @@ public class BuyWaterActivity extends BaseActivity implements Observer{
                     byte[] data = FormatInformationUtil.setBuyWaterCommand104ConsumeType1(dataList);
                     byte[] packet = PacketUtils.makePackage(frame, type, data);
                     portService.sendToControlBoard(packet);
-                    if (myCountDownTimer!=null){
-                        myCountDownTimer.start();
+                    if (myScanCodeDownTimer!=null){
+                        myScanCodeDownTimer.start();
                     }
                     //MyLogUtil.d("sendCom1_104:",ByteUtils.byteArrayToHexString(packet));
                 } else if (business == 2) {
@@ -555,8 +555,8 @@ public class BuyWaterActivity extends BaseActivity implements Observer{
         @Override
         public void onFinish() {
             onSettleAccountEndOutWater();
-            ToastUtils.onToastLong("本次扫码无效，请稍后10秒重新扫描二维码");
-            ToastUtils.onToastLong("本次扫码无效，请稍后10秒重新扫描二维码");
+            ToastUtils.onToastLong("本次扫码无效，请稍候10秒重新扫描二维码");
+            ToastUtils.onToastLong("本次扫码无效，请稍候10秒重新扫描二维码");
         }
     }
     @Override

@@ -8,6 +8,7 @@ import android.graphics.Color;
 import android.media.MediaPlayer;
 import android.net.ConnectivityManager;
 import android.os.Bundle;
+import android.os.CountDownTimer;
 import android.support.v4.content.ContextCompat;
 import android.view.KeyEvent;
 import android.view.View;
@@ -47,6 +48,7 @@ import com.msht.watersystem.gen.OrderInfoDao;
 import com.msht.watersystem.service.ResendDataService;
 import com.msht.watersystem.widget.BannerM;
 import com.msht.watersystem.widget.CustomVideoView;
+import com.msht.watersystem.widget.ToastUtils;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -84,6 +86,7 @@ public class MainMyVideoActivity extends BaseActivity implements Observer/*Surfa
     /**
      * 扫码发送104帧序
      */
+    private MyScanCodeDownTimer myScanCodeDownTimer;
     private byte[] mAppFrame;
     private double volume = 0.00;
     private boolean bindStatus = false;
@@ -416,6 +419,7 @@ public class MainMyVideoActivity extends BaseActivity implements Observer/*Surfa
 
     private void onCom1Received204DataFromControlBoard(byte[] frame) {
         if (Arrays.equals(frame, mAppFrame)) {
+            cancelCountDownTimer();
             if (buyStatus) {
                 buyStatus = false;
                 if (FormatInformationBean.ConsumptionType == 1) {
@@ -583,9 +587,9 @@ public class MainMyVideoActivity extends BaseActivity implements Observer/*Surfa
                     byte[] data = FormatInformationUtil.setBuyWaterCommand104ConsumeType1(dataList);
                     byte[] packet = PacketUtils.makePackage(frame, type, data);
                     portService.sendToControlBoard(packet);
-                    /*if (myCountDownTimer!=null){
-                        myCountDownTimer.start();
-                    }*/
+                    if (myScanCodeDownTimer!=null){
+                        myScanCodeDownTimer.start();
+                    }
                     //MyLogUtil.d("sendCom1_104:",ByteUtils.byteArrayToHexString(packet));
                 } else if (business == 2) {
                     byte[] data = FormatInformationUtil.setBuyWaterCommand104ConsumeType2(dataList);
@@ -714,6 +718,25 @@ public class MainMyVideoActivity extends BaseActivity implements Observer/*Surfa
             return super.onKeyDown(keyCode, event);
         }
     }
+    /**
+     * 自动发结账
+     */
+    private void onSettleAccountEndOutWater() {
+        if (portService != null) {
+            try {
+                byte[] frame = FrameUtils.getFrame(mContext);
+                byte[] type = new byte[]{0x01, 0x04};
+                byte[] packet = PacketUtils.makePackage(frame, type, ConstantUtil.END_BYTE);
+                portService.sendToControlBoard(packet);
+            } catch (CRCException e) {
+                e.printStackTrace();
+            } catch (FrameException e) {
+                e.printStackTrace();
+            } catch (CmdTypeException e) {
+                e.printStackTrace();
+            }
+        }
+    }
     private void startBuyWater() {
         pageStatus = false;
         Intent intent = new Intent(mContext, BuyWaterActivity.class);
@@ -723,17 +746,7 @@ public class MainMyVideoActivity extends BaseActivity implements Observer/*Surfa
     private void exitApp() {
         System.exit(0);
     }
-    private void restartWaterApp() {
-        releaseVideoData();
-        Intent launchIntent = getPackageManager().getLaunchIntentForPackage(getPackageName());
-        if (launchIntent!=null){
-            launchIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            startActivity(launchIntent);
-        }
-        //**杀死整个进程**//*
-        android.os.Process.killProcess(android.os.Process.myPid());
-        System.exit(0);
-    }
+
 
     /*    @Override
         public void surfaceCreated(SurfaceHolder holder) {
@@ -884,6 +897,21 @@ public class MainMyVideoActivity extends BaseActivity implements Observer/*Surfa
                 mIsVideoSizeKnown = true;
             }
         }*/
+
+    class MyScanCodeDownTimer extends CountDownTimer {
+        private MyScanCodeDownTimer(long millisInFuture, long countDownInterval) {
+            super(millisInFuture, countDownInterval);
+        }
+        @Override
+        public void onTick(long millisUntilFinished) {  //计时过程
+        }
+        @Override
+        public void onFinish() {
+            onSettleAccountEndOutWater();
+            ToastUtils.onCustomToastLong("本次扫码无效，请稍候10秒重新扫描二维码");
+            ToastUtils.onCustomToastLong("本次扫码无效，请稍候10秒重新扫描二维码");
+        }
+    }
     @Override
     protected void onStart() {
         super.onStart();
@@ -926,12 +954,18 @@ public class MainMyVideoActivity extends BaseActivity implements Observer/*Surfa
        // releaseMediaPlayer();
        // doCleanUp();
     }
+    private void cancelCountDownTimer(){
+        if (myScanCodeDownTimer!=null){
+            myScanCodeDownTimer.cancel();
+        }
+    }
     @Override
     protected void onDestroy() {
         super.onDestroy();
         unbindPortServiceAndRemoveObserver();
       //  releaseMediaPlayer();
       //  doCleanUp();
+        cancelCountDownTimer();
         ThreadPoolManager.getInstance(getApplicationContext()).onShutDown();
         EventBus.getDefault().unregister(getApplicationContext());
     }

@@ -29,9 +29,9 @@ public class Cmd {
     }
 
     public static final int PORT=16080;
-    public static final String IP_ADDRESS="120.25.195.173";
+   // public static final String IP_ADDRESS="120.25.195.173";
    // public static final String IP_ADDRESS="192.168.1.210";
-  // public static final String IP_ADDRESS="sb-server.msbapp.cn";
+   public static final String IP_ADDRESS="sb-server.msbapp.cn";
 
     public static class ComCmd {
         //启动灌装09
