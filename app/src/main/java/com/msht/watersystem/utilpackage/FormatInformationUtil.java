@@ -119,10 +119,10 @@ public class FormatInformationUtil {
             byte[] purification=new byte[2];
             purification[0]=byteList.get(12);
             purification[1]=byteList.get(13);
-            if (isMakeWater(ByteUtils.byteToInt(byteList.get(ConstantUtil.FOURTEEN)))){
+            /*if (isMakeWater(ByteUtils.byteToInt(byteList.get(ConstantUtil.FOURTEEN)))){
                 FormatInformationBean.PurificationTDS=ByteUtils.byte2ToInt(purification);
-            }
-           // FormatInformationBean.PurificationTDS=ByteUtils.byte2ToInt(purification);
+            }*/
+            FormatInformationBean.PurificationTDS=ByteUtils.byte2ToInt(purification);
             FormatInformationBean.OriginTDS0=ByteUtils.byteToInt(byteList.get(10));
             FormatInformationBean.OriginTDS1=ByteUtils.byteToInt(byteList.get(11));
             FormatInformationBean.PurificationTDS0=ByteUtils.byteToInt(byteList.get(12));
