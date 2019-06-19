@@ -148,7 +148,15 @@ public class MainMyVideoActivity extends BaseActivity implements Observer/*Surfa
     @Override
     protected void onResume() {
         super.onResume();
-
+        fileList = FileUtil.getVideoFilePath();
+        if (fileList != null && fileList.size() >= 1) {
+            jcVideoPlayerStandard.setVisibility(View.VISIBLE);
+            imageLayout.setVisibility(View.GONE);
+        } else {
+            jcVideoPlayerStandard.setVisibility(View.GONE);
+            initBannerView();
+            imageLayout.setVisibility(View.VISIBLE);
+        }
     }
 
     private void bindAndAddObserverToPortService() {
