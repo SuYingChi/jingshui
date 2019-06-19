@@ -152,6 +152,7 @@ public class MainMyVideoActivity extends BaseActivity implements Observer/*Surfa
         if (fileList != null && fileList.size() >= 1) {
             jcVideoPlayerStandard.setVisibility(View.VISIBLE);
             imageLayout.setVisibility(View.GONE);
+            jcVideoPlayerStandard.performClick();
         } else {
             jcVideoPlayerStandard.setVisibility(View.GONE);
             initBannerView();
