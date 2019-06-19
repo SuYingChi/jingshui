@@ -62,6 +62,8 @@ import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
+import fm.jiecao.jcvideoplayer_lib.JCVideoPlayerStandard;
+
 /**
  * Demo class
  * 〈一句话功能简述〉
@@ -74,14 +76,6 @@ public class MainMyVideoActivity extends BaseActivity implements Observer/*Surfa
     private PortService portService;
     private ComServiceConnection serviceConnection;
     private View imageLayout;
-    private RelativeLayout mVideoViewContainer;
-   /* private MediaPlayer mMediaPlayer;
-    private NetBroadcastReceiver receiver;
-      private SurfaceHolder holder;
-   private boolean mIsVideoSizeKnown = false;
-     private boolean mIsVideoReadyToBePlayed = false;
-    private long currentPosition = 0;
-    private boolean changeVideo = false;*/
 
     /**
      * 扫码发送104帧序
@@ -100,9 +94,9 @@ public class MainMyVideoActivity extends BaseActivity implements Observer/*Surfa
    // private int videoIndex = 0;
     private List<String> fileList;
     private Context mContext;
-    private CustomVideoView mVideoView;
     private String path;
     private int index;
+    private JCVideoPlayerStandard jcVideoPlayerStandard;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -113,143 +107,50 @@ public class MainMyVideoActivity extends BaseActivity implements Observer/*Surfa
         EventBus.getDefault().register(mContext);
         initService();
         imageLayout = findViewById(R.id.id_layout_frame);
-        mVideoViewContainer = findViewById(R.id.id_video_layout);
-        // SurfaceView mPreview = (SurfaceView) findViewById(R.id.surface);
-        mVideoView = (CustomVideoView) findViewById(R.id.surface_view);
+        jcVideoPlayerStandard = (JCVideoPlayerStandard) findViewById(R.id.custom_videoplayer_standard);
+        jcVideoPlayerStandard.setListener(new JCVideoPlayerStandard.Listener() {
+            @Override
+            public void onAutocompletion() {
+                 fileList = FileUtil.getVideoFilePath();
+                if (fileList != null && fileList.size() >0) {
+                    jcVideoPlayerStandard.setVisibility(View.VISIBLE);
+                    imageLayout.setVisibility(View.GONE);
+                    if(index<fileList.size()-1){
+                        index+=1;
+                    }else {
+                        index=0;
+                    }
+                    jcVideoPlayerStandard.setUp(fileList.get(index),"嫂子想我没");
+                    jcVideoPlayerStandard.startButton.performClick();
+                } else {
+                    jcVideoPlayerStandard.setVisibility(View.GONE);
+                    initBannerView();
+                    imageLayout.setVisibility(View.VISIBLE);
+                }
+            }
+        });
         fileList = FileUtil.getVideoFilePath();
         if (fileList != null && fileList.size() >= 1) {
+            jcVideoPlayerStandard.setVisibility(View.VISIBLE);
             imageLayout.setVisibility(View.GONE);
-            mVideoViewContainer.setVisibility(View.VISIBLE);
-           /* holder = mPreview.getHolder();
-            holder.addCallback(this);
-            holder.setFormat(PixelFormat.RGBX_8888);*/
-           /* if (mVideoViewContainer != null) {
-                mVideoViewContainer.removeAllViews();
-            }
-            mVideoView = new CustomVideoView(getApplicationContext());
-            mVideoViewContainer.addView(mVideoView);*/
-
-            path = fileList.get(0);
             index = 0;
-            mVideoView.setVideoPath(path);
-          //  mVideoView.setMediaController(new MediaController(this));
-           // mVideoView.requestFocus();
-       /*     mVideoView.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
-                @Override
-                public void onPrepared(MediaPlayer mediaPlayer) {
-                    mediaPlayer.setPlaybackSpeed(1.0f);
-                }
-            });*/
-            mVideoView.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
-                @Override
-                public void onCompletion(MediaPlayer mp) {
-                    if (index == fileList.size() - 1) {
-                        index = 0;
-                    } else if (index < fileList.size() - 1) {
-                        index++;
-                    }
-                    path = fileList.get(index);
-                    mVideoView.setVideoPath(path);
-                    mVideoView.start();
-                }
-            });
-            mVideoView.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
-                @Override
-                public void onPrepared(MediaPlayer mp) {
-                    mp.setOnInfoListener(new MediaPlayer.OnInfoListener() {
-                        @Override
-                        public boolean onInfo(MediaPlayer mp, int what, int extra) {
-                            if (what == MediaPlayer.MEDIA_INFO_VIDEO_RENDERING_START)
-                                mVideoView.setBackgroundColor(Color.TRANSPARENT);
-                            return true;
-                        }
-                    });
-                }
-            });
-            mVideoView.setOnErrorListener(new MediaPlayer.OnErrorListener() {
-                @Override
-                public boolean onError(MediaPlayer mp, int what, int extra) {
-
-                    index=0;
-                    path = fileList.get(index);
-                    mVideoView.setVideoPath(path);
-                    mVideoView.start();
-                    return true;
-                }
-            });
+            jcVideoPlayerStandard.setUp(fileList.get(index),"嫂子想我没");
+            jcVideoPlayerStandard.startButton.performClick();
         } else {
+            jcVideoPlayerStandard.setVisibility(View.GONE);
             initBannerView();
             imageLayout.setVisibility(View.VISIBLE);
-            mVideoViewContainer.setVisibility(View.GONE);
         }
     }
 
 
-    private void initVideoData(){
-        if (fileList != null && fileList.size() >= 1) {
-            mVideoView.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
-                @Override
-                public void onCompletion(MediaPlayer mp) {
-                    if (index == fileList.size() - 1) {
-                        index = 0;
-                    } else if (index < fileList.size() - 1) {
-                        index++;
-                    }
-                    path = fileList.get(index);
-                    mVideoView.setVideoPath(path);
-                    mVideoView.start();
-                }
-            });
-            mVideoView.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
-                @Override
-                public void onPrepared(MediaPlayer mp) {
-                    mp.setOnInfoListener(new MediaPlayer.OnInfoListener() {
-                        @Override
-                        public boolean onInfo(MediaPlayer mp, int what, int extra) {
-                            if (what == MediaPlayer.MEDIA_INFO_VIDEO_RENDERING_START)
-                                mVideoView.setBackgroundColor(Color.TRANSPARENT);
-                            return true;
-                        }
-                    });
-                }
-            });
-            mVideoView.setOnErrorListener(new MediaPlayer.OnErrorListener() {
-                @Override
-                public boolean onError(MediaPlayer mp, int what, int extra) {
-
-                    index=0;
-                    path = fileList.get(index);
-                    mVideoView.setVideoPath(path);
-                    mVideoView.start();
-                    return true;
-                }
-            });
-        }
-    }
 
     @Override
     protected void onResume() {
         super.onResume();
-        //initVideoData();
-        if (mVideoView!=null){
-            mVideoView.start();
-        }else {
-            imageLayout.setVisibility(View.VISIBLE);
-            mVideoViewContainer.setVisibility(View.GONE);
-        }
 
     }
 
-    /*public void initNetBroadcast() {
-        if (receiver==null){
-            IntentFilter filter = new IntentFilter();
-            filter.addAction(ConnectivityManager.CONNECTIVITY_ACTION);
-            receiver = new NetBroadcastReceiver();
-            if (!receiver.isOrderedBroadcast()){
-                registerReceiver(receiver, filter);
-            }
-        }
-    }*/
     private void bindAndAddObserverToPortService() {
         serviceConnection = new ComServiceConnection(this, new ComServiceConnection.ConnectionCallBack() {
             @Override
@@ -678,7 +579,6 @@ public class MainMyVideoActivity extends BaseActivity implements Observer/*Surfa
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onRestartApp(RestartAppEvent event) {
         if (event.getMessage()) {
-            releaseVideoData();
             RestartAppUtil.restartApp();
            // restartWaterApp();
         }
@@ -748,156 +648,6 @@ public class MainMyVideoActivity extends BaseActivity implements Observer/*Surfa
     }
 
 
-    /*    @Override
-        public void surfaceCreated(SurfaceHolder holder) {
-            if(fileList!=null&&fileList.size()>=1){
-                imageLayout.setVisibility(View.GONE);
-                videoLayout .setVisibility(View.VISIBLE);
-                initMediaPlayer();
-            }else {
-                imageLayout.setVisibility(View.VISIBLE);
-                videoLayout .setVisibility(View.GONE);
-            }
-
-        }*/
- /*   @Override
-    public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
-        if(mMediaPlayer==null){
-            if (fileList!=null&&fileList.size()>0){
-                if (!TextUtils.isEmpty(fileList.get(videoIndex))){
-                    onSetStartPlay();
-                }else {
-                    videoIndex++;
-                    if (videoIndex>=fileList.size()){
-                        videoIndex=0;
-                    }
-                    if (!TextUtils.isEmpty(fileList.get(videoIndex))){
-                        onSetStartPlay();
-                    }else {
-                        imageLayout.setVisibility(View.VISIBLE);
-                        videoLayout .setVisibility(View.GONE);
-                    }
-                }
-            }else {
-                imageLayout.setVisibility(View.VISIBLE);
-                videoLayout .setVisibility(View.GONE);
-            }
-
-        }
-    }*/
-  /*  private void onSetStartPlay(){
-       if(initMediaPlayer()) {
-           mIsVideoSizeKnown = true;
-           startVideoPlayback();
-       }
-    }*/
-  /*  @Override
-    public void surfaceDestroyed(SurfaceHolder holder) {}*/
-   /* private boolean initMediaPlayer() {
-        doCleanUp();
-        try {
-            String videoPath=fileList.get(videoIndex);
-            if (!TextUtils.isEmpty(videoPath)&&mMediaPlayer==null) {
-                mMediaPlayer = new MediaPlayer(this);
-                setDataPath(videoPath);
-                mMediaPlayer.setDisplay(holder);
-                mMediaPlayer.prepareAsync();
-                mMediaPlayer.setOnBufferingUpdateListener(this);
-                mMediaPlayer.setOnCompletionListener(this);
-                mMediaPlayer.setOnPreparedListener(this);
-                mMediaPlayer.setOnVideoSizeChangedListener(this);
-                *//*高质*//*
-                mMediaPlayer.setVideoQuality(MediaPlayer.VIDEOQUALITY_HIGH);
-                mMediaPlayer.setVolume(0.6f,0.6f);
-                setVolumeControlStream(AudioManager.STREAM_MUSIC);
-                return  true;
-            }else if(!TextUtils.isEmpty(videoPath)&&mMediaPlayer!=null){
-                setDataPath(videoPath);
-                return true;
-            } else {
-                Log.d("initMediaPlayer",Log.getStackTraceString(new Throwable()));
-                imageLayout.setVisibility(View.VISIBLE);
-                videoLayout .setVisibility(View.GONE);
-                return  false;
-            }
-        } catch (Exception e) {
-           e.printStackTrace();
-        }
-        return false;
-    }*/
-    /*private void setDataPath(String videoPath) {
-        try {
-            mMediaPlayer.setDataSource(videoPath);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }*/
-
-    /*private void doCleanUp() {
-        mIsVideoReadyToBePlayed = false;
-        mIsVideoSizeKnown = false;
-    }*/
-
-  /*  private void startVideoPlayback() {
-        if (changeVideo) {
-            changeVideo = false;
-        } else if (currentPosition != 0) {
-            mMediaPlayer.seekTo(currentPosition);
-        }
-        mMediaPlayer.start();
-    }
-*/
-    /*   private void onStopVideo(){
-           mMediaPlayer.stop();
-           releaseMediaPlayer();
-           videoIndex=0;
-           mIsVideoSizeKnown = true;
-           changeVideo = true;
-       }*/
-/*    @Override
-    public void onBufferingUpdate(MediaPlayer mp, int percent) { }
-    @Override
-    public void onCompletion(MediaPlayer mp) {
-        releaseMediaPlayer();
-        videoIndex++;
-        if (videoIndex>=fileList.size()){
-            videoIndex=0;
-        }
-        if (initMediaPlayer()) {
-            mIsVideoSizeKnown = true;
-           // mIsVideoReadyToBePlayed = true;
-            changeVideo = true;
-        }
-    }*/
-    /*private void releaseMediaPlayer() {
-        if (mMediaPlayer != null) {
-            currentPosition = mMediaPlayer.getCurrentPosition();
-            mMediaPlayer.release();
-            mMediaPlayer = null;
-        }
-    }*/
-
-    /*    @Override
-        public void onPrepared(MediaPlayer mp) {
-           // mIsVideoReadyToBePlayed = true;
-            if (mIsVideoSizeKnown) {
-                startVideoPlayback();
-            }
-        }
-        @Override
-        public void onVideoSizeChanged(MediaPlayer mp, int width, int height) {
-            //关键
-            if (width == 0 || height == 0) {
-                imageLayout.setVisibility(View.VISIBLE);
-                videoLayout .setVisibility(View.INVISIBLE);
-               // return;
-            }else {
-                imageLayout.setVisibility(View.GONE);
-                videoLayout .setVisibility(View.VISIBLE);
-                mIsVideoSizeKnown = true;
-            }
-        }*/
-
     class MyScanCodeDownTimer extends CountDownTimer {
         private MyScanCodeDownTimer(long millisInFuture, long countDownInterval) {
             super(millisInFuture, countDownInterval);
@@ -925,34 +675,11 @@ public class MainMyVideoActivity extends BaseActivity implements Observer/*Surfa
         pageStatus = true;
     }
 
-    /*@Override
-    protected void attachBaseContext(Context newBase) {
-        super.attachBaseContext(new ContextWrapper(newBase){
-            @Override
-            public Object getSystemService(String name) {
-                if (Context.AUDIO_SERVICE.equals(name)){
-                    return getApplicationContext().getSystemService(name);
-                }
-                return super.getSystemService(name);
-            }
-        });
-    }*/
-    private void  releaseVideoData(){
-        if (mVideoView!=null){
-            mVideoView.stopPlayback();
-            mVideoView.suspend();
-            mVideoView.setOnErrorListener(null);
-            mVideoView.setOnPreparedListener(null);
-            mVideoView.setOnCompletionListener(null);
-            mVideoView=null;
-            mVideoViewContainer.removeAllViews();
-        }
-    }
     @Override
     protected void onPause() {
         super.onPause();
-       // releaseMediaPlayer();
-       // doCleanUp();
+        JCVideoPlayerStandard.releaseAllVideos();
+
     }
     private void cancelCountDownTimer(){
         if (myScanCodeDownTimer!=null){
@@ -963,8 +690,6 @@ public class MainMyVideoActivity extends BaseActivity implements Observer/*Surfa
     protected void onDestroy() {
         super.onDestroy();
         unbindPortServiceAndRemoveObserver();
-      //  releaseMediaPlayer();
-      //  doCleanUp();
         cancelCountDownTimer();
         ThreadPoolManager.getInstance(getApplicationContext()).onShutDown();
         EventBus.getDefault().unregister(getApplicationContext());

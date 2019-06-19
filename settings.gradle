@@ -1,1 +1,1 @@
-include ':app', ':vitamio', ':SerialportLibs'
+include ':app', ':vitamio', ':SerialportLibs',':jcvideoplayer-lib'
