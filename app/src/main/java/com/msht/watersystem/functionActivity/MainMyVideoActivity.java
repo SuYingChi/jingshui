@@ -62,6 +62,7 @@ import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
+import fm.jiecao.jcvideoplayer_lib.JCMediaManager;
 import fm.jiecao.jcvideoplayer_lib.JCVideoPlayerStandard;
 
 /**
@@ -97,6 +98,7 @@ public class MainMyVideoActivity extends BaseActivity implements Observer/*Surfa
     private String path;
     private int index;
     private JCVideoPlayerStandard jcVideoPlayerStandard;
+    private int currentPosition;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -152,6 +154,8 @@ public class MainMyVideoActivity extends BaseActivity implements Observer/*Surfa
         if (fileList != null && fileList.size() >= 1) {
             jcVideoPlayerStandard.setVisibility(View.VISIBLE);
             imageLayout.setVisibility(View.GONE);
+            jcVideoPlayerStandard.setUp(fileList.get(index),"嫂子想我没");
+            JCMediaManager.instance().seekTo(currentPosition);
             jcVideoPlayerStandard.startButton.performClick();
         } else {
             jcVideoPlayerStandard.setVisibility(View.GONE);
@@ -687,6 +691,7 @@ public class MainMyVideoActivity extends BaseActivity implements Observer/*Surfa
     @Override
     protected void onPause() {
         super.onPause();
+        currentPosition = JCMediaManager.instance().getCurrentPosition();
         JCVideoPlayerStandard.releaseAllVideos();
 
     }

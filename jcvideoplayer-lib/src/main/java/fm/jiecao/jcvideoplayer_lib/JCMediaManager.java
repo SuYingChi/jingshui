@@ -254,4 +254,11 @@ public class JCMediaManager implements MediaPlayer.OnPreparedListener, MediaPlay
             this.looping = loop;
         }
     }
+    public int getCurrentPosition() {
+        return mediaPlayer.getCurrentPosition();
+    }
+
+    public void seekTo(int currentPosition) {
+        mediaPlayer.seekTo(currentPosition);
+    }
 }
